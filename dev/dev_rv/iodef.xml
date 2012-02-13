@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<simulation>
+
+  
+   <!-- Définition du premier context -->
+   <context id="context1" calendar_type="Gregorian" start_date="12/07/2005 - 01:30:40">
+
+      <variable_definition>
+       
+         <!-- Taille des tampons côté serveur -->
+         <variable_group id="buffer">
+            buffer_client_size = 1E6;
+            buffer_server_size = 10E6;
+         </variable_group>
+         
+         <!-- Paramètres de découpage de domaine -->
+         <variable_group id="decomposition">
+            <variable id="with_oasis" type="boolean">.TRUE.</variable>
+         </variable_group>
+         
+      </variable_definition>
+
+      <!-- Définition des champs du premier context -->
+      <field_definition enabled=".TRUE." prec="8" level="1" unit="SI">
+         <field  id="champ1" name="premier_champ" standard_name="premier champ" long_name="mon premier champ" operation="average"  grid_ref="grille1" freq_op="2h"/>
+         <field  id="champ2" name="second_champ"  standard_name="second champ" enabled=".FALSE."  long_name="mon second champ"  grid_ref="grille2" freq_op="1h"/>
+      </field_definition>
+
+      <!-- Définition des grilles du premier context -->
+      <grid_definition>
+         <grid id="grille1" name="premiere_grille" description="ma premiere grille" domain_ref="domaine1" axis_ref="axe1"/>
+         <!-- grid id="grille1" name="premiere_grille" description="ma premiere grille" domain_ref="domaine1"/-->
+         <grid id="grille2" name="seconde_grille"  description="ma seconde grille"  domain_ref="domaine2" axis_ref="axe2"/>
+      </grid_definition>
+
+      <!-- Définition des domaines du premier context -->
+      <domain_definition>
+         <domain id="domaine1" name="premier_domaine"  standard_name="premier domaine" long_name="mon premier domaine" data_dim="2"   nj_glo="30"  ni_glo="20"
+         ni="20"  ibegin="1" nj="30"  jbegin="1"  lonvalue="1(600)600" latvalue="1(600)600"  zoom_ibegin="10" zoom_jbegin="10" zoom_ni="5" zoom_nj="5"/>
+         <domain id="domaine2" name="second_domaine"   standard_name="second domaine"  long_name="mon second domaine"
+               ni_glo="100" ni="50"  ibegin="25"  nj_glo="100" nj="50"  jbegin="25" data_dim="1" lonvalue="25(50)74" latvalue="25(50)74"/>
+      </domain_definition>
+      
+
+      <!-- Définition des axes du premier context -->
+      <axis_definition unit="km">
+         <axis id="axe1" name="premier_axe" standard_name="premier axe" long_name="mon premier axe" size="20" zvalue="1(20)20"/>
+         <axis id="axe2" name="second_axe"  standard_name="second axe"  long_name="mon second axe"  size="10" zvalue="1(10)10"/>
+      </axis_definition>
+
+      <!-- Définition des fichiers du premier context -->
+      <file_definition enabled=".TRUE."  output_freq="12h">
+         <file id="fichier1" name="premier_fichier" description="Mon premier fichier">
+            <field_group group_ref="field_definition"/>
+         </file>
+      </file_definition>
+
+   </context>
+  
+</simulation>

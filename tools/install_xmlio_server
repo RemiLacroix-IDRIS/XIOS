@@ -1,0 +1,56 @@
+#!/bin/bash
+
+user_defined="FALSE"
+branch_defined="FALSE"
+arch_defined="FALSE"
+
+while (($# > 0))
+  do
+  case $1 in
+      "-h") cat <<fin
+Usage :
+makegcm [options] -m arch exec
+[-h]                       : help
+[ -user name]    : user name from svn repository
+[ -branch branch] : select branch from svn repository .
+[ -arch nom_arch  ]    : nom de l\'architecture cible
+fin
+          exit;;
+
+      "-user")
+          user=$2 ; user_defined="TRUE" ; shift ; shift ;;
+
+      "-branch")
+          branch=$2 ; branch_defined="TRUE" ; shift ; shift ;;
+
+      "-arch")
+          arch=$2 ; arch_defined="TRUE"; shift ; shift ;;
+
+      *)
+          echo "$1 : bad option => exiting..." ; exit 1   ;;
+  esac
+done
+
+if [[ $user_defined == "FALSE" ]]
+then
+  echo "No user defined, using svn by http..."
+  connect="http://forge.ipsl.jussieu.fr/ioserver/svn/XMLIO_V2"
+else
+  connect="svn+ssh://${user}@forge.ipsl.jussieu.fr/ipsl/forge/projets/ioserver/svn/XMLIO_V2"
+fi
+
+if [[ $branch_defined == "FALSE" ]]
+then
+  branch="trunk"
+fi
+
+svn co ${connect}/${branch} xmlioserver
+svn co ${connect}/external external
+svn co ${connect}/tools tools
+cp tools/make_xmlioserver .
+
+
+if [[ $arch_defined == "TRUE" ]]
+then
+  ./make_xmlioserver -arch $arch
+fi

@@ -1,0 +1,132 @@
+#!/bin/bash
+
+compil_mode="prod"
+svnbranch="/trunk"
+doc="F"
+extdir="."
+
+interactive=false
+
+has_interactive=false
+has_rev=false
+has_user=false
+has_branch=false
+has_compil_mode=false
+has_arch=false
+has_doc=false
+has_extdir=false
+
+
+echo -e "Installation de la bibliothèque xmlioserver ... "
+
+# Traitement de la ligne de commande
+while (($# > 0))
+   do
+      case $1 in
+         "-h")
+            # A modifier
+            exit;;
+         "--interactive") interactive=true    ; has_interactive=true; shift ;;
+         "--rev")         svnrev=$2           ; has_rev="true"; shift; shift ;;
+         "--user")        svnuser=$2          ; has_user="true"; shift; shift ;;
+         "--branch")      svnbranch=$2        ; has_branch="true"; shift; shift ;;
+         "--prod")        compil_mode="prod"  ; has_compil_mode="true"; shift ;;
+         "--dev")         compil_mode="dev"   ; has_compil_mode="true"; shift ;;
+         "--debug")       compil_mode="debug" ; has_compil_mode="true"; shift ;;
+         "--arch")        arch=$2             ; has_arch="true"; shift; shift ;;
+         "--doc")         withdoc="Y"         ; has_doc="true"; shift ;;
+         *)               extdir="$1"           ; has_extdir=true; shift ;;
+      esac
+   done
+
+# Récupération du répertoire local d'installation
+if  [[  $interactive == "true" && $has_extdir == "false"  ]]
+   then
+      read -p "Entrez le répertoire d'extraction de la bibliothèque : "$PWD"/" extdir
+fi
+
+install_dir=$PWD/$extdir
+mkdir --parents $install_dir
+
+# Documentation de la distribution
+if  [[ $interactive == "true" && $has_doc == "false" ]]
+   then
+      read -p "Souhaitez-vous extraire la documentation ? [Y/N]: " withdoc
+fi
+
+# Architecture de compilation
+if  [[ $interactive == "true" && $has_arch == "false" ]]
+   then
+      echo -e "\r\nLe serveur d'Entrée/Sortie peut-être installée sur diverses machine parmis lesquels : "
+      echo -e "\tIA64_PLATINE        => Configuration pour la machine de calcul Platine du CCRT !"
+      echo -e "\tX86_LOCGNU_FEDORA   => Configuration locale pour le compilateur GNU sous fedora !"
+      echo -e "\tX86_LOCINTEL_FEDORA => Configuration locale pour le compilateur intel sous fedora !\r\n"
+      echo -e "\tX64_TITANE          => Configuration pour la machine de calcul Titane du CCRT  !\r\n"
+      
+      read -p "Sur quelle architecture travaillez-vous ? (aucune par défaut): " arch
+fi
+
+case $arch in
+   IA64_PLATINE)        
+      echo "=> Configuration pour la machine de calcul Platine du CCRT !" ;;
+   X86_LOCGNU_FEDORA)   
+      echo "=> Configuration locale pour le compilateur GNU sous fedora !" ;;
+   X86_LOCINTEL_FEDORA) 
+      echo "=> Configuration locale pour le compilateur intel sous fedora !" ;;
+   X64_TITANE) 
+      echo "=> Configuration pour la machine de calcul Titane du CCRT  !" ;;
+   *)                   
+      echo "=> Aucune configuration d'installation !"
+      arch=
+esac
+
+# Récupération du login de connexion svn
+if  [[ $interactive == "true" && $has_user  == "false" ]]
+   then
+      echo -e -n "Veuillez à présent indiquer votre identifiant de connexion au serveur svn"
+      read -p " forge.ipsl.jussieu.fr (Ne rien écrire si anonyme) : " svnuser
+fi
+
+# Récupération de la branche svn de travail
+if  [[ $interactive == "true" && $has_branch == "false" ]]
+   then
+      read -p "Quelle branche souhaitez-vous extraire ? (/trunk par défaut): " svnbranch
+fi
+
+if [[ -z $svnbranch ]]
+   then
+      svnbranch="/trunk"
+fi
+
+if [[ -z $svnuser ]]
+   then
+      connect="http://forge.ipsl.jussieu.fr/ioserver/svn/XMLIO_V2"$svnbranch
+   else
+      connect="svn+ssh://"$svnuser"@forge.ipsl.jussieu.fr/ipsl/forge/projets/ioserver/svn/XMLIO_V2"$svnbranch
+fi
+
+# Extraction de la distribution
+echo -e "=> Connexion au serveur svn via \""$connect"\"..."
+
+
+if [[ $withdoc == [Yy]* ]]
+   then
+      installopt=$installopt" --doc"
+fi
+
+svn -q co $connect  $install_dir
+
+echo -e "- Décompression des archives ..."
+cd $install_dir
+for tarname in $install_dir/tools/archive/*.tar.gz; do
+   tar -xzf "$tarname"
+done
+
+if [[ !(-z $arch) && -f $install_dir/make_xios ]]
+   then
+      echo -e "Exécution du script d'installation local pour l'architecture \""$arch"\" ..."
+      installopt=$installopt" --"$compil_mode" --arch "$arch
+      cd $install_dir && ./make_xios $installopt
+fi
+
+

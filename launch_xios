@@ -1,0 +1,4 @@
+#!/bin/bash
+
+svn export http://forge.ipsl.jussieu.fr/ioserver/svn/XMLIO_V2/extract_xios
+./extract_xios $*

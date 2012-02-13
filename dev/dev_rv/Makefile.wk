@@ -1,0 +1,605 @@
+################################################################################
+###################        Projet xios - xmlioserver       #####################
+#                                                                              #
+#                   * © OZDOBA Hervé (herve.ozdoba@lsce.ipsl.fr) *             #
+#                   * © MEURDESOIF Yann (yann.meurdesoif@cea.fr) *             #
+#                                    * Avril 2010 - Octobre 2011 *             #
+#                                                                              #
+################################################################################
+
+################################# Configuration ################################
+
+DEBUG     = yes
+MCOLOR    = no
+SHOWCMD   = yes
+VTK       = no
+GUI       = no
+NPROC     = 2
+#VERSION   = 4
+CSUITE    = gnu
+PFORME    = fedora-wk
+FORTEXT   = .f90
+DEV_PATH  = $(PWD)
+
+ifeq ($(HOSTNAME), localhost.localdomain)
+	PFORME = fedora-wk
+	CSUITE = gnu
+endif
+
+ifeq ($(HOSTNAME), gaia)
+	PFORME = fedora-wk
+	CSUITE = gnu
+endif
+
+ifeq ($(HOSTNAME), lsce4063.extra.cea.fr)
+	PFORME = fedora-wk
+endif
+
+ifeq ($(HOST), mercure01)
+	CSUITE = sx
+	PFORME = sx8-mercure-wk
+endif
+
+ifeq ($(HOSTNAME), platine1076)
+	CSUITE = gnu
+	PFORME = platine-wk
+endif
+
+
+ifeq ($(SHOWCMD), no)
+	A = @
+endif
+
+#################################### Chemins ###################################
+
+ifeq ($(PFORME), platine-wk)
+	NETCDF_PATH = /applications/netcdf-4.1.1
+	INTEL_PATH  = 
+	BOOST_PATH  = $(DEV_PATH)/extra/boost-1.44
+	RXML_PATH   = $(DEV_PATH)/extra/rapidxml-1.13
+	HDF5_PATH   = /applications/hdf5-1.8.5
+	MPI_PATH    = /opt/mpi/mpibull2-1.3.9-18.s
+
+	DEFINE     += -D MPIBULL_SKIP_MPICXX 
+endif
+
+ifeq ($(PFORME), sx8-mercure-wk)
+	NETCDF_PATH = $(DEV_PATH)/netcdf4
+	INTEL_PATH  =
+	BOOST_PATH  = $(DEV_PATH)/extra/boost-1.44
+	RXML_PATH   = $(DEV_PATH)/extra/rapidxml-1.13
+	HDF5_PATH   = $(DEV_PATH)/hdf5
+	MPI_PATH    = /applications/mpisx-8.0.10
+endif
+
+ifeq ($(PFORME), fedora-wk)
+	NETCDF_PATH = $(DEV_PATH)/extra/netcdf4
+	INTEL_PATH  = /work/intel/composerxe
+	BOOST_PATH  = $(DEV_PATH)/extra/boost-1.44
+	RXML_PATH   = $(DEV_PATH)/extra/rapidxml-1.13
+	HDF5_PATH   = $(DEV_PATH)/extra/hdf5
+	MPI_PATH    = /usr/lib/openmpi
+endif
+
+ifeq ($(HOSTNAME), gaia)
+	BOOST_PATH  = /usr/include
+endif
+
+######################## Outils de compilations standard #######################
+
+COMPTOOL = $(CSUITE)-$(PFORME)
+VERSTR   = version $(CSUITE)
+
+
+RMDIR  = $(A)rm -rf
+REMOVE = $(A)rm -f
+COPY   = $(A)cp -f
+MKDIR  = $(A)mkdir -p
+
+ifeq ($(COMPTOOL), sx-sx8-mercure-wk)
+	CDEP   = $(A)g++
+	CCPP   = $(A)sxc++ 
+	CFORT  = $(A)sxf90
+	LINK   = $(A)sxmpif90 -nofor-main
+	AR     = $(A)sxar
+	T2F    = # indisponible
+	DOX    = # indisponible
+	TAR    = # indisponible
+	GZIP   = # indisponible
+	EXNET  = # indisponible
+	MPIRUN = $(A)$(MPI_PATH)/bin/mpirun
+endif
+
+
+ifeq ($(COMPTOOL), intel-platine-wk)
+	CDEP   = $(A)icc
+	CCPP   = $(A)icc
+	CFORT  = $(A)ifort
+	LINK   = $(A)$(MPI_PATH)/bin/mpif90 -nofor-main
+	AR     = $(A)ar
+	T2F    = # indisponible
+	DOX    = # indisponible
+	TAR    = # indisponible
+	GZIP   = # indisponible
+	EXNET  = # indisponible
+	MPIRUN = $(A)$(MPI_PATH)/bin/mpirun
+endif
+
+ifeq ($(COMPTOOL), gnu-fedora-wk)
+	CDEP   = $(A)g++
+	CCPP   = $(A)g++
+	CFORT  = $(A)gfortran
+	LINK   = $(A)$(MPI_PATH)/bin/mpif90
+	AR     = $(A)ar
+	T2F    = $(A)txt2tags
+	DOX    = $(A)doxygen -s
+	TAR    = $(A)tar -cf
+	GZIP   = $(A)gzip -9 -q
+	EXNET  = $(A)firefox
+	MPIRUN = $(A)$(MPI_PATH)/bin/mpirun
+endif
+
+ifeq ($(COMPTOOL), intel-fedora-wk)
+	CDEP   = $(A)icc
+	CCPP   = $(A)icc
+	CFORT  = $(A)ifort
+	LINK   = $(A)$(MPI_PATH)/bin/mpif90
+	AR     = $(A)ar
+	T2F    = $(A)txt2tags
+	DOX    = $(A)doxygen -s
+	TAR    = $(A)tar -cvf
+	GZIP   = $(A)gzip -9 -q
+	EXNET  = $(A)firefox
+	MPIRUN = $(A)$(MPI_PATH)/bin/mpirun
+endif
+
+################################ Sortie couleur ################################
+
+C_Black         = "\033[0;30m"
+C_Blue          = "\033[0;34m"
+C_Green         = "\033[0;32m"
+C_Cyan          = "\033[0;36m"
+C_Red           = "\033[0;31m"
+C_Purple        = "\033[0;35m"
+C_Brown         = "\033[0;33m"
+C_Light_Gray    = "\033[0;37m"
+C_Dark_Gray     = "\033[1;30m"
+C_Light_Blue    = "\033[1;34m"
+C_Light_Green   = "\033[1;32m"
+C_Light_Cyan    = "\033[1;36m"
+C_Light_Red     = "\033[1;31m"
+C_Light_Purple  = "\033[1;35m"
+C_Yellow        = "\033[1;33m"
+C_White         = "\033[1;37m"
+NO_COLOUR       = "\033[0m"
+
+ifeq ($(MCOLOR), yes)
+	COLORMSG = @echo -e "\033[1m" $1 $2 $(NO_COLOUR)
+else
+	COLORMSG = @echo $2
+endif
+
+############################# Répertoire du projet #############################
+
+WK_PATH   = $(DEV_PATH)/wk
+
+OBJ_PATH  = $(WK_PATH)/obj
+BIN_PATH  = $(WK_PATH)/bin
+LIB_PATH  = $(WK_PATH)/lib
+DOC_PATH  = $(WK_PATH)/doc
+DEP_PATH  = $(WK_PATH)/dep
+INC_PATH  = $(WK_PATH)/inc
+DATA_PATH = $(WK_PATH)/data
+CONF_PATH = $(WK_PATH)/conf
+DEF_PATH  = $(WK_PATH)/def
+
+SRC_PATH  = $(DEV_PATH)/src$(VERSION)/xmlio
+
+# Sous-répertoires des sources :
+
+FSRC_PATH = $(SRC_PATH)/fortran
+CSRC_PATH = $(SRC_PATH)/iface
+
+CONF_PATH = $(SRC_PATH)/config
+BUFF_PATH = $(SRC_PATH)/buffer
+NODE_PATH = $(SRC_PATH)/node
+FUNC_PATH = $(SRC_PATH)/functor
+DATE_PATH = $(SRC_PATH)/date
+INPT_PATH = $(SRC_PATH)/input
+OUPT_PATH = $(SRC_PATH)/output
+MNGR_PATH = $(SRC_PATH)/manager
+MPII_PATH = $(SRC_PATH)/mpi
+NCDF_PATH = $(SRC_PATH)/netcdf
+ATT_PATH = $(SRC_PATH)/attribute
+GUI_PATH  = $(SRC_PATH)/qt
+VTK_PATH  = $(SRC_PATH)/vtk
+XML_PATH  = $(SRC_PATH)/xml
+
+
+FAKE_PATH = $(SRC_PATH)/fake_client
+
+################################################################################
+
+VPATH = $(DEP_PATH):$(SRC_PATH):$(CSRC_PATH):$(NODE_PATH):$(XML_PATH):$(BUFF_PATH)\
+:$(FUNC_PATH):$(DATE_PATH):$(GUI_PATH):$(VTK_PATH):$(INPT_PATH):$(NCDF_PATH):$(ATT_PATH)\
+:$(OUPT_PATH):$(MNGR_PATH):$(FAKE_PATH):$(FSRC_PATH):$(CONF_PATH):$(MPII_PATH)
+
+######################## Outils de traitements internes ########################
+
+CPPROC  = $(CSRC_PATH)/preprocess_cpp.sh
+F90ROC  = $(FSRC_PATH)/preprocess_f03.sh
+
+####################### Chemins vers la bibliothèque BOOST #####################
+
+INCLUDE    = -I $(BOOST_PATH)
+
+####################### Chemins vers la bibliothèque RAPIDXML ##################
+
+INCLUDE   += -I $(RXML_PATH)
+
+####################### Chemins vers la bibliothèque VTK #######################
+
+ifeq ($(VTK), yes)
+	INCLUDE += -I /usr/include/vtk
+	LIBS    += -lvtkCommon -lvtkIO -lvtkFiltering -lvtkRendering -lvtkHybrid
+	DEFINE  += -D XIOS_VTK
+endif
+
+####################### Chemins vers la bibliothèque NETCDF ####################
+
+NETCDF_BIN  = $(NETCDF_PATH)/bin
+NETCDF_LIB  = $(NETCDF_PATH)/lib
+NETCDF_INCL = $(NETCDF_PATH)/include
+
+HDF5_INCL   = $(HDF5_PATH)/include
+HDF5_LIB    = $(HDF5_PATH)/lib
+
+LIBS_PATH  += -L $(NETCDF_LIB) -L $(HDF5_LIB)
+LIBS       +=  -lnetcdf -lhdf5_hl -lhdf5 -lz
+INCLUDE    += -I $(NETCDF_INCL)
+
+####################### Chemins vers la bibliothèque MPI #######################
+
+MPI_LIB     = $(MPI_PATH)/bin
+MPI_LIB     = $(MPI_PATH)/lib
+MPI_INCL    = $(MPI_PATH)/include
+
+ifeq ($(PFORME), fedora-wk)
+	MPI_INCL = /usr/include/openmpi-i386
+endif
+
+LIBS_PATH   += -L $(MPI_LIB)
+LIBS        += -lmpi
+INCLUDE     += -I $(MPI_INCL)
+FFLAGS      += -I $(MPI_INCL)
+
+ifeq ($(PFORME), fedora-wk)
+	LIBS        += -lmpi_cxx
+endif
+
+################################ VARIABLES #####################################
+
+INCLUDE += -I $(INC_PATH)
+DEFINE  += -D __XIOS_LIBRARY
+
+LIBS      += -lstdc++
+
+ifeq ($(COMPTOOL), intel-fedora-wk)
+	LIBS_PATH += -L $(INTEL_PATH)/lib
+	LIBS      += -lifcore -lintlc
+endif
+
+NODEPS   = clean clean-all dir-tree
+
+FFLAGS  += -D __XIOS_LIBRARY
+CFLAGS  += $(DEFINE) $(INCLUDE)
+LDFLAGS += $(LIBS_PATH) $(LIBS)
+
+ifeq ($(CSUITE), intel)
+	FFLAGS  += -module $(LIB_PATH)
+	CFLAGS  += -ansi  -diag-disable 1125 -diag-disable 279
+endif
+
+ifeq ($(CSUITE), gnu)
+	FFLAGS += -J $(LIB_PATH)
+	CFLAGS += -ansi -W -Wall -Wno-unused-parameter -Wno-long-long -Wno-deprecated
+endif
+
+ifeq ($(CSUITE), sx)
+	DEF_SX  = -D BOOST_NO_IS_ABSTRACT -D BOOST_NO_RVALUE_REFERENCES -D BOOST_NO_STATIC_ASSERT
+	DEFLAGS = $(DEFINE) $(INCLUDE) $(DEF_SX)
+	CFLAGS += -K exceptions -K rtti -Xp -size_t64 $(DEF_SX)
+	FFLAGS += -f2003 cbind -size_t64 
+else
+	DEFLAGS = $(CFLAGS)
+endif
+
+ifeq ($(DEBUG), yes)
+	CFLAGS += -D __XIOS_DEBUG -g
+endif
+
+EXENAME   = $(BIN_PATH)/xmlioserver.exe
+LIBSTATIC = $(LIB_PATH)/libxmlioserver.a
+
+################################### SOURCES ####################################
+
+# Source de l'interface C (contenue dans dans le dossier src/iface)
+ICSOURCE = icaxis iccontext icgrid icfield icdomain icfile icdata icdate icxml_tree 
+
+# Sources de l'interface fortran (contenues dans le dossier src/fortran)
+IFSOURCE = idate                                            \
+           domain_interface  domaingroup_interface idomain  \
+           field_interface   fieldgroup_interface  ifield   \
+           file_interface    filegroup_interface   ifile    \
+           axis_interface    axisgroup_interface   iaxis    \
+           grid_interface    gridgroup_interface   igrid    \
+           context_interface                       icontext \
+           ixml_tree idata                           
+
+# Sources de la bibliothèque (contenues dans le dossier src)
+LSOURCE  = object exception                                 \
+           date calendar duration calendar_util             \
+           attribute attribute_map attribute_template       \
+           object_factory group_factory                     \
+           indent xml_node xml_parser                       \
+           buffer linear_buffer circular_buffer             \
+           buffer_list buffer_pair                          \
+           data_treatment data_output                       \
+           rebuild functor client server configure 
+
+# Sources des gestionnaires (contenues dans le dossier manager)
+MSOURCE  = tree_manager mpi_manager xios_manager
+
+# Sources pour le traitement des noeuds xml (contenues dans le dossier node)
+NSOURCE  = axis domain field file grid variable context
+
+# Sources pour les opérations à effectuer sur les champs (contenues dans le dossier functor)
+FSOURCE  = once instant average maximum minimum
+
+# Sources contenant les différents type de calendriers (contenues dans le dossier date)
+DSOURCE = julian gregorian noleap allleap d360
+
+# Sources pour l'interface graphique (contenues dans le dossier qt)
+ifeq ($(GUI), yes)
+	QSOURCE = # vidé #
+endif
+
+# Sources pour le lecteur vtk (contenues dans le dossier vtk)
+ifeq ($(VTK), yes)
+	VSOURCE = lscereader
+endif
+
+# Sources pour les entrées (contenues dans le dossier input)
+ISOURCE = inetcdf4 nc4_data_input
+
+# Sources pour les sorties (contenues dans le dossier output)
+OSOURCE = onetcdf4 nc4_data_output
+
+# Source des faux clients
+TSOURCE = #fake_nemo fake_lmdz fake_orchidee
+
+# Nom du fichier contenant les points d'entrée des programmes
+MAINNAME = main
+
+DOC_T2T = $(wildcard *.t2t)
+COM_T2T = $(patsubst %.t2t,%.html,$(DOC_T2T))
+
+PREPROC = $(FSRC_PATH)/$(IFSOURCE)$(FORTEXT) $(CSRC_PATH)/$(ICSOURCE).cpp
+
+ifeq ($(VERSION), 4)
+	PREPROC = #vide
+endif
+
+##############################  Modifications ##################################
+
+AHEADERS  =  \
+$(notdir $(wildcard $(SRC_PATH)/*/*.conf))\
+$(notdir $(wildcard $(SRC_PATH)/*/*.hpp))\
+$(notdir $(wildcard $(SRC_PATH)/*.hpp))
+            
+HEADERS   = $(addprefix $(INC_PATH)/, $(AHEADERS))
+
+ELEMS_FOR = $(TSOURCE) $(IFSOURCE) 
+
+ifeq ($(VERSION), 4)
+	ELEMS_FOR = idate \
+               domain_interface domaingroup_interface idomain \
+               field_interface  fieldgroup_interface  ifield  \
+               file_interface   filegroup_interface   ifile   \
+               axis_interface   axisgroup_interface   iaxis   \
+               grid_interface   gridgroup_interface   igrid   \
+               context_interface icontext ixml_tree idata    
+endif
+            
+ELEMS_CPP = $(ICSOURCE) $(OSOURCE) $(ISOURCE) $(LSOURCE) \
+            $(VSOURCE)  $(QSOURCE) $(DSOURCE) $(FSOURCE) \
+            $(NSOURCE)  $(MSOURCE) 
+
+ifeq ($(VERSION), 4)
+	ELEMS_CPP = object exception xml_node xml_parser inetcdf4 inetcdf4_adv onetcdf4  mpi_interface\
+	attribute attribute_template attribute_map buffer circular_buffer \
+	icaxis iccontext icgrid icfield icdomain icfile icdata icdate icxml_tree \
+               
+endif
+
+ELEMS_ALL = $(ELEMS_CPP) $(ELEMS_FOR)
+              
+OBJECTS = $(addprefix $(OBJ_PATH)/, $(addsuffix .o, $(ELEMS_ALL)))
+ifeq ($(VERSION), 4)
+	OBJECTS = $(addprefix $(OBJ_PATH)/, $(addsuffix .o, $(ELEMS_ALL)))
+endif
+
+DEPENDS = $(addprefix $(DEP_PATH)/, $(addsuffix .d, $(ELEMS_CPP)))
+
+################################### Règles #####################################
+all: depend build
+
+build: preproc $(EXENAME)
+
+.PHONY: t2t
+t2t: $(COM_T2T)
+
+.PHONY: dir-tree
+dir-tree :
+	$(MKDIR) $(OBJ_PATH)
+	$(MKDIR) $(BIN_PATH)
+	$(MKDIR) $(LIB_PATH)
+	$(MKDIR) $(DOC_PATH)
+	$(MKDIR) $(DEP_PATH)
+	$(MKDIR) $(INC_PATH)
+	$(MKDIR) $(DATA_PATH)
+	$(MKDIR) $(CONF_PATH)
+	$(MKDIR) $(DEF_PATH)
+
+.PHONY: run
+run: all clean-dat
+	$(call COLORMSG, $(C_White),"Exécution du serveur d'E/S de l'IPSL ($(VERSTR) C++) ...")
+	$(MPIRUN) -np $(NPROC) $(EXENAME)
+
+.PHONY: depend
+depend: preproc $(DEPENDS) cheaders
+
+.PHONY: cheaders
+cheaders: $(HEADERS)
+
+.PHONY: preproc
+preproc : 
+# $(PREPROC)
+
+.PHONY: clean-depend
+clean-depend:
+	$(REMOVE) $(DEP_PATH)/*.d
+	$(REMOVE) $(DEP_PATH)/mark
+
+clean-t2t:
+#$(REMOVE) $(COM_T2T)
+
+.PHONY: clean-dir
+clean-dir:
+	$(RMDIR) $(WK_PATH)
+
+clean-h:
+	$(REMOVE) $(INC_PATH)/*.hpp
+	$(REMOVE) $(INC_PATH)/*.conf
+	
+clean-doc: clean-t2t
+	$(RMDIR)  $(DOC_PATH)/html
+	$(REMOVE) $(DEV_PATH)/doxygen.log
+
+clean-exe:
+	$(REMOVE) $(BIN_PATH)/*.exe
+
+clean-lib:
+	$(REMOVE) $(LIB_PATH)/*.a
+
+clean-mod:
+	$(REMOVE) $(LIB_PATH)/*.mod
+
+clean-dll:
+	$(REMOVE) $(BIN_PATH)/*.dll
+
+clean-gen:
+	$(REMOVE) $(SRC_PATH)/iface/interface.cpp
+	$(REMOVE) $(SRC_PATH)/fortran/ixmlioserver$(FORTEXT)
+
+clean-obj:
+	$(REMOVE) $(OBJ_PATH)/*.o
+
+clean-dat:
+	$(REMOVE) $(DATA_PATH)/*.dat
+#$(REMOVE) $(DATA_PATH)/*.bin
+	$(REMOVE) $(DATA_PATH)/*.nc
+	$(REMOVE) $(DATA_PATH)/def/*
+
+.PHONY: clean
+clean : clean-obj    \
+        clean-mod    \
+        clean-gen    \
+        clean-h      \
+        clean-depend
+
+.PHONY: clean-all
+clean-all : clean     \
+            clean-exe \
+            clean-dll \
+            clean-dat \
+            clean-lib \
+            clean-doc
+.PHONY: doc
+doc: t2t
+	$(DOX)
+	$(REMOVE) $(DEV_PATH)/doc.tar.gz
+	$(TAR)    $(DEV_PATH)/doc.tar $(DOC_PATH)/html > $(DEV_PATH)/tar_output
+	$(REMOVE) $(DEV_PATH)/tar_output
+	$(GZIP)   $(DEV_PATH)/doc.tar
+
+.PHONY: show-doc
+show-doc: doc
+	$(EXNET) $(DOC_PATH)/doc/html/index.html
+
+################################ Compilation ###################################
+
+$(OBJ_PATH)/$(MAINNAME)_server.o: $(DEP_PATH)/$(MAINNAME)_server.d
+
+$(EXENAME): $(OBJ_PATH)/$(MAINNAME)_server.o $(LIBSTATIC) 
+	$(call COLORMSG, $(C_Purple),"Génération du serveur d'E/S de l'IPSL ($(VERSTR) C++) ...")
+	$(LINK) -o $@ $^ $(LDFLAGS)
+
+$(LIBSTATIC) : $(OBJECTS)
+	$(call COLORMSG, $(C_Green),"Génération de l'archive de la bibliothèque d'E/S de l'IPSL...")
+	$(AR) crs $@ $^
+
+################################ Dépendances ###################################
+
+
+ifeq (0, $(words $(findstring $(MAKECMDGOALS), $(NODEPS))))
+-include $(DEPENDS)
+endif
+
+
+################################################################################
+
+%.html: %.t2t
+	$(T2F) -t html $<
+
+# Preproc
+$(FSRC_PATH)/%$(FORTEXT): %.f03.in $(FSRC_PATH)/macro.inc
+	$(F90ROC) $@ $<
+
+$(CSRC_PATH)/%.cpp: %.cpp.in $(CSRC_PATH)/macro.inc
+	$(CPPROC) $@ $<
+
+# Dépendances
+$(DEP_PATH)/mark: $(HEADERS)
+	@touch $@
+
+$(DEP_PATH)/%.d: %.cpp $(DEP_PATH)/mark
+	$(CDEP) $(DEFLAGS) -D __XIOS_NO_EXTERN -MT $(OBJ_PATH)/$(patsubst %.d,%.o,$(@F)) -MM -MF $@ $<
+
+# Entêtes cpp
+$(INC_PATH)/%.hpp: %.hpp
+	$(COPY) $< $@
+
+$(INC_PATH)/%.conf: %.conf
+	$(COPY) $< $@
+
+# Objets cpp
+$(OBJ_PATH)/%.o: %.cpp %.d
+	$(CCPP) $(CFLAGS) -o $@ -c $<
+
+# Objets fortran
+$(FSRC_PATH)/%.f03: %.f90
+	$(COPY) $< $@
+
+$(FAKE_PATH)/%.f03: %.f90
+	$(COPY) $< $@
+
+$(LIB_PATH)/%.mod: $(OBJ_PATH)/%.o
+
+$(OBJ_PATH)/%.o: $(FSRC_PATH)/%$(FORTEXT)  
+	$(CFORT) $(FFLAGS) -o $@ -c $<
+
+$(OBJ_PATH)/%.o: $(FAKE_PATH)/%$(FORTEXT) $(OBJ_PATH)/ixmlioserver.o
+	$(CFORT) $(FFLAGS) -o $@ -c $<
+
+#################################### FIN #######################################
