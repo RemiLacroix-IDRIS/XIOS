@@ -42,7 +42,6 @@ while (($# > 0))
 # Récupération du répertoire local d'installation
 if  [[  $interactive == "true" && $has_extdir == "false"  ]]
    then
-      read -p "Entrez le répertoire d'extraction de la bibliothèque : "$PWD"/" extdir
       read -p "insert directory path to extract XIOS library : "$PWD"/" extdir
 fi
 
@@ -101,9 +100,9 @@ fi
 
 if [[ -z $svnuser ]]
    then
-      connect="http://forge.ipsl.jussieu.fr/ioserver/svn/XMLIO_V2"$svnbranch
+      connect="http://forge.ipsl.jussieu.fr/ioserver/svn/XIOS"$svnbranch
    else
-      connect="svn+ssh://"$svnuser"@forge.ipsl.jussieu.fr/ipsl/forge/projets/ioserver/svn/XMLIO_V2"$svnbranch
+      connect="svn+ssh://"$svnuser"@forge.ipsl.jussieu.fr/ipsl/forge/projets/ioserver/svn/XIOS"$svnbranch
 fi
 
 # Extraction de la distribution
