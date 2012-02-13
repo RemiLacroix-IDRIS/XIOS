@@ -17,7 +17,7 @@ has_doc=false
 has_extdir=false
 
 
-echo -e "Installation de la bibliothèque xmlioserver ... "
+echo -e "Installing XIOS library... "
 
 # Traitement de la ligne de commande
 while (($# > 0))
@@ -43,6 +43,7 @@ while (($# > 0))
 if  [[  $interactive == "true" && $has_extdir == "false"  ]]
    then
       read -p "Entrez le répertoire d'extraction de la bibliothèque : "$PWD"/" extdir
+      read -p "insert directory path to extract XIOS library : "$PWD"/" extdir
 fi
 
 install_dir=$PWD/$extdir
@@ -51,46 +52,46 @@ mkdir --parents $install_dir
 # Documentation de la distribution
 if  [[ $interactive == "true" && $has_doc == "false" ]]
    then
-      read -p "Souhaitez-vous extraire la documentation ? [Y/N]: " withdoc
+      read -p "Do you want to extract documentation ? [Y/N]: " withdoc
 fi
 
 # Architecture de compilation
 if  [[ $interactive == "true" && $has_arch == "false" ]]
    then
-      echo -e "\r\nLe serveur d'Entrée/Sortie peut-être installée sur diverses machine parmis lesquels : "
-      echo -e "\tIA64_PLATINE        => Configuration pour la machine de calcul Platine du CCRT !"
-      echo -e "\tX86_LOCGNU_FEDORA   => Configuration locale pour le compilateur GNU sous fedora !"
-      echo -e "\tX86_LOCINTEL_FEDORA => Configuration locale pour le compilateur intel sous fedora !\r\n"
-      echo -e "\tX64_TITANE          => Configuration pour la machine de calcul Titane du CCRT  !\r\n"
+      echo -e "\r\n XIOS may be install on different computing architecture, choose witch one...\r\n "
+      echo -e "\tIA64_PLATINE        => Configuration for CCRT supercomputer Platine\r\n"
+      echo -e "\tX86_LOCGNU_FEDORA   => Local configuration for gnu compiler under fedora\r\n"
+      echo -e "\tX86_LOCINTEL_FEDORA => Local configuration for intel compiler under fedora \r\n"
+      echo -e "\tX64_TITANE          => Configuration for CCRT supercomputer Titane \r\n"
       
-      read -p "Sur quelle architecture travaillez-vous ? (aucune par défaut): " arch
+      read -p "On which architecture do you want to work ? (default : none): " arch
 fi
 
 case $arch in
    IA64_PLATINE)        
-      echo "=> Configuration pour la machine de calcul Platine du CCRT !" ;;
+      echo "=> Configuration for CCRT supercomputer Platine" ;;
    X86_LOCGNU_FEDORA)   
-      echo "=> Configuration locale pour le compilateur GNU sous fedora !" ;;
+      echo "=> Local configuration for gnu compiler under fedora" ;;
    X86_LOCINTEL_FEDORA) 
-      echo "=> Configuration locale pour le compilateur intel sous fedora !" ;;
+      echo "=> Local configuration for intel compiler under fedora" ;;
    X64_TITANE) 
-      echo "=> Configuration pour la machine de calcul Titane du CCRT  !" ;;
+      echo "=> Configuration for CCRT supercomputer Titane " ;;
    *)                   
-      echo "=> Aucune configuration d'installation !"
+      echo "=> no specific architecture choosen"
       arch=
 esac
 
 # Récupération du login de connexion svn
 if  [[ $interactive == "true" && $has_user  == "false" ]]
    then
-      echo -e -n "Veuillez à présent indiquer votre identifiant de connexion au serveur svn"
-      read -p " forge.ipsl.jussieu.fr (Ne rien écrire si anonyme) : " svnuser
+      echo -e -n "insert your svn login"
+      read -p " forge.ipsl.jussieu.fr (nothing if anonymous) : " svnuser
 fi
 
 # Récupération de la branche svn de travail
 if  [[ $interactive == "true" && $has_branch == "false" ]]
    then
-      read -p "Quelle branche souhaitez-vous extraire ? (/trunk par défaut): " svnbranch
+      read -p "Which branch do tou want to extract ? (default : /trunk): " svnbranch
 fi
 
 if [[ -z $svnbranch ]]
@@ -106,7 +107,7 @@ if [[ -z $svnuser ]]
 fi
 
 # Extraction de la distribution
-echo -e "=> Connexion au serveur svn via \""$connect"\"..."
+echo -e "=> Connecting to svn server via \""$connect"\"..."
 
 
 if [[ $withdoc == [Yy]* ]]
@@ -116,7 +117,7 @@ fi
 
 svn -q co $connect  $install_dir
 
-echo -e "- Décompression des archives ..."
+echo -e "- uncompress archives ..."
 cd $install_dir
 for tarname in $install_dir/tools/archive/*.tar.gz; do
    tar -xzf "$tarname"
@@ -124,7 +125,7 @@ done
 
 if [[ !(-z $arch) && -f $install_dir/make_xios ]]
    then
-      echo -e "Exécution du script d'installation local pour l'architecture \""$arch"\" ..."
+      echo -e "Running installation script for architecture \""$arch"\" ..."
       installopt=$installopt" --"$compil_mode" --arch "$arch
       cd $install_dir && ./make_xios $installopt
 fi
