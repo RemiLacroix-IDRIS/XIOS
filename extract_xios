@@ -46,7 +46,7 @@ if  [[  $interactive == "true" && $has_extdir == "false"  ]]
 fi
 
 install_dir=$PWD/$extdir
-mkdir --parents $install_dir
+mkdir -p $install_dir
 
 # Documentation de la distribution
 if  [[ $interactive == "true" && $has_doc == "false" ]]
@@ -119,7 +119,8 @@ svn -q co $connect  $install_dir
 echo -e "- uncompress archives ..."
 cd $install_dir
 for tarname in $install_dir/tools/archive/*.tar.gz; do
-   tar -xzf "$tarname"
+   gunzip -f "$tarname"
+   tar -xf ${tarname%.gz}
 done
 
 if [[ !(-z $arch) && -f $install_dir/make_xios ]]
