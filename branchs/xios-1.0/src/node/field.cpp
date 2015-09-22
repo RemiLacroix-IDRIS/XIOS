@@ -1,4 +1,5 @@
 #include "field.hpp"
+#include "timer.hpp"
 
 #include "attribute_template.hpp"
 #include "object_template.hpp"
@@ -828,11 +829,15 @@ namespace xios{
     slots[slotId] = true;
     if (slotsFull())
     {
+      CTimer::get("spatialOp").resume();
       CArray<double,1> expr(expression->compute());
+      CTimer::get("spatialOp").suspend();
 
       if (hasInstantData)
       {
+        CTimer::get("instantData").resume();
         instantData = expr;
+        CTimer::get("instantData").suspend();
         for (list< pair<CField *,int> >::iterator it = fieldDependency.begin(); it != fieldDependency.end(); ++it)
           if (it->first != this) it->first->setSlot(it->second);
       }

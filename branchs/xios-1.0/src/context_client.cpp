@@ -36,6 +36,7 @@ namespace xios
 
     void CContextClient::sendEvent(CEventClient& event)
     {
+      CTimer::get("XIOS send events").resume();
       list<int>::iterator itServer ;
       list<int> ranks ;
       list<int> sizes ;  
@@ -62,6 +63,7 @@ namespace xios
 
       if (context->hasServer) waitEvent(ranks) ;
       timeLine++ ;
+      CTimer::get("XIOS send events").suspend();
     }
       
     void CContextClient::waitEvent(list<int>& ranks)
@@ -128,9 +130,11 @@ namespace xios
 
    bool CContextClient::checkBuffers(void)
    {
+      CTimer::get("XIOS checkBuffers").resume();
       map<int,CClientBuffer*>::iterator itBuff ;
       bool pending=false ;
       for(itBuff=buffers.begin();itBuff!=buffers.end();itBuff++) pending|=itBuff->second->checkBuffer() ;
+      CTimer::get("XIOS checkBuffers").suspend();
       return pending ;
    } 
 
@@ -142,9 +146,11 @@ namespace xios
 
    bool CContextClient::checkBuffers(list<int>& ranks)
    {
+      CTimer::get("XIOS checkBuffers").resume();
       list<int>::iterator it ;
       bool pending=false ;
       for(it=ranks.begin();it!=ranks.end();it++) pending|=buffers[*it]->checkBuffer() ;
+      CTimer::get("XIOS checkBuffers").suspend();
       return pending ;
    } 
 

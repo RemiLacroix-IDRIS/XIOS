@@ -223,6 +223,13 @@ namespace xios
       report(0)<< " Performance report : time spent for waiting free buffer : "<< CTimer::get("Blocking time").getCumulatedTime()<<" s"<<endl ;
       report(0)<< " Performance report : Ratio : "<< CTimer::get("Blocking time").getCumulatedTime()/CTimer::get("XIOS").getCumulatedTime()*100.<<" %"<<endl ;
       report(0)<< " Performance report : This ratio must be close to zero. Otherwise it may be usefull to increase buffer size or numbers of server"<<endl ;
+      report(0)<< " Performance report : time spent for initialization : "<< CTimer::get("XIOS init").getCumulatedTime() <<" s"<<endl ;
+      report(0)<< " Performance report : time spent for finalization : "<< CTimer::get("XIOS finalize").getCumulatedTime() <<" s"<<endl ;
+      report(0)<< " Performance report : time spent sending events : "<< CTimer::get("XIOS send events").getCumulatedTime() <<" s"<<endl ;
+      report(0)<< " Performance report : time spent extracting instant data : "<< CTimer::get("instantData").getCumulatedTime() <<" s"<<endl ;
+      report(0)<< " Performance report : time spent extracting data : "<< CTimer::get("extractData").getCumulatedTime() <<" s"<<endl ;
+      report(0)<< " Performance report : time spent for temporal operations : "<< CTimer::get("temporalOp").getCumulatedTime() <<" s"<<endl ;
+      report(0)<< " Performance report : time spent for spatial operations : "<< CTimer::get("spatialOp").getCumulatedTime() <<" s"<<endl ;
       report(0)<< " Memory report : Current buffer_size : "<<CXios::bufferSize<<endl ;
       report(0)<< " Memory report : Minimum buffer size required : "<<maxRequestSize*2<<endl ;
       report(0)<< " Memory report : increasing it by a factor will increase performance, depending of the volume of data wrote in file at each time step of the file"<<endl ;

@@ -17,7 +17,9 @@ namespace xios {
   {
     if (hasInstantData)
     {
+      CTimer::get("instantData").resume();
       grid->inputField(_data, instantData);
+      CTimer::get("instantData").suspend();
       for(list< pair<CField *,int> >::iterator it=fieldDependency.begin(); it!=fieldDependency.end(); ++it)  it->first->setSlot(it->second);
     }
 
@@ -35,7 +37,9 @@ namespace xios {
   {
     if (hasInstantData)
     {
+      CTimer::get("instantData").resume();
       instantData=_data;
+      CTimer::get("instantData").suspend();
       for(list< pair<CField *,int> >::iterator it=fieldDependency.begin(); it!=fieldDependency.end(); ++it)  it->first->setSlot(it->second);
     }
 
@@ -74,9 +78,13 @@ namespace xios {
             this->data.resize(this->grid->storeIndex_client.numElements());
          }
 
+         CTimer::get("extractData").resume();
          CArray<double,1> input(data.numElements());
          this->grid->inputField(_data, input);
+         CTimer::get("extractData").suspend();
+         CTimer::get("temporalOp").resume();
          (*this->foperation)(input);
+         CTimer::get("temporalOp").suspend();
 
          *last_operation = currDate;
          info(50) << "(*last_operation = currDate) : " << *last_operation << " = " << currDate << std::endl;
@@ -95,7 +103,9 @@ namespace xios {
 
       if (doWrite)
       {
+         CTimer::get("temporalOp").resume();
          this->foperation->final();
+         CTimer::get("temporalOp").suspend();
          *last_Write = writeDate;
          if (hasOutputFile)
          {
@@ -139,7 +149,9 @@ namespace xios {
             this->data.resize(this->grid->storeIndex_client.numElements());
          }
 
+         CTimer::get("temporalOp").resume();
         (*this->foperation)(_data);
+         CTimer::get("temporalOp").suspend();
 
          *last_operation = currDate;
          info(50) << "(*last_operation = currDate) : " << *last_operation << " = " << currDate << std::endl;
@@ -158,7 +170,9 @@ namespace xios {
 
       if (doWrite)
       {
+         CTimer::get("temporalOp").resume();
          this->foperation->final();
+         CTimer::get("temporalOp").suspend();
          *last_Write = writeDate;
          if (hasOutputFile)
          {
