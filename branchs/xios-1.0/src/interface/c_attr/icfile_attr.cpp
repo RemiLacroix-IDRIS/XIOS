@@ -16,6 +16,29 @@ extern "C"
 {
   typedef xios::CFile*  file_Ptr;
   
+  void cxios_set_file_append(file_Ptr file_hdl, bool append)
+  {
+     CTimer::get("XIOS").resume();
+    file_hdl->append.setValue(append);
+    file_hdl->sendAttributToServer(file_hdl->append);
+     CTimer::get("XIOS").suspend();
+  }
+  
+  void cxios_get_file_append(file_Ptr file_hdl, bool* append)
+  {
+    *append = file_hdl->append.getInheritedValue();
+  }
+  
+  bool cxios_is_defined_file_append(file_Ptr file_hdl )
+  {
+    CTimer::get("XIOS").resume();
+    bool isDefined = file_hdl->append.hasInheritedValue();
+    CTimer::get("XIOS").suspend();
+    return isDefined;
+  }
+  
+  
+  
   void cxios_set_file_compression_level(file_Ptr file_hdl, int compression_level)
   {
      CTimer::get("XIOS").resume();

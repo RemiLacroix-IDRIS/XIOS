@@ -936,7 +936,8 @@ namespace xios
                                      StdString("An IPSL model"),
                                      this->getTimeStamp());
 
-           SuperClassWriter::addDimension("axis_nbounds", 2);
+           if (!appendMode)
+             SuperClassWriter::addDimension("axis_nbounds", 2);
          }
          catch (CNetCdfException& e)
          {

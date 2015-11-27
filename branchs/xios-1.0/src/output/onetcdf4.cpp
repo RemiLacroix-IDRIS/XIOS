@@ -10,11 +10,11 @@ namespace xios
       /// ////////////////////// Définitions ////////////////////// ///
 
       CONetCDF4::CONetCDF4
-         (const StdString & filename, bool exist, const MPI_Comm * comm, bool multifile)
+         (const StdString & filename, bool append, const MPI_Comm * comm, bool multifile)
             : path()
             , wmpi(false)
       {
-         this->initialize(filename, exist, comm,multifile);
+         this->initialize(filename, append, comm,multifile);
       }
 
       //---------------------------------------------------------------
@@ -28,7 +28,7 @@ namespace xios
       ///--------------------------------------------------------------
 
       void CONetCDF4::initialize
-         (const StdString & filename, bool exist, const MPI_Comm * comm, bool multifile)
+         (const StdString & filename, bool append, const MPI_Comm * comm, bool multifile)
       {
          // Don't use parallel mode if there is only one process
          if (comm)
@@ -40,19 +40,32 @@ namespace xios
          }
          wmpi = comm && !multifile;
 
-         if (!exist)
+         // If the file does not exist, we always create it
+         if (!append || !std::ifstream(filename.c_str()))
          {
             if (wmpi)
                CNetCdfInterface::createPar(filename, NC_NETCDF4|NC_MPIIO, *comm, MPI_INFO_NULL, this->ncidp);
             else
                CNetCdfInterface::create(filename, NC_NETCDF4, this->ncidp);
+
+            this->appendMode = false;
+            this->recordOffset = 0;
          }
          else
          {
             if (wmpi)
-               CNetCdfInterface::openPar(filename, NC_NETCDF4|NC_MPIIO, *comm, MPI_INFO_NULL, this->ncidp);
+               CNetCdfInterface::openPar(filename, NC_NETCDF4|NC_MPIIO|NC_WRITE, *comm, MPI_INFO_NULL, this->ncidp);
             else
-               CNetCdfInterface::open(filename, NC_NETCDF4, this->ncidp);
+               CNetCdfInterface::open(filename, NC_NETCDF4|NC_WRITE, this->ncidp);
+
+            this->appendMode = true;
+            // Find out how many temporal records have been written already to the file we are opening
+            int ncUnlimitedDimId;
+            CNetCdfInterface::inqUnLimDim(this->ncidp, ncUnlimitedDimId);
+            if (ncUnlimitedDimId != -1)
+               CNetCdfInterface::inqDimLen(this->ncidp, ncUnlimitedDimId, this->recordOffset);
+            else
+               this->recordOffset = 0;
          }
       }
 
@@ -428,7 +441,7 @@ namespace xios
 
          if (iddims.begin()->compare(this->getUnlimitedDimensionName()) == 0)
          {
-            sstart.push_back(record);
+            sstart.push_back(record + recordOffset);
             scount.push_back(1);
             if ((start == NULL) &&
                 (count == NULL)) i++;
