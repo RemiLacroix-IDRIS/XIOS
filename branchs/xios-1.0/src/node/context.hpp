@@ -13,6 +13,8 @@
 
 #include "mpi.hpp"
 
+#include "registry.hpp"
+
 
 namespace xios {
    class CContextClient ;
@@ -41,7 +43,8 @@ namespace xios {
          enum EEventId
          {
            EVENT_ID_CLOSE_DEFINITION,EVENT_ID_UPDATE_CALENDAR,
-           EVENT_ID_CREATE_FILE_HEADER,EVENT_ID_CONTEXT_FINALIZE
+           EVENT_ID_CREATE_FILE_HEADER,EVENT_ID_CONTEXT_FINALIZE,
+           EVENT_ID_SEND_REGISTRY
          } ;
          
          /// typedef ///
@@ -124,11 +127,14 @@ namespace xios {
          void sendCloseDefinition(void) ;
          void sendUpdateCalendar(int step) ;
          void sendCreateFileHeader(void) ;
+         void sendRegistry(void) ; //!< after be gathered to the root process of the context, merged registry is sent to the root process of the servers
          static void recvUpdateCalendar(CEventServer& event) ;
          void recvUpdateCalendar(CBufferIn& buffer) ;
          static void recvCloseDefinition(CEventServer& event) ;
          static void recvCreateFileHeader(CEventServer& event) ;
          void recvCreateFileHeader(CBufferIn& buffer) ;
+         static void recvRegistry(CEventServer& event) ;
+         void recvRegistry(CBufferIn& buffer) ; //!< registry is received by the root process of the servers
          static CContext* getCurrent(void) ;
          static CContextGroup* getRoot(void) ;
          static void setCurrent(const string& id) ;
@@ -150,7 +156,8 @@ namespace xios {
          std::vector<CFile*> enabledFiles;
          static shared_ptr<CContextGroup> root ;
 
-
+         CRegistry* registryIn ;  //!< input registry which is read from file
+         CRegistry* registryOut ; //!< output registry which will be wrote on file at the finalize
    }; // class CContext
 
    ///--------------------------------------------------------------

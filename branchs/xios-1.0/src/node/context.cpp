@@ -6,6 +6,7 @@
 #include "calendar_type.hpp"
 #include "duration.hpp"
 
+#include "cxios.hpp"
 #include "context_client.hpp"
 #include "context_server.hpp"
 #include "nc4_data_output.hpp"
@@ -267,6 +268,13 @@ namespace xios {
    {
      hasClient=true ;
      client = new CContextClient(this,intraComm, interComm) ;
+     registryIn=new CRegistry(intraComm);
+     registryIn->setPath(getId()) ;
+     if (client->clientRank==0) registryIn->fromFile("xios_registry.bin") ;
+     registryIn->bcastRegistry() ;
+
+     registryOut=new CRegistry(intraComm) ;
+     registryOut->setPath(getId()) ;
    } 
 
    bool CContext::isInitialized(void)
@@ -278,6 +286,12 @@ namespace xios {
    {
      hasServer=true ;
      server = new CContextServer(this,intraComm,interComm) ;
+     registryIn=new CRegistry(intraComm);
+     registryIn->setPath(getId()) ;
+     if (server->intraCommRank==0) registryIn->fromFile("xios_registry.bin") ;
+     registryIn->bcastRegistry() ;
+     registryOut=new CRegistry(intraComm) ;
+     registryOut->setPath(getId()) ;
    } 
 
    bool CContext::eventLoop(void)
@@ -289,11 +303,14 @@ namespace xios {
    {
       if (hasClient && !hasServer)
       {
+         if (hasClient) sendRegistry() ;
          client->finalize() ;
       }
       if (hasServer)
       {
         closeAllFile() ;
+        registryOut->hierarchicalGatherRegistry() ;
+        if (server->intraCommRank==0) CXios::globalRegistry->mergeRegistry(*registryOut) ;
       }
    }
        
@@ -428,6 +445,10 @@ namespace xios {
              recvCreateFileHeader(event) ;
              return true ;
              break ;
+           case EVENT_ID_SEND_REGISTRY:
+            recvRegistry(event);
+            return true;
+           break;
            default :
              ERROR("bool CContext::dispatchEvent(CEventServer& event)",
                     <<"Unknown Event") ;
@@ -562,5 +583,39 @@ namespace xios {
 #include "node_type.conf"
 
     return (context);
+  }
+
+  void CContext::recvRegistry(CEventServer& event)
+  {
+    CBufferIn* buffer=event.subEvents.begin()->buffer;
+    string id;
+    *buffer>>id;
+    get(id)->recvRegistry(*buffer);
+  }
+
+  void CContext::recvRegistry(CBufferIn& buffer)
+  {
+    if (server->intraCommRank==0)
+    {
+      CRegistry registry(server->intraComm) ;
+      registry.fromBuffer(buffer) ;
+      registryOut->mergeRegistry(registry) ;
+    }
+  }
+
+  void CContext::sendRegistry(void)
+  {
+    registryOut->hierarchicalGatherRegistry() ;
+
+    CEventClient event(CContext::GetType(), CContext::EVENT_ID_SEND_REGISTRY);
+    if (client->isServerLeader())
+    {
+       CMessage msg ;
+       msg<<this->getId();
+       if (client->clientRank==0) msg<<*registryOut ;
+       event.push(client->getServerLeader(),1,msg);
+       client->sendEvent(event);
+     }
+     else client->sendEvent(event);
   }
 } // namespace xios

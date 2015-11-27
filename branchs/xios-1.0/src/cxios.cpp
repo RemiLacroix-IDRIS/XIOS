@@ -9,6 +9,7 @@
 #include "memory.hpp"
 #include <new>
 #include "memtrack.hpp"
+#include "registry.hpp"
 
 namespace xios
 {
@@ -27,6 +28,7 @@ namespace xios
   size_t CXios::defaultBufferSize=1024*1024*100 ; // 100Mo
   double CXios::defaultBufferServerFactorSize=2 ;
   bool CXios::printLogs2Files;
+  CRegistry* CXios::globalRegistry = 0;
 
 
   void CXios::initialize()
@@ -51,6 +53,7 @@ namespace xios
     isClient=true;
 
     CClient::initialize(codeId,localComm,returnComm) ;
+    if (CClient::getRank()==0) globalRegistry = new CRegistry(returnComm) ;
 
     if (usingServer) isServer=false;
     else isServer=true;
@@ -70,6 +73,12 @@ namespace xios
   void CXios::clientFinalize(void)
   {
      CClient::finalize() ;
+     if (CClient::getRank()==0)
+     {
+       info(80)<<"Write data base Registry"<<endl<<globalRegistry->toString()<<endl ;
+       globalRegistry->toFile("xios_registry.bin") ;
+       delete globalRegistry ;
+     }
      CClient::closeInfoStream();
 
 #ifdef XIOS_MEMTRACK
@@ -88,6 +97,7 @@ namespace xios
 
     // Initialize all aspects MPI
     CServer::initialize();
+    if (CServer::getRank()==0) globalRegistry = new CRegistry(CServer::intraComm) ;
 
     if (printLogs2Files)
     {
@@ -105,6 +115,12 @@ namespace xios
 
     // Finalize
     CServer::finalize();
+    if (CServer::getRank()==0)
+    {
+      info(80)<<"Write data base Registry"<<endl<<globalRegistry->toString()<<endl ;
+      globalRegistry->toFile("xios_registry.bin") ;
+      delete globalRegistry ;
+    }
     CServer::closeInfoStream();
   }
 

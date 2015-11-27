@@ -3,6 +3,7 @@
 
 #include "xmlioserver_spl.hpp"
 #include "mpi.hpp"
+#include "registry.hpp"
 
 namespace xios
 {
@@ -41,6 +42,7 @@ namespace xios
      static size_t defaultBufferSize ;
      static double bufferServerFactorSize ;
      static double defaultBufferServerFactorSize ;
+     static CRegistry* globalRegistry ; //!< global registry which is written by the root process of the servers
 
      public:
      //! Setting xios to use server mode

@@ -19,7 +19,7 @@ namespace xios
     CBufferIn::CBufferIn(void)
     {
       own=false ;
-      realloc(0,0) ;      
+      size_=0 ;
     }
 
     void CBufferIn::realloc(size_t size)
@@ -51,7 +51,7 @@ namespace xios
       return count_ ;
     }
 
-    size_t CBufferIn::size(void)
+    size_t CBufferIn::bufferSize(void)
     {
       return size_ ;
     }
