@@ -179,6 +179,20 @@ namespace xios {
       if (! output_freq.isEmpty()) outputFreq = CDuration::FromString(output_freq.getValue());
       lastSync=new CDate(currentDate) ;
       lastSplit=new CDate(currentDate) ;
+      if (!split_freq.isEmpty())
+      {
+        if (context->registryIn->foundKey("splitStart") && context->registryIn->foundKey("splitEnd"))
+        {
+          string savedSplitStartStr, savedSplitEndStr;
+          context->registryIn->getKey("splitStart", savedSplitStartStr);
+          context->registryIn->getKey("splitEnd",   savedSplitEndStr);
+
+          CDate savedSplitStart = CDate::FromString(savedSplitStartStr, *context->getCalendar());
+          CDate savedSplitEnd = CDate::FromString(savedSplitEndStr, *context->getCalendar());
+          if (savedSplitStart <= *lastSplit && *lastSplit <= savedSplitEnd)
+            *lastSplit = savedSplitStart;
+        }
+      }
       isOpen=false ;
 
       allDomainEmpty=true ;
@@ -262,6 +276,8 @@ namespace xios {
 //         if (!split_freq.isEmpty()) oss<<"_"<<lastSplit->getStr("%y_%mo_%d")<<"-"<< (*lastSplit+(splitFreq-1*Second)).getStr("%y_%mo_%d");
          if (!split_freq.isEmpty())
          {
+           CDate splitEnd = *lastSplit + splitFreq - 1 * Second;
+
            string splitFormat ;
            if (split_freq_format.isEmpty())
            {
@@ -273,7 +289,11 @@ namespace xios {
              else splitFormat="%y";
            }
            else splitFormat=split_freq_format ;
-           oss<<"_"<<lastSplit->getStr(splitFormat)<<"-"<< (*lastSplit + splitFreq - 1 * Second).getStr(splitFormat);
+           oss<<"_"<<lastSplit->getStr(splitFormat)<<"-"<< splitEnd.getStr(splitFormat);
+
+           string lastSplitStr = lastSplit->toString(), splitEndStr = splitEnd.toString();
+           context->registryOut->setKey("splitStart", lastSplitStr);
+           context->registryOut->setKey("splitEnd",   splitEndStr);
          }
            
          bool multifile=true ;
