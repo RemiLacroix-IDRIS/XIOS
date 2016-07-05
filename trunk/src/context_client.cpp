@@ -187,6 +187,7 @@ namespace xios
       // Notify the server
       CBufferOut* bufOut = buffer->getBuffer(sizeof(StdSize));
       bufOut->put(mapBufferSize_[rank]); // Stupid C++
+      error << "Sending buffer size = " << mapBufferSize_[rank] << " to " << rank << std::endl;
       buffer->checkBuffer();
    }
 
@@ -218,7 +219,10 @@ namespace xios
    {
       list<int>::iterator it;
       bool pending = false;
-      for (it = ranks.begin(); it != ranks.end(); it++) pending |= buffers[*it]->checkBuffer();
+      for (it = ranks.begin(); it != ranks.end(); it++) {bool p = buffers[*it]->checkBuffer();
+        error << "CContextClient::checkBuffers --> " << int(p) << " pending request for server " << *it << std::endl;
+        pending |= p;
+      }
       return pending;
    }
 

@@ -13,6 +13,8 @@ namespace xios
     current = 1;
     end = size;
     buffer = new char[size]; // use MPI_ALLOC_MEM later?
+    free = size;
+    occupied = 0;
   }
 
   CServerBuffer::~CServerBuffer()
@@ -78,6 +80,9 @@ namespace xios
 
     if (count==0) return buffer+current ;
 
+    free -= count;
+    occupied += count;
+
     if (current>first)
     {
       if (current+count<size)
@@ -133,6 +138,9 @@ namespace xios
   void CServerBuffer::freeBuffer(size_t count)
   {
     if (count==0) return ;
+
+    free += count;
+    occupied -= count;
 
     if (first==end-1)
     {

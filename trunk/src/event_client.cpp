@@ -47,9 +47,11 @@ namespace xios
      std::list<CBufferOut*>::iterator itBuff = buffers.begin();
      std::list<int>::const_iterator itSizes = sizes.begin(), itSenders = nbSenders.begin();
      std::list<CMessage*>::iterator itMsg = messages.begin();
+     std::list<int>::const_iterator itRank = ranks.begin();
 
-     for (; itBuff != buffers.end(); ++itBuff, ++itSizes, ++itSenders, ++itMsg)
+     for (; itBuff != buffers.end(); ++itBuff, ++itSizes, ++itSenders, ++itMsg, ++itRank)
      {
+       error << "Preparing event " << timeLine << " for " << *itRank << " with " << *itSenders << " senders" << std::endl;
        **itBuff << *itSizes << timeLine << *itSenders << classId << typeId << **itMsg;
      }
    }

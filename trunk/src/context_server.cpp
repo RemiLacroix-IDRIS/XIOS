@@ -72,6 +72,7 @@ namespace xios
     char * addr;
     MPI_Status status;
     map<int,CServerBuffer*>::iterator it;
+    static map<int,int> n;
 
     for(rank=0;rank<commSize;rank++)
     {
@@ -82,23 +83,32 @@ namespace xios
         traceOn();
         if (flag==true)
         {
+          error << "CContextServer[" << hashId << "]::listen <-- Receiving request " << n[rank] << " from client " << rank;
           it=buffers.find(rank);
           if (it==buffers.end()) // Receive the buffer size and allocate the buffer
           {
             StdSize buffSize = 0;
             MPI_Recv(&buffSize, 1, MPI_LONG, rank, 20, interComm, &status);
+            int s = -1; MPI_Type_size(MPI_LONG, &s);
+            error << " --> Received buffer size = " << buffSize << std::endl;
+            n[rank]++;
             mapBufferSize_.insert(std::make_pair(rank, buffSize));
             it=(buffers.insert(pair<int,CServerBuffer*>(rank,new CServerBuffer(buffSize)))).first;
           }
           else
           {
             MPI_Get_count(&status,MPI_CHAR,&count);
+            error << " --> size = " << count;
             if (it->second->isBufferFree(count))
             {
+              error << " --> Starting to receive" << std::endl;
+              n[rank]++;
               addr=(char*)it->second->getBuffer(count);
               MPI_Irecv(addr,count,MPI_CHAR,rank,20,interComm,&pendingRequest[rank]);
               bufferRequest[rank]=addr;
             }
+            else
+              error << " --> Not enough space to receive (free = " << it->second->free << ", occupied = " << it->second->occupied << ") " << (int(it->second->free / 2) >= count) << std::endl;
           }
         }
       }
@@ -114,6 +124,7 @@ namespace xios
     int flag;
     int count;
     MPI_Status status;
+    static map<int,int> n;
 
     for(it=pendingRequest.begin();it!=pendingRequest.end();it++)
     {
@@ -126,6 +137,9 @@ namespace xios
         recvRequest.push_back(rank);
         MPI_Get_count(&status,MPI_CHAR,&count);
         processRequest(rank,bufferRequest[rank],count);
+        if (n.find(rank) == n.end()) n[rank] = 1;
+        else n[rank]++;
+        error << "CContextServer[" << hashId << "]::checkPendingRequest <-- Received and processed request " << n[rank] << " of size " << count << " from client " << rank << std::endl;
       }
     }
 
@@ -154,6 +168,8 @@ namespace xios
       it=events.find(timeLine);
       if (it==events.end()) it=events.insert(pair<int,CEventServer*>(timeLine,new CEventServer)).first;
       it->second->push(rank,buffers[rank],startBuffer,size);
+      error << "CContextServer[" << hashId << "]::processRequest <-- Added subvent " << it->second->subEvents.size() << " of " << it->second->nbSender << " from client " << rank << " for event " << timeLine << std::endl;
+
 
       buffer.advance(size);
       count=buffer.remain();
@@ -171,15 +187,19 @@ namespace xios
     {
       event=it->second;
 
+      error << "CContextServer[" << hashId << "]::processEvents --> currentTimeLine = " << currentTimeLine << " event.isFull() = " << event->isFull();
+
       if (event->isFull())
       {
         if (!scheduled && CServer::eventScheduler) // Skip event scheduling for attached mode and reception on client side
         {
           CServer::eventScheduler->registerEvent(currentTimeLine,hashId);
           scheduled=true;
+          error << " --> scheduled";
         }
         else if (!CServer::eventScheduler || CServer::eventScheduler->queryEvent(currentTimeLine,hashId) )
         {
+          error << " --> processed";
          // When using attached mode, synchronise the processes to avoid that differents event be scheduled by differents processes
          // The best way to properly solve this problem will be to use the event scheduler also in attached mode
          // for now just set up a MPI barrier
@@ -195,6 +215,8 @@ namespace xios
          scheduled = false;
         }
       }
+      else error << " --> " << event->nbSender << " != " << event->subEvents.size();
+      error << std::endl;
     }
   }
 

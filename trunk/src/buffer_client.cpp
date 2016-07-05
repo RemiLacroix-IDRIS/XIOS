@@ -72,13 +72,24 @@ namespace xios
   {
     MPI_Status status;
     int flag;
+    static map<int,int> n;
+    static map<int, size_t> cpt;
 
     if (pending)
     {
       traceOff();
       MPI_Test(&request, &flag, &status);
       traceOn();
-      if (flag == true) pending = false;
+      cpt[serverRank]++;
+      if (flag == true) {
+        pending = false;
+        error << "CClientBuffer::checkBuffer --> sending request " << n[serverRank] << " to server " << serverRank << " terminated" << std::endl;
+        n[serverRank]++;
+        cpt[serverRank] = 0;
+      } else if (!(cpt[serverRank] % 1000)) {
+        error << "CClientBuffer::checkBuffer --> still haven't received request " << n[serverRank] << " to server " << serverRank
+              << " ( " << status.MPI_SOURCE << " , " << status.MPI_TAG << " , " << status.MPI_ERROR << " ) after " << cpt[serverRank] << " tests" << std::endl;
+      }
     }
 
     if (!pending)
@@ -86,6 +97,7 @@ namespace xios
       if (count > 0)
       {
         MPI_Issend(buffer[current], count, MPI_CHAR, serverRank, 20, interComm, &request);
+        error << "CClientBuffer::checkBuffer --> sending request " << n[serverRank] << " of size " << count << " bytes to server " << serverRank << std::endl;
         pending = true;
         if (current == 1) current = 0;
         else current = 1;

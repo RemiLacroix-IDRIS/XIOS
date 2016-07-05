@@ -18,6 +18,8 @@ namespace xios
       void* getBuffer(size_t count) ;
       void freeBuffer(size_t count) ;
 
+      size_t free, occupied;
+
     private:
       char* buffer;
       size_t first;   // first occupied element
