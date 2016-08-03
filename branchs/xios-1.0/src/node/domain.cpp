@@ -791,7 +791,7 @@ namespace xios {
       list_msg.back() << isCurvilinear;
       list_msg.back() << list_indi.back() << list_indj.back() << list_lon.back() << list_lat.back();
       if (hasBounds) list_msg.back() << list_boundslon.back() << list_boundslat.back();
-        
+
       event.push(connectedServer[ns], nbSenders[ns], list_msg.back());
 
       if (hasArea)
@@ -877,7 +877,10 @@ namespace xios {
     }
 
     if (hasArea)
-      area_srv.resize(zoom_ni_srv * zoom_nj_srv);
+    {
+       area_srv.resize(zoom_ni_srv * zoom_nj_srv);
+       area_srv = 0.;
+    }
   }
 
   void CDomain::recvLonLat(CEventServer& event)
