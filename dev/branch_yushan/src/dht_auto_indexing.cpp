@@ -78,8 +78,7 @@ namespace xios
     globalIndex_.resize(nbIndexOnProc_);
     for (itIdx = itbIdx; itIdx != iteIdx; ++itIdx)
     {
-//      (itIdx->second)[0] = beginIndexOnProc_ + idx;
-      (itIdx->second)[1] = beginIndexOnProc_ + idx;
+      (itIdx->second)[0] = beginIndexOnProc_ + idx;
       globalIndex_[idx] = beginIndexOnProc_ + idx;
       ++idx ;
     }

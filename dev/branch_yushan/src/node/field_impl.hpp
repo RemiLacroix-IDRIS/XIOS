@@ -18,8 +18,10 @@ namespace xios {
   void CField::setData(const CArray<double, N>& _data)
   {
     if (clientSourceFilter)
+    {
       clientSourceFilter->streamData(CContext::getCurrent()->getCalendar()->getCurrentDate(), _data);
-    else if (instantDataFilter)
+    }
+    else if (!field_ref.isEmpty() || !content.empty())
       ERROR("void CField::setData(const CArray<double, N>& _data)",
             << "Impossible to receive data from the model for a field [ id = " << getId() << " ] with a reference or an arithmetic operation.");
   }

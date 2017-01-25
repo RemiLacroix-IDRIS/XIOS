@@ -11,6 +11,9 @@
 #include "attribute_enum.hpp"
 #include "attribute_enum_impl.hpp"
 #include "mpi.hpp"
+#ifdef _usingEP
+#include "ep_declaration.hpp"
+#endif
 
 namespace xios {
 

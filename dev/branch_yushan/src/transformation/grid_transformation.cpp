@@ -530,7 +530,9 @@ void CGridTransformation::computeTransformationMapping(const SourceDestinationIn
   }
 
   status.resize(requests.size());
+  //printf("(%d) src/transformation/grid_transformation 1st waitall\n", clientRank);
   MPI_Waitall(requests.size(), &requests[0], &status[0]);
+  //printf("(%d) src/transformation/grid_transformation 1st waitall OK\n", clientRank);
 
   // Okie, now use the mask to identify which index source we need to send, then also signal the destination which masked index we will return
   std::vector<MPI_Request>().swap(requests);
@@ -582,7 +584,9 @@ void CGridTransformation::computeTransformationMapping(const SourceDestinationIn
     MPI_Isend(recvMaskDst[recvRank], recvSize, MPI_UNSIGNED_CHAR, recvRank, 48, client->intraComm, &requests.back());
   }
   status.resize(requests.size());
+  //printf("(%d) src/transformation/grid_transformation 2nd waitall\n", clientRank);
   MPI_Waitall(requests.size(), &requests[0], &status[0]);
+  //printf("(%d) src/transformation/grid_transformation 2nd waitall OK\n", clientRank);
 
   // Cool, now we can fill in local index of grid destination (counted for masked index)
   localIndexToReceiveOnGridDest_.push_back(RecvIndexGridDestinationMap());

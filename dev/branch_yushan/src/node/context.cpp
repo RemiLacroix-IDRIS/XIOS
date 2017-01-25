@@ -338,17 +338,17 @@ namespace xios {
      client = new CContextClient(this,intraCommClient,interCommClient, cxtClient);
    }
 
+   //! Server side: Put server into a loop in order to listen message from client
+   bool CContext::eventLoop(void)
+   {
+     return server->eventLoop();
+   }
+
    //! Try to send the buffers and receive possible answers
    bool CContext::checkBuffersAndListen(void)
    {
      client->checkBuffers();
-
-     bool hasTmpBufferedEvent = client->hasTemporarilyBufferedEvent();
-     if (hasTmpBufferedEvent)
-       hasTmpBufferedEvent = !client->sendTemporarilyBufferedEvent();
-
-     // Don't process events if there is a temporarily buffered event
-     return server->eventLoop(!hasTmpBufferedEvent);
+     return server->eventLoop();
    }
 
    //! Terminate a context
@@ -388,58 +388,65 @@ namespace xios {
    */
    void CContext::closeDefinition(void)
    {
+     int myRank;
+     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+
+     //printf("myRank = %d, hasClient = %d, hasServer = %d\n", myRank, hasClient, hasServer);
+
      // There is nothing client need to send to server
      if (hasClient)
      {
        // After xml is parsed, there are some more works with post processing
-       postProcessing();
+       postProcessing(); 
+       //printf("myRank = %d,                postProcessing OK\n", myRank);
      }
-     setClientServerBuffer();
+     setClientServerBuffer(); //printf("myRank = %d, setClientServerBuffer OK\n", myRank);
 
      if (hasClient && !hasServer)
      {
       // Send all attributes of current context to server
-      this->sendAllAttributesToServer();
+      this->sendAllAttributesToServer(); //printf("myRank = %d, this->sendAllAttributesToServer OK\n", myRank);
 
       // Send all attributes of current calendar
       CCalendarWrapper::get(CCalendarWrapper::GetDefName())->sendAllAttributesToServer();
+      //printf("myRank = %d, CCalendarWrapper::get(CCalendarWrapper::GetDefName())->sendAllAttributesToServer OK\n", myRank);
 
       // We have enough information to send to server
       // First of all, send all enabled files
-       sendEnabledFiles();
+       sendEnabledFiles();  //printf("myRank = %d, sendEnabledFiles OK\n", myRank);
 
       // Then, send all enabled fields
-       sendEnabledFields();
+       sendEnabledFields();  //printf("myRank = %d, sendEnabledFields OK\n", myRank);
 
       // At last, we have all info of domain and axis, then send them
-       sendRefDomainsAxis();
+       sendRefDomainsAxis();  //printf("myRank = %d, sendRefDomainsAxis OK\n", myRank);
 
       // After that, send all grid (if any)
-       sendRefGrid();
+       sendRefGrid(); //printf("myRank = %d, sendRefGrid OK\n", myRank);
     }
 
     // We have a xml tree on the server side and now, it should be also processed
-    if (hasClient && !hasServer) sendPostProcessing();
+    if (hasClient && !hasServer) sendPostProcessing();  
 
     // There are some processings that should be done after all of above. For example: check mask or index
     if (hasClient)
     {
-      this->buildFilterGraphOfEnabledFields();
-      buildFilterGraphOfFieldsWithReadAccess();
-      this->solveAllRefOfEnabledFields(true);
+      this->buildFilterGraphOfEnabledFields();  //printf("myRank = %d, buildFilterGraphOfEnabledFields OK\n", myRank);
+      buildFilterGraphOfFieldsWithReadAccess();  //printf("myRank = %d, buildFilterGraphOfFieldsWithReadAccess OK\n", myRank);
+      this->solveAllRefOfEnabledFields(true);  //printf("myRank = %d, solveAllRefOfEnabledFields OK\n", myRank);
     }
 
     // Now tell server that it can process all messages from client
     if (hasClient && !hasServer) this->sendCloseDefinition();
 
     // Nettoyage de l'arborescence
-    if (hasClient && !hasServer) CleanTree(); // Only on client side??
+    if (hasClient && !hasServer) CleanTree();
 
     if (hasClient)
     {
-      sendCreateFileHeader();
+      sendCreateFileHeader();  //printf("myRank = %d, sendCreateFileHeader OK\n", myRank);
 
-      startPrefetchingOfEnabledReadModeFiles();
+      startPrefetchingOfEnabledReadModeFiles();  //printf("myRank = %d, startPrefetchingOfEnabledReadModeFiles OK\n", myRank);
     }
    }
 
@@ -478,6 +485,7 @@ namespace xios {
    void CContext::solveAllRefOfEnabledFields(bool sendToServer)
    {
      int size = this->enabledFiles.size();
+     
      for (int i = 0; i < size; ++i)
      {
        this->enabledFiles[i]->solveAllRefOfEnabledFields(sendToServer);
@@ -565,34 +573,15 @@ namespace xios {
    void CContext::findEnabledFiles(void)
    {
       const std::vector<CFile*> allFiles = CFile::getAll();
-      const CDate& initDate = calendar->getInitDate();
 
       for (unsigned int i = 0; i < allFiles.size(); i++)
          if (!allFiles[i]->enabled.isEmpty()) // Si l'attribut 'enabled' est défini.
          {
             if (allFiles[i]->enabled.getValue()) // Si l'attribut 'enabled' est fixé à vrai.
-            {
-              if ((initDate + allFiles[i]->output_freq.getValue()) < (initDate + this->getCalendar()->getTimeStep()))
-              {
-                error(0)<<"WARNING: void CContext::findEnabledFiles()"<<endl
-                    << "Output frequency in file \""<<allFiles[i]->getFileOutputName()
-                    <<"\" is less than the time step. File will not be written."<<endl;
-              }
-              else
                enabledFiles.push_back(allFiles[i]);
-            }
          }
-         else
-         {
-           if ( (initDate + allFiles[i]->output_freq.getValue()) < (initDate + this->getCalendar()->getTimeStep()))
-           {
-             error(0)<<"WARNING: void CContext::findEnabledFiles()"<<endl
-                 << "Output frequency in file \""<<allFiles[i]->getFileOutputName()
-                 <<"\" is less than the time step. File will not be written."<<endl;
-           }
-           else
-             enabledFiles.push_back(allFiles[i]); // otherwise true by default
-         }
+         else enabledFiles.push_back(allFiles[i]); // otherwise true by default
+
 
       if (enabledFiles.size() == 0)
          DEBUG(<<"Aucun fichier ne va être sorti dans le contexte nommé \""
@@ -811,6 +800,10 @@ namespace xios {
    */
    void CContext::postProcessing()
    {
+     int myRank;
+     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+
+     //printf("myRank = %d, in postProcessing, isPostProcessed = %d\n", myRank, isPostProcessed);
      if (isPostProcessed) return;
 
       // Make sure the calendar was correctly created
@@ -819,43 +812,43 @@ namespace xios {
       else if (calendar->getTimeStep() == NoneDu)
         ERROR("CContext::postProcessing()", << "A timestep must be defined for the context \"" << getId() << "!\"")
       // Calendar first update to set the current date equals to the start date
-      calendar->update(0);
+      calendar->update(0);  //printf("myRank = %d, calendar->update(0) OK\n", myRank);
 
       // Find all inheritance in xml structure
-      this->solveAllInheritance();
+      this->solveAllInheritance();  //printf("myRank = %d, this->solveAllInheritance OK\n", myRank);
 
       // Check if some axis, domains or grids are eligible to for compressed indexed output.
       // Warning: This must be done after solving the inheritance and before the rest of post-processing
-      checkAxisDomainsGridsEligibilityForCompressedOutput();
+      checkAxisDomainsGridsEligibilityForCompressedOutput();  //printf("myRank = %d, checkAxisDomainsGridsEligibilityForCompressedOutput OK\n", myRank);
 
       // Check if some automatic time series should be generated
       // Warning: This must be done after solving the inheritance and before the rest of post-processing
-      prepareTimeseries();
+      prepareTimeseries();  //printf("myRank = %d, prepareTimeseries OK\n", myRank);
 
       //Initialisation du vecteur 'enabledFiles' contenant la liste des fichiers à sortir.
-      this->findEnabledFiles();
-      this->findEnabledReadModeFiles();
+      this->findEnabledFiles();  //printf("myRank = %d, this->findEnabledFiles OK\n", myRank);
+      this->findEnabledReadModeFiles();  //printf("myRank = %d, this->findEnabledReadModeFiles OK\n", myRank);
 
       // Find all enabled fields of each file
-      this->findAllEnabledFields();
-      this->findAllEnabledFieldsInReadModeFiles();
+      this->findAllEnabledFields();  //printf("myRank = %d, this->findAllEnabledFields OK\n", myRank);
+      this->findAllEnabledFieldsInReadModeFiles();  //printf("myRank = %d, this->findAllEnabledFieldsInReadModeFiles OK\n", myRank);
 
      if (hasClient && !hasServer)
      {
       // Try to read attributes of fields in file then fill in corresponding grid (or domain, axis)
-      this->readAttributesOfEnabledFieldsInReadModeFiles();
+      this->readAttributesOfEnabledFieldsInReadModeFiles();  //printf("myRank = %d, this->readAttributesOfEnabledFieldsInReadModeFiles OK\n", myRank);
      }
 
       // Only search and rebuild all reference objects of enable fields, don't transform
-      this->solveOnlyRefOfEnabledFields(false);
+      this->solveOnlyRefOfEnabledFields(false);  //printf("myRank = %d, this->solveOnlyRefOfEnabledFields(false) OK\n", myRank);
 
       // Search and rebuild all reference object of enabled fields
-      this->solveAllRefOfEnabledFields(false);
+      this->solveAllRefOfEnabledFields(false);  //printf("myRank = %d, this->solveAllRefOfEnabledFields(false) OK\n", myRank);
 
       // Find all fields with read access from the public API
-      findFieldsWithReadAccess();
+      findFieldsWithReadAccess();  //printf("myRank = %d, findFieldsWithReadAccess OK\n", myRank);
       // and solve the all reference for them
-      solveAllRefOfFieldsWithReadAccess();
+      solveAllRefOfFieldsWithReadAccess();  //printf("myRank = %d, solveAllRefOfFieldsWithReadAccess OK\n", myRank);
 
       isPostProcessed = true;
    }
@@ -1239,8 +1232,8 @@ namespace xios {
        for (std::list<int>::const_iterator itRank = ranks.begin(), itRankEnd = ranks.end(); itRank != itRankEnd; ++itRank)
          event.push(*itRank,1,msg);
        client->sendEvent(event);
-     }
-     else client->sendEvent(event);
+    }
+    else client->sendEvent(event);
   }
 
 } // namespace xios

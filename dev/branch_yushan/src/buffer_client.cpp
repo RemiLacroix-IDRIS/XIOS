@@ -7,6 +7,7 @@
 #include "mpi.hpp"
 #include "tracer.hpp"
 
+
 namespace xios
 {
   size_t CClientBuffer::maxRequestSize = 0;
@@ -79,6 +80,8 @@ namespace xios
       MPI_Test(&request, &flag, &status);
       traceOn();
       if (flag == true) pending = false;
+
+      //printf("\ncheckbuffer, flag = %d, pending = %d; request = %p, count = %d\n", flag, pending, &request, count);
     }
 
     if (!pending)

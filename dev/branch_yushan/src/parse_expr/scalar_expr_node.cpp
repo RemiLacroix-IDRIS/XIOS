@@ -22,18 +22,10 @@ namespace xios
 
   double CScalarVarExprNode::reduce() const
   {
-    // $missing_value will be replaced with NaN
-    if (varId == "missing_value")
-    {
-      return std::numeric_limits<double>::quiet_NaN();
-    }
-    else
-    {
-      if (!CVariable::has(varId)) 
-        ERROR("double CScalarVarExprNode::reduce() const", << "The variable " << varId << " does not exist.");
+    if (!CVariable::has(varId)) 
+      ERROR("double CScalarVarExprNode::reduce() const", << "The variable " << varId << " does not exist.");
 
-      return CVariable::get(varId)->getData<double>();
-    }
+    return CVariable::get(varId)->getData<double>();
   }
 
   CScalarUnaryOpExprNode::CScalarUnaryOpExprNode(const std::string& opId, IScalarExprNode* child)

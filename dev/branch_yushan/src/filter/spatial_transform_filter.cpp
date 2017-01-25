@@ -10,7 +10,7 @@ namespace xios
   { /* Nothing to do */ }
 
   std::pair<boost::shared_ptr<CSpatialTransformFilter>, boost::shared_ptr<CSpatialTransformFilter> >
-  CSpatialTransformFilter::buildFilterGraph(CGarbageCollector& gc, CGrid* srcGrid, CGrid* destGrid, bool hasMissingValue, double missingValue)
+  CSpatialTransformFilter::buildFilterGraph(CGarbageCollector& gc, CGrid* srcGrid, CGrid* destGrid, double defaultValue)
   {
     if (!srcGrid || !destGrid)
       ERROR("std::pair<boost::shared_ptr<CSpatialTransformFilter>, boost::shared_ptr<CSpatialTransformFilter> >"
@@ -25,7 +25,6 @@ namespace xios
       CSpatialTransformFilterEngine* engine = CSpatialTransformFilterEngine::get(destGrid->getTransformations());
       const std::vector<StdString>& auxInputs = gridTransformation->getAuxInputs();
       size_t inputCount = 1 + (auxInputs.empty() ? 0 : auxInputs.size());
-      double defaultValue  = (hasMissingValue) ? std::numeric_limits<double>::quiet_NaN() : missingValue;
       boost::shared_ptr<CSpatialTransformFilter> filter(new CSpatialTransformFilter(gc, engine, defaultValue, inputCount));
 
       if (!lastFilter)
@@ -53,7 +52,7 @@ namespace xios
     CSpatialTransformFilterEngine* spaceFilter = static_cast<CSpatialTransformFilterEngine*>(engine);
     CDataPacketPtr outputPacket = spaceFilter->applyFilter(data, outputDefaultValue);
     if (outputPacket)
-      onOutputReady(outputPacket);
+      deliverOuput(outputPacket);
   }
 
   CSpatialTransformFilterEngine::CSpatialTransformFilterEngine(CGridTransformation* gridTransformation)
@@ -103,8 +102,7 @@ namespace xios
         gridTransformation->computeAll(dataAuxInputs, packet->timestamp);
       }
       packet->data.resize(gridTransformation->getGridDestination()->storeIndex_client.numElements());
-      if (0 != packet->data.numElements())
-        (packet->data)(0) = defaultValue;
+      packet->data = defaultValue;
       apply(data[0]->data, packet->data);
     }
 
@@ -219,9 +217,9 @@ namespace xios
     }
     if (dataCurrentDest.numElements() != dataDest.numElements())
     ERROR("CSpatialTransformFilterEngine::apply(const CArray<double, 1>& dataSrc, CArray<double,1>& dataDest)",
-          "Incoherent between the received size and expected size. " << std::endl 
-          << "Expected size: " << dataDest.numElements() << std::endl 
-          << "Received size: " << dataCurrentDest.numElements());
+          "Incoherent between the received size and expected size" <<
+          "Expected size: " << dataDest.numElements() <<
+          "Received size: " << dataCurrentDest.numElements());
 
     dataDest = dataCurrentDest;
   }

@@ -1,6 +1,5 @@
 #include "average.hpp"
 #include "array_new.hpp"
-#include "utils.hpp"
 
 namespace xios
 {
@@ -42,7 +41,7 @@ namespace xios
             const double * in=_dinput.dataFirst() ;
             int* nc=nbcalls.dataFirst() ;
             for (i=0; i<n; ++i,++nc,++in) 
-              if (!NumTraits<double>::isnan(*in)) (*nc) ++;
+              if (*in!=missingValue) (*nc) ++;
           }
         }
         else
@@ -54,7 +53,7 @@ namespace xios
             double* out=_doutput.dataFirst();
             int* nc=nbcalls.dataFirst() ;
             for (i=0; i<n; ++i,++in,++out,++nc) 
-              if (!NumTraits<double>::isnan(*in)) 
+              if (*in!=missingValue) 
               {
                 if (*nc != 0) (*out)  += *in;
                 else *out = *in ;

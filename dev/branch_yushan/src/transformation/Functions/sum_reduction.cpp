@@ -2,12 +2,11 @@
    \file sum.cpp
    \author Ha NGUYEN
    \since 27 June 2016
-   \date 9 Jan 2017
+   \date 27 June 2016
 
    \brief sum reduction
  */
 #include "sum_reduction.hpp"
-#include "utils.hpp"
 
 namespace xios {
 
@@ -29,47 +28,23 @@ bool CSumReductionAlgorithm::registerTrans()
 void CSumReductionAlgorithm::apply(const std::vector<std::pair<int,double> >& localIndex,
                                    const double* dataInput,
                                    CArray<double,1>& dataOut,
-                                   std::vector<bool>& flagInitial,
-                                   const double& defaultValue)
+                                   std::vector<bool>& flagInitial)
 {
-  bool hasMissingValue = NumTraits<double>::isnan(defaultValue);
-  if (hasMissingValue)
+  int nbLocalIndex = localIndex.size();
+  int currentlocalIndex = 0;
+  double currentWeight  = 0.0;
+  for (int idx = 0; idx < nbLocalIndex; ++idx)
   {
-    int nbLocalIndex = localIndex.size();
-    int currentlocalIndex = 0;    
-    for (int idx = 0; idx < nbLocalIndex; ++idx)
+    currentlocalIndex = localIndex[idx].first;
+    currentWeight     = localIndex[idx].second;
+    if (flagInitial[currentlocalIndex])
     {
-      currentlocalIndex = localIndex[idx].first;   
-      if (!NumTraits<double>::isnan(*(dataInput + idx)))
-      {   
-        if (flagInitial[currentlocalIndex])
-        {
-          dataOut(currentlocalIndex) = *(dataInput + idx);
-          flagInitial[currentlocalIndex] = false;
-        }
-        else
-        {
-          dataOut(currentlocalIndex) += *(dataInput + idx);
-        }
-      }
-    }    
-  }
-  else
-  {
-    int nbLocalIndex = localIndex.size();
-    int currentlocalIndex = 0;    
-    for (int idx = 0; idx < nbLocalIndex; ++idx)
+      dataOut(currentlocalIndex) = *(dataInput + idx);
+      flagInitial[currentlocalIndex] = false;
+    }
+    else
     {
-      currentlocalIndex = localIndex[idx].first;      
-      if (flagInitial[currentlocalIndex])
-      {
-        dataOut(currentlocalIndex) = *(dataInput + idx);
-        flagInitial[currentlocalIndex] = false;
-      }
-      else
-      {
-        dataOut(currentlocalIndex) += *(dataInput + idx);
-      }
+      dataOut(currentlocalIndex) += *(dataInput + idx);
     }
   }
 }

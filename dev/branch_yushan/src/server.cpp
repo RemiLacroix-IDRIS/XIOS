@@ -8,7 +8,7 @@
 #include "oasis_cinterface.hpp"
 #include <boost/functional/hash.hpp>
 #include <boost/algorithm/string.hpp>
-#include "mpi.hpp"
+//#include "mpi.hpp"
 #include "tracer.hpp"
 #include "timer.hpp"
 #include "event_scheduler.hpp"
@@ -25,23 +25,16 @@ namespace xios
     map<string,CContext*> CServer::contextList ;
     bool CServer::finished=false ;
     bool CServer::is_MPI_Initialized ;
+
+    
     CEventScheduler* CServer::eventScheduler = 0;
    
     void CServer::initialize(void)
     {
-      int initialized ;
-      MPI_Initialized(&initialized) ;
-      if (initialized) is_MPI_Initialized=true ;
-      else is_MPI_Initialized=false ;
-
       // Not using OASIS
       if (!CXios::usingOasis)
       {
 
-        if (!is_MPI_Initialized)
-        {
-          MPI_Init(NULL, NULL);
-        }
         CTimer::get("XIOS").resume() ;
 
         boost::hash<string> hashString ;
@@ -49,7 +42,7 @@ namespace xios
         unsigned long hashServer=hashString(CXios::xiosCodeId) ;
         unsigned long* hashAll ;
 
-//        int rank ;
+
         int size ;
         int myColor ;
         int i,c ;
@@ -76,8 +69,11 @@ namespace xios
         }
 
         myColor=colors[hashServer] ;
-        MPI_Comm_split(MPI_COMM_WORLD,myColor,rank,&intraComm) ;
 
+
+        MPI_Comm_split(CXios::globalComm,myColor,rank,&intraComm) ;
+
+        
         int serverLeader=leaders[hashServer] ;
         int clientLeader;
 
@@ -95,6 +91,7 @@ namespace xios
 
              MPI_Intercomm_create(intraComm,0,CXios::globalComm,clientLeader,0,&newComm) ;
              interComm.push_back(newComm) ;
+             printf("after inter create, interComm.size = %lu\n", interComm.size());
            }
          }
 
@@ -103,7 +100,6 @@ namespace xios
       // using OASIS
       else
       {
-//        int rank ,size;
         int size;
         if (!is_MPI_Initialized) oasis_init(CXios::xiosCodeId);
 
@@ -147,18 +143,24 @@ namespace xios
       CTimer::get("XIOS").suspend() ;
      
       delete eventScheduler ;
+      
+      
 
       for (std::list<MPI_Comm>::iterator it = contextInterComms.begin(); it != contextInterComms.end(); it++)
         MPI_Comm_free(&(*it));
+
       for (std::list<MPI_Comm>::iterator it = interComm.begin(); it != interComm.end(); it++)
         MPI_Comm_free(&(*it));
+
       MPI_Comm_free(&intraComm);
 
       if (!is_MPI_Initialized)
       {
         if (CXios::usingOasis) oasis_finalize();
-        else MPI_Finalize() ;
+        else  {MPI_Finalize() ; printf("CServer::finalize called MPI_finalize\n");}
       }
+
+      
       report(0)<<"Performance report : Time spent for XIOS : "<<CTimer::get("XIOS server").getCumulatedTime()<<endl  ;
       report(0)<<"Performance report : Time spent in processing events : "<<CTimer::get("Process events").getCumulatedTime()<<endl  ;
       report(0)<<"Performance report : Ratio : "<<CTimer::get("Process events").getCumulatedTime()/CTimer::get("XIOS server").getCumulatedTime()*100.<<"%"<<endl  ;
@@ -173,19 +175,25 @@ namespace xios
        {
          if (isRoot)
          {
-           listenContext();
-           if (!finished) listenFinalize() ;
+           listenContext(); 
+           if (!finished) listenFinalize() ; 
          }
          else
          {
-           listenRootContext();
-           if (!finished) listenRootFinalize() ;
+           listenRootContext(); 
+           if (!finished) 
+           {
+             listenRootFinalize() ; 
+           }
          }
-
+         
          contextEventLoop() ;
          if (finished && contextList.empty()) stop=true ;
+         
          eventScheduler->checkEvent() ;
        }
+       
+       
        CTimer::get("XIOS server").suspend() ;
      }
 
@@ -194,6 +202,7 @@ namespace xios
         list<MPI_Comm>::iterator it;
         int msg ;
         int flag ;
+        
 
         for(it=interComm.begin();it!=interComm.end();it++)
         {
@@ -204,7 +213,9 @@ namespace xios
            if (flag==true)
            {
               MPI_Recv(&msg,1,MPI_INT,0,0,*it,&status) ;
+              printf(" CServer : Receive client finalize\n");
               info(20)<<" CServer : Receive client finalize"<<endl ;
+
               MPI_Comm_free(&(*it));
               interComm.erase(it) ;
               break ;
@@ -233,7 +244,7 @@ namespace xios
         int flag ;
         MPI_Status status ;
         int msg ;
-
+        
         traceOff() ;
         MPI_Iprobe(0,4,intraComm, &flag, &status) ;
         traceOn() ;
@@ -248,26 +259,32 @@ namespace xios
      {
 
        MPI_Status status ;
-       int flag ;
-       static char* buffer ;
+       int flag = false ;
+       static void* buffer ;
        static MPI_Request request ;
        static bool recept=false ;
        int rank ;
-       int count ;
+       int count ; 
 
        if (recept==false)
-       {
+       {      
          traceOff() ;
          MPI_Iprobe(MPI_ANY_SOURCE,1,CXios::globalComm, &flag, &status) ;
          traceOn() ;
+         
          if (flag==true)
          {
+           #ifdef _usingMPI
            rank=status.MPI_SOURCE ;
+           #elif _usingEP
+           rank= status.ep_src ;
+           #endif
            MPI_Get_count(&status,MPI_CHAR,&count) ;
            buffer=new char[count] ;
-           MPI_Irecv((void*)buffer,count,MPI_CHAR,rank,1,CXios::globalComm,&request) ;
+           MPI_Irecv(buffer,count,MPI_CHAR,rank,1,CXios::globalComm,&request) ;
            recept=true ;
          }
+          
        }
        else
        {
@@ -276,9 +293,15 @@ namespace xios
          traceOn() ;
          if (flag==true)
          {
+           #ifdef _usingMPI
            rank=status.MPI_SOURCE ;
+           #elif _usingEP
+           rank= status.ep_src ;
+           #endif
            MPI_Get_count(&status,MPI_CHAR,&count) ;
-           recvContextMessage((void*)buffer,count) ;
+           recvContextMessage(buffer,count) ;
+           printf("listerContext register context OK, interComm size = %lu\n", interComm.size());
+           
            delete [] buffer ;
            recept=false ;
          }
@@ -321,6 +344,7 @@ namespace xios
          }
          MPI_Waitall(size-1,requests,status) ;
          registerContext(buff,count,it->second.leaderRank) ;
+         printf("recvContextMessage register context OK\n");
 
          recvContextId.erase(it) ;
          delete [] requests ;
@@ -334,12 +358,13 @@ namespace xios
 
        MPI_Status status ;
        int flag ;
-       static char* buffer ;
+       static void* buffer ;
        static MPI_Request request ;
        static bool recept=false ;
        int rank ;
        int count ;
        const int root=0 ;
+       
 
        if (recept==false)
        {
@@ -350,7 +375,7 @@ namespace xios
          {
            MPI_Get_count(&status,MPI_CHAR,&count) ;
            buffer=new char[count] ;
-           MPI_Irecv((void*)buffer,count,MPI_CHAR,root,2,intraComm,&request) ;
+           MPI_Irecv(buffer,count,MPI_CHAR,root,2,intraComm,&request) ;
            recept=true ;
          }
        }
@@ -360,7 +385,8 @@ namespace xios
          if (flag==true)
          {
            MPI_Get_count(&status,MPI_CHAR,&count) ;
-           registerContext((void*)buffer,count) ;
+           registerContext(buffer,count) ;
+           printf("listenRootContext register context OK, interComm size = %lu\n", interComm.size());
            delete [] buffer ;
            recept=false ;
          }
@@ -380,18 +406,26 @@ namespace xios
                << "Context '" << contextId << "' has already been registred");
 
        MPI_Comm contextIntercomm;
+       
        MPI_Intercomm_create(intraComm,0,CXios::globalComm,leaderRank,10+leaderRank,&contextIntercomm);
 
        MPI_Comm inter;
        MPI_Intercomm_merge(contextIntercomm,1,&inter);
        MPI_Barrier(inter);
+       
 
        CContext* context=CContext::create(contextId);
        contextList[contextId]=context;
        context->initServer(intraComm,contextIntercomm);
+       
+       
 
        contextInterComms.push_back(contextIntercomm);
+       
+       
        MPI_Comm_free(&inter);
+       
+       printf(" ****   server: register context OK\n");
      }
 
      void CServer::contextEventLoop(void)

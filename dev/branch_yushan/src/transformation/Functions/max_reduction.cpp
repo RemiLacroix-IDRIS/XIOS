@@ -7,7 +7,6 @@
    \brief max reduction
  */
 #include "max_reduction.hpp"
-#include "utils.hpp"
 
 namespace xios {
 
@@ -29,48 +28,23 @@ bool CMaxReductionAlgorithm::registerTrans()
 void CMaxReductionAlgorithm::apply(const std::vector<std::pair<int,double> >& localIndex,
                                    const double* dataInput,
                                    CArray<double,1>& dataOut,
-                                   std::vector<bool>& flagInitial,
-                                   const double& defaultValue)
+                                   std::vector<bool>& flagInitial)
 {
-  bool hasMissingValue = NumTraits<double>::isnan(defaultValue);
-
-  if (hasMissingValue)
+  int nbLocalIndex = localIndex.size();
+  int currentlocalIndex = 0;
+  double currentWeight  = 0.0;
+  for (int idx = 0; idx < nbLocalIndex; ++idx)
   {
-    int nbLocalIndex = localIndex.size();
-    int currentlocalIndex = 0;    
-    for (int idx = 0; idx < nbLocalIndex; ++idx)
+    currentlocalIndex = localIndex[idx].first;
+    currentWeight     = localIndex[idx].second;
+    if (flagInitial[currentlocalIndex])
     {
-      currentlocalIndex = localIndex[idx].first;      
-      if (!NumTraits<double>::isnan(*(dataInput + idx)))
-      {
-        if (flagInitial[currentlocalIndex])
-        {
-          dataOut(currentlocalIndex) = *(dataInput + idx);
-          flagInitial[currentlocalIndex] = false;
-        }
-        else
-        {
-          dataOut(currentlocalIndex) = std::max(*(dataInput + idx), dataOut(currentlocalIndex));
-        }
-      }
+      dataOut(currentlocalIndex) = *(dataInput + idx);
+      flagInitial[currentlocalIndex] = false;
     }
-  }
-  else
-  {
-    int nbLocalIndex = localIndex.size();
-    int currentlocalIndex = 0;    
-    for (int idx = 0; idx < nbLocalIndex; ++idx)
+    else
     {
-      currentlocalIndex = localIndex[idx].first;      
-      if (flagInitial[currentlocalIndex])
-      {
-        dataOut(currentlocalIndex) = *(dataInput + idx);
-        flagInitial[currentlocalIndex] = false;
-      }
-      else
-      {
-        dataOut(currentlocalIndex) = std::max(*(dataInput + idx), dataOut(currentlocalIndex));
-      }
+      dataOut(currentlocalIndex) = std::max(*(dataInput + idx), dataOut(currentlocalIndex));
     }
   }
 }

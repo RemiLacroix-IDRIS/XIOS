@@ -5,6 +5,9 @@
 #include "buffer_out.hpp"
 #include "mpi.hpp"
 #include "cxios.hpp"
+#ifdef _usingEP
+#include "ep_declaration.hpp"
+#endif
 
 namespace xios
 {

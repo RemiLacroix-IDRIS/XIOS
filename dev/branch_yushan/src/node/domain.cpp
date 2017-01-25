@@ -697,13 +697,9 @@ namespace xios {
      }
      computeNGlobDomain();
      checkZoom();
-     
+
      isDistributed_ = !((!ni.isEmpty() && (ni == ni_glo) && !nj.isEmpty() && (nj == nj_glo)) ||
                         (!i_index.isEmpty() && i_index.numElements() == ni_glo*nj_glo));
-
-     // A stupid condition to make sure that if there is only one client, domain
-     // should be considered to be distributed. This should be a temporary solution     
-     isDistributed_ |= (1 == CContext::getCurrent()->client->clientSize);
    }
 
    // Check global zoom of a domain
@@ -1306,14 +1302,30 @@ namespace xios {
 
    void CDomain::checkAttributesOnClientAfterTransformation()
    {
-     CContext* context=CContext::getCurrent() ;
+     int myRank;
+     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
 
+     CContext* context=CContext::getCurrent() ;  //printf("myRank = %d, CContext::getCurrent OK\n", myRank);
+
+     //printf("myRank = %d, this->isClientAfterTransformationChecked = %d\n", myRank, this->isClientAfterTransformationChecked);
      if (this->isClientAfterTransformationChecked) return;
+     //printf("myRank = %d, context->hasClient = %d\n", myRank, context->hasClient);
      if (context->hasClient)
      {
-       this->checkMask();
-       if (hasLonLat || hasArea || isCompressible_) this->computeConnectedServer();
-       if (hasLonLat) this->completeLonLatClient();
+       this->checkMask();  //printf("myRank = %d, this->checkMask OK\n", myRank);
+       //printf("myRank = %d, hasLonLat = %d, hasArea = %d, isCompressible_ = %d\n", myRank, hasLonLat, hasArea, isCompressible_);
+       if (hasLonLat || hasArea || isCompressible_) 
+        {
+          //printf("myRank = %d, start this->computeConnectedServer\n", myRank);
+          this->computeConnectedServer();
+          //printf("myRank = %d, this->computeConnectedServer OK\n", myRank);
+        }
+       //printf("myRank = %d, hasLonLat = %d\n", myRank, hasLonLat);
+       if (hasLonLat) 
+        {
+          this->completeLonLatClient();
+          //printf("myRank = %d, this->completeLonLatClient OK\n", myRank);
+        }
      }
 
      this->isClientAfterTransformationChecked = true;
@@ -1447,6 +1459,9 @@ namespace xios {
 
   void CDomain::computeConnectedServer(void)
   {
+    int myRank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+
     CContext* context=CContext::getCurrent() ;
     CContextClient* client=context->client ;
     int nbServer=client->serverSize;
@@ -1533,6 +1548,7 @@ namespace xios {
         }
       }
     }
+    
 
     size_t globalSizeIndex = 1, indexBegin, indexEnd;
     int range, clientSize = client->clientSize;
@@ -1554,15 +1570,24 @@ namespace xios {
       }
       indexEnd = indexBegin + range - 1;
     }
-
+    
     CServerDistributionDescription serverDescription(nGlobDomain_, nbServer);
     if (isUnstructed_) serverDescription.computeServerGlobalIndexInRange(std::make_pair<size_t,size_t>(indexBegin, indexEnd), 0);
     else serverDescription.computeServerGlobalIndexInRange(std::make_pair<size_t,size_t>(indexBegin, indexEnd), 1);
 
+    //printf("myRank = %d, check 7 OK\n", myRank);
+
     CClientServerMapping* clientServerMap = new CClientServerMappingDistributed(serverDescription.getGlobalIndexRange(),
                                                                                 client->intraComm);
-    clientServerMap->computeServerIndexMapping(globalIndexDomain);
+    //printf("myRank = %d new OK\n", myRank);
+
+    clientServerMap->computeServerIndexMapping(globalIndexDomain);  
+    //printf("myRank = %d, clientServerMap->computeServerIndexMapping(globalIndexDomain) OK\n", myRank);
+    
     const CClientServerMapping::GlobalIndexMap& globalIndexDomainOnServer = clientServerMap->getGlobalIndexOnServer();
+    //printf("myRank = %d, clientServerMap->getGlobalIndexOnServer OK\n", myRank);
+    
+    //printf("myRank = %d, check 8 OK\n", myRank);
 
     CClientServerMapping::GlobalIndexMap::const_iterator it  = globalIndexDomainOnServer.begin(),
                                                          ite = globalIndexDomainOnServer.end();
@@ -1596,6 +1621,8 @@ namespace xios {
       }
     }
 
+    //printf("myRank = %d, check 9 OK\n", myRank);
+
     connectedServerRank_.clear();
     for (it = globalIndexDomainOnServer.begin(); it != ite; ++it) {
       connectedServerRank_.push_back(it->first);
@@ -1604,6 +1631,7 @@ namespace xios {
     nbConnectedClients_ = clientServerMap->computeConnectedClients(client->serverSize, client->clientSize, client->intraComm, connectedServerRank_);
 
     delete clientServerMap;
+    //printf("myRank = %d, check 10 OK\n", myRank);
   }
 
   const std::map<int, vector<size_t> >& CDomain::getIndexServer() const

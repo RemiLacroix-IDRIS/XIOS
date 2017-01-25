@@ -17,7 +17,7 @@ PROGRAM test_regular
   INTEGER :: ts
   INTEGER :: comm  
   INTEGER :: ierr
-  INTEGER :: sizeComm, rank    ! SIZE is a fortran function
+  INTEGER :: size, rank
 
   INTEGER :: nlon = 100 
   INTEGER :: nlat = 100
@@ -93,21 +93,21 @@ PROGRAM test_regular
 ! Initialization of local variables
 
   CALL MPI_COMM_RANK(comm,rank,ierr)
-  CALL MPI_COMM_SIZE(comm,sizeComm,ierr)
+  CALL MPI_COMM_SIZE(comm,size,ierr)
 
-  IF (MOD(ncell, sizeComm) == 0) THEN
-    ni = ncell/sizeComm
+  IF (MOD(ncell, size) == 0) THEN
+    ni = ncell/size
     ibegin = rank*ni
   ELSE
-    IF (rank < MOD(ncell, sizeComm)) THEN
-      ni = ncell/sizeComm + 1
-      ibegin = rank*(ncell/sizeComm + 1)
+    IF (rank < MOD(ncell, size)) THEN
+      ni = ncell/size + 1
+      ibegin = rank*(ncell/size + 1)
     ELSE
-      ni = ncell/sizeComm
-      IF (rank == MOD(ncell, sizeComm)) THEN
-        ibegin = rank*(ncell/sizeComm + 1)
+      ni = ncell/size
+      IF (rank == MOD(ncell, size)) THEN
+        ibegin = rank*(ncell/size + 1)
       ELSE
-        ibegin = MOD(ncell,sizeComm)*(ncell/sizeComm + 1) + (rank-MOD(ncell,sizeComm))*ncell/sizeComm
+        ibegin = MOD(ncell,size)*(ncell/size + 1) + (rank-MOD(ncell,size))*ncell/size
       END IF
     END IF
   END IF
@@ -117,10 +117,10 @@ PROGRAM test_regular
   ALLOCATE(bounds_lon(4,ni))
   ALLOCATE(bounds_lat(4,ni))
   ALLOCATE(field_temp(ni,ntime)) 
-  lon = lon_glo(1+ibegin:ibegin+ni)
-  lat = lat_glo(1+ibegin:ibegin+ni)
-  bounds_lon(:,:) = bounds_lon_glo(:,1+ibegin:ibegin+ni)
-  bounds_lat(:,:) = bounds_lat_glo(:,1+ibegin:ibegin+ni)
+  lon = lon_glo(1+ibegin:1+ibegin+ni)
+  lat = lat_glo(1+ibegin:1+ibegin+ni)
+  bounds_lon(:,:) = bounds_lon_glo(:,1+ibegin:1+ibegin+ni)
+  bounds_lat(:,:) = bounds_lat_glo(:,1+ibegin:1+ibegin+ni)
   field_temp(:,:) = rank
 
 

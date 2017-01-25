@@ -13,6 +13,10 @@
 #include "array_new.hpp"
 #include "mpi.hpp"
 #include <boost/unordered_map.hpp>
+#ifdef _usingEP
+#include "ep_declaration.hpp"
+#endif
+
 
 namespace xios {
 

@@ -2,18 +2,12 @@
 #include "grid.hpp"
 #include "exception.hpp"
 #include "calendar_util.hpp"
-#include <limits> 
 
 namespace xios
 {
-  CSourceFilter::CSourceFilter(CGarbageCollector& gc, CGrid* grid,
-                               const CDuration offset /*= NoneDu*/, bool manualTrigger /*= false*/,
-                               bool hasMissingValue /*= false*/,
-                               double defaultValue /*= 0.0*/)
-    : COutputPin(gc, manualTrigger)
-    , grid(grid)
+  CSourceFilter::CSourceFilter(CGrid* grid, const CDuration offset /*= NoneDu*/)
+    : grid(grid)
     , offset(offset)
-    , hasMissingValue(hasMissingValue), defaultValue(defaultValue)
   {
     if (!grid)
       ERROR("CSourceFilter::CSourceFilter(CGrid* grid)",
@@ -31,21 +25,10 @@ namespace xios
     packet->status = CDataPacket::NO_ERROR;
 
     packet->data.resize(grid->storeIndex_client.numElements());
+
     grid->inputField(data, packet->data);
 
-    // Convert missing values to NaN
-    if (hasMissingValue)
-    {
-      double nanValue = std::numeric_limits<double>::quiet_NaN();
-      size_t nbData = packet->data.numElements();
-      for (size_t idx = 0; idx < nbData; ++idx)
-      {
-        if (defaultValue == packet->data(idx))
-          packet->data(idx) = nanValue;
-      }
-    }
-
-    onOutputReady(packet);
+    deliverOuput(packet);
   }
 
   template void CSourceFilter::streamData<1>(CDate date, const CArray<double, 1>& data);
@@ -65,23 +48,22 @@ namespace xios
     packet->timestamp = date;
     packet->status = CDataPacket::NO_ERROR;
 
-    // if (data.size() != grid->storeIndex_toSrv.size())
-    if (data.size() != grid->storeIndex_fromSrv.size())
+    if (data.size() != grid->storeIndex_toSrv.size())
       ERROR("CSourceFilter::streamDataFromServer(CDate date, const std::map<int, CArray<double, 1> >& data)",
             << "Incoherent data received from servers,"
-            << " expected " << grid->storeIndex_fromSrv.size() << " chunks but " << data.size() << " were given.");
+            << " expected " << grid->storeIndex_toSrv.size() << " chunks but " << data.size() << " were given.");
 
     packet->data.resize(grid->storeIndex_client.numElements());
     std::map<int, CArray<double, 1> >::const_iterator it, itEnd = data.end();
     for (it = data.begin(); it != itEnd; it++)
     {
-      // CArray<int,1>& index = grid->storeIndex_toSrv[it->first];
-      CArray<int,1>& index = grid->storeIndex_fromSrv[it->first];
+      CArray<int,1>& index = grid->storeIndex_toSrv[it->first];
+
       for (int n = 0; n < index.numElements(); n++)
         packet->data(index(n)) = it->second(n);
     }
 
-    onOutputReady(packet);
+    deliverOuput(packet);
   }
 
   void CSourceFilter::signalEndOfStream(CDate date)
@@ -90,6 +72,6 @@ namespace xios
     packet->date = date;
     packet->timestamp = date;
     packet->status = CDataPacket::END_OF_STREAM;
-    onOutputReady(packet);
+    deliverOuput(packet);
   }
 } // namespace xios

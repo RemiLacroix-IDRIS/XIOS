@@ -7,6 +7,7 @@
 #include "data_output.hpp"
 #include "array_new.hpp"
 #include "mpi.hpp"
+//#include <mpi.h>
 #include "netcdf.hpp"
 
 #ifndef UNLIMITED_DIM

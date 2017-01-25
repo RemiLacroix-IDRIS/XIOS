@@ -16,6 +16,7 @@
 #include "context_client.hpp"
 #include "mpi.hpp"
 
+
 namespace xios {
 
    /// ////////////////////// Dfinitions ////////////////////// ///
@@ -28,6 +29,8 @@ namespace xios {
      setVirtualFieldGroup(CFieldGroup::create(getId() + "_virtual_field_group"));
      setVirtualVariableGroup(CVariableGroup::create(getId() + "_virtual_variable_group"));
    }
+   
+
 
    CFile::CFile(const StdString & id)
       : CObjectTemplate<CFile>(id), CFileAttributes()
@@ -37,6 +40,7 @@ namespace xios {
       setVirtualFieldGroup(CFieldGroup::create(getId() + "_virtual_field_group"));
       setVirtualVariableGroup(CVariableGroup::create(getId() + "_virtual_variable_group"));
     }
+   
 
    CFile::~CFile(void)
    { /* Ne rien faire de plus */ }
@@ -234,11 +238,9 @@ namespace xios {
 //              "Invalid 'record_offset', this attribute cannot be negative.");
       const int recordOffset = record_offset.isEmpty() ? 0 : record_offset;
 
-      // set<CAxis*> setAxis;
-      // set<CDomain*> setDomains;
-      set<StdString> setAxis;
-      set<StdString> setDomains;
-      
+      set<CAxis*> setAxis;
+      set<CDomain*> setDomains;
+
       std::vector<CField*>::iterator it, end = this->enabledFields.end();
       for (it = this->enabledFields.begin(); it != end; it++)
       {
@@ -246,12 +248,10 @@ namespace xios {
          allDomainEmpty &= !field->grid->doGridHaveDataToWrite();
          std::vector<CAxis*> vecAxis = field->grid->getAxis();
          for (size_t i = 0; i < vecAxis.size(); ++i)
-            setAxis.insert(vecAxis[i]->getAxisOutputName());
-            // setAxis.insert(vecAxis[i]);
+            setAxis.insert(vecAxis[i]);
          std::vector<CDomain*> vecDomains = field->grid->getDomains();
          for (size_t i = 0; i < vecDomains.size(); ++i)
-            setDomains.insert(vecDomains[i]->getDomainOutputName());
-            // setDomains.insert(vecDomains[i]);
+            setDomains.insert(vecDomains[i]);
 
          field->resetNStep(recordOffset);
       }
@@ -263,7 +263,7 @@ namespace xios {
       MPI_Comm_split(server->intraComm, color, server->intraCommRank, &fileComm);
       if (allDomainEmpty) MPI_Comm_free(&fileComm);
 
-      // if (time_counter.isEmpty()) time_counter.setValue(time_counter_attr::centered);
+      if (time_counter.isEmpty()) time_counter.setValue(time_counter_attr::centered);
       if (time_counter_name.isEmpty()) time_counter_name = "time_counter";
     }
 
@@ -374,7 +374,8 @@ namespace xios {
          pos2=filename.find(strEndDate,pos1) ;
          if (pos2!=std::string::npos)
          {
-           middlePart=filename.substr(pos1,pos2-pos1) ;           
+           middlePart=filename.substr(pos1,pos2-pos1) ;
+           cout<<pos2<<endl ;
            pos2+=strEndDate.size() ;
            lastPart=filename.substr(pos2,filename.size()-pos2) ;
            hasEndDate=true ;
@@ -579,7 +580,9 @@ namespace xios {
          else
           this->data_in->closeFile();
        }
+
       if (fileComm != MPI_COMM_NULL) MPI_Comm_free(&fileComm);
+
    }
    //----------------------------------------------------------------
 
@@ -714,6 +717,7 @@ namespace xios {
    void CFile::solveAllRefOfEnabledFields(bool sendToServer)
    {
      int size = this->enabledFields.size();
+     
      for (int i = 0; i < size; ++i)
      {
        this->enabledFields[i]->solveAllReferenceEnabledField(sendToServer);
@@ -744,7 +748,7 @@ namespace xios {
 
      int size = this->enabledFields.size();
      for (int i = 0; i < size; ++i)
-       this->enabledFields[i]->sendReadDataRequest(CContext::getCurrent()->getCalendar()->getCurrentDate());
+       this->enabledFields[i]->sendReadDataRequest();
    }
 
    /*!

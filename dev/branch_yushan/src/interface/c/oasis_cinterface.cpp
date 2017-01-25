@@ -1,6 +1,6 @@
 #include "oasis_cinterface.hpp"
 #include <string>
-#include "mpi.hpp"
+//#include "mpi_std.hpp"
 
 namespace xios
 { 

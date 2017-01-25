@@ -47,42 +47,12 @@ bool CDomainAlgorithmInterpolate::registerTrans()
 }
 
 CDomainAlgorithmInterpolate::CDomainAlgorithmInterpolate(CDomain* domainDestination, CDomain* domainSource, CInterpolateDomain* interpDomain)
-: CDomainAlgorithmTransformation(domainDestination, domainSource), interpDomain_(interpDomain), writeToFile_(false), readFromFile_(false)
+: CDomainAlgorithmTransformation(domainDestination, domainSource), interpDomain_(interpDomain), writeToFile_(false)
 {
-  CContext* context = CContext::getCurrent();
   interpDomain_->checkValid(domainSource);
-  fileToReadWrite_ = "xios_interpolation_weights_";
-
-  if (interpDomain_->weight_filename.isEmpty())
-  {
-    fileToReadWrite_ += context->getId() + "_" + 
-                    domainSource->getDomainOutputName() + "_" + 
-                    domainDestination->getDomainOutputName() + ".nc";    
-  }
-  else 
-    fileToReadWrite_ = interpDomain_->weight_filename;
-
-  ifstream f(fileToReadWrite_.c_str());  
-  switch (interpDomain_->mode)
-  {
-    case CInterpolateDomain::mode_attr::read:
-      readFromFile_ = true;      
-      break;
-    case CInterpolateDomain::mode_attr::compute:
-      readFromFile_ = false;
-      break;
-    case CInterpolateDomain::mode_attr::read_or_compute:      
-      if (!f.good())
-        readFromFile_ = false;
-      else
-        readFromFile_ = true;
-      break;
-    default:
-      break;
-  } 
-
-  writeToFile_ = interpDomain_->write_weight;  
-    
+  if ((CInterpolateDomain::mode_attr::write == interpDomain_->mode) &&
+      (!interpDomain_->file.isEmpty()))
+    writeToFile_ = true;
 }
 
 /*!
@@ -383,7 +353,7 @@ void CDomainAlgorithmInterpolate::computeRemap()
      }
   }
 
-  if (writeToFile_ && !readFromFile_)
+  if (writeToFile_)
      writeRemapInfo(interpMapValue);
   exchangeRemapInfo(interpMapValue);
 
@@ -468,7 +438,7 @@ void CDomainAlgorithmInterpolate::processPole(std::map<int,std::vector<std::pair
 */
 void CDomainAlgorithmInterpolate::computeIndexSourceMapping_(const std::vector<CArray<double,1>* >& dataAuxInputs)
 {
-  if (readFromFile_ && !writeToFile_)  
+  if (CInterpolateDomain::mode_attr::read == interpDomain_->mode)  
     readRemapInfo();
   else
   {
@@ -477,14 +447,16 @@ void CDomainAlgorithmInterpolate::computeIndexSourceMapping_(const std::vector<C
 }
 
 void CDomainAlgorithmInterpolate::writeRemapInfo(std::map<int,std::vector<std::pair<int,double> > >& interpMapValue)
-{  
-  writeInterpolationInfo(fileToReadWrite_, interpMapValue);
+{
+  std::string filename = interpDomain_->file.getValue();
+  writeInterpolationInfo(filename, interpMapValue);
 }
 
 void CDomainAlgorithmInterpolate::readRemapInfo()
-{  
+{
+  std::string filename = interpDomain_->file.getValue();
   std::map<int,std::vector<std::pair<int,double> > > interpMapValue;
-  readInterpolationInfo(fileToReadWrite_, interpMapValue);
+  readInterpolationInfo(filename, interpMapValue);
 
   exchangeRemapInfo(interpMapValue);
 }
@@ -635,8 +607,11 @@ void CDomainAlgorithmInterpolate::exchangeRemapInfo(std::map<int,std::vector<std
 
     int countBuff = 0;
     MPI_Get_count(&recvStatus, MPI_INT, &countBuff);
+    #ifdef _usingMPI
     clientSrcRank = recvStatus.MPI_SOURCE;
-
+    #elif _usingEP
+    clientSrcRank = recvStatus.ep_src;
+    #endif
     MPI_Recv((recvIndexSrcBuff + receivedSize),
              recvBuffSize,
              MPI_INT,
@@ -680,18 +655,13 @@ CDomainAlgorithmInterpolate::WriteNetCdf::WriteNetCdf(const StdString& filename,
 int CDomainAlgorithmInterpolate::WriteNetCdf::addDimensionWrite(const StdString& name, 
                                                                 const StdSize size)
 {
-  return CONetCDF4::addDimension(name, size);  
+  CONetCDF4::addDimension(name, size);  
 }
 
 int CDomainAlgorithmInterpolate::WriteNetCdf::addVariableWrite(const StdString& name, nc_type type,
                                                                const std::vector<StdString>& dim)
 {
-  return CONetCDF4::addVariable(name, type, dim);
-}
-
-void CDomainAlgorithmInterpolate::WriteNetCdf::endDefinition()
-{
-  CONetCDF4::definition_end();
+  CONetCDF4::addVariable(name, type, dim);
 }
 
 void CDomainAlgorithmInterpolate::WriteNetCdf::writeDataIndex(const CArray<int,1>& data, const StdString& name,
@@ -755,19 +725,12 @@ void CDomainAlgorithmInterpolate::writeInterpolationInfo(std::string& filename,
   MPI_Allreduce(&localNbWeight, &globalNbWeight, 1, MPI_LONG, MPI_SUM, client->intraComm);
   MPI_Scan(&localNbWeight, &startIndex, 1, MPI_LONG, MPI_SUM, client->intraComm);
   
-  if (0 == globalNbWeight)
-  {
-    info << "There is no interpolation weights calculated between "
-         << "domain source: " << domainSrc_->getDomainOutputName()
-         << " and domain destination: " << domainDest_->getDomainOutputName()
-         << std::endl;
-    return;
-  }
-
   std::vector<StdSize> start(1, startIndex - localNbWeight);
   std::vector<StdSize> count(1, localNbWeight);
-  
-  WriteNetCdf netCdfWriter(filename, client->intraComm);  
+
+  WriteNetCdf netCdfWriter(filename, client->intraComm);
+
+  // netCdfWriter = CONetCDF4(filename, false, false, true, client->intraComm, false);
 
   // Define some dimensions
   netCdfWriter.addDimensionWrite("n_src", n_src);
@@ -781,16 +744,10 @@ void CDomainAlgorithmInterpolate::writeInterpolationInfo(std::string& filename,
   netCdfWriter.addVariableWrite("dst_idx", NC_INT, dims);
   netCdfWriter.addVariableWrite("weight", NC_DOUBLE, dims);
 
-  // End of definition
-  netCdfWriter.endDefinition();
-
   // // Write variables
-  if (0 != localNbWeight)
-  {
-    netCdfWriter.writeDataIndex(src_idx, "src_idx", false, 0, &start, &count);
-    netCdfWriter.writeDataIndex(dst_idx, "dst_idx", false, 0, &start, &count);
-    netCdfWriter.writeDataIndex(weights, "weight", false, 0, &start, &count);
-  }
+  netCdfWriter.writeDataIndex(src_idx, "src_idx", true, 0, &start, &count);
+  netCdfWriter.writeDataIndex(dst_idx, "dst_idx", true, 0, &start, &count);
+  netCdfWriter.writeDataIndex(weights, "weight", true, 0, &start, &count);
 
   netCdfWriter.closeFile();
 }

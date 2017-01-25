@@ -464,6 +464,7 @@ MODULE IDATA
    INTEGER :: f_local_comm
    INTEGER :: f_return_comm
 
+
       IF (PRESENT(local_comm)) THEN
         f_local_comm=local_comm
       ELSE
@@ -471,6 +472,10 @@ MODULE IDATA
       ENDIF
 
       CALL cxios_init_client(client_id,LEN(client_id),f_local_comm,f_return_comm)
+      
+      
+      !print*, "in fortran, world_f = ", MPI_COMM_WORLD 
+      print*, "in fortran, f_return_comm = ", f_return_comm 
 
       IF (PRESENT(return_comm)) return_comm=f_return_comm
 

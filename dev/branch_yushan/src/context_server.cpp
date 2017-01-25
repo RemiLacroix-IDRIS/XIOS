@@ -56,12 +56,11 @@ namespace xios
     return finished;
   }
 
-  bool CContextServer::eventLoop(bool enableEventsProcessing /*= true*/)
+  bool CContextServer::eventLoop(void)
   {
     listen();
     checkPendingRequest();
-    if (enableEventsProcessing)
-      processEvents();
+    processEvents();
     return finished;
   }
 
@@ -76,6 +75,7 @@ namespace xios
 
     for(rank=0;rank<commSize;rank++)
     {
+      //printf("in CContextServer::listen, rank = %d, commSize = %d, pendingRequest.find(rank) = %d\n", rank, commSize, pendingRequest.find(rank));
       if (pendingRequest.find(rank)==pendingRequest.end())
       {
         traceOff();
@@ -84,21 +84,25 @@ namespace xios
         if (flag==true)
         {
           it=buffers.find(rank);
+          
           if (it==buffers.end()) // Receive the buffer size and allocate the buffer
           {
             StdSize buffSize = 0;
             MPI_Recv(&buffSize, 1, MPI_LONG, rank, 20, interComm, &status);
             mapBufferSize_.insert(std::make_pair(rank, buffSize));
             it=(buffers.insert(pair<int,CServerBuffer*>(rank,new CServerBuffer(buffSize)))).first;
+            //printf("find message, is buffer end, receiving, buffSize = %d, rank = %d, commSize = %d\n", buffSize, rank, commSize);
           }
           else
           {
+            
             MPI_Get_count(&status,MPI_CHAR,&count);
             if (it->second->isBufferFree(count))
             {
               addr=(char*)it->second->getBuffer(count);
               MPI_Irecv(addr,count,MPI_CHAR,rank,20,interComm,&pendingRequest[rank]);
               bufferRequest[rank]=addr;
+              //printf("find message, i-receiving to buffer %p, rank = %d, commSize = %d\n", addr, rank, commSize);
             }
           }
         }
@@ -115,6 +119,8 @@ namespace xios
     int flag;
     int count;
     MPI_Status status;
+
+    //printf("enter checkPendingRequest\n");
 
     for(it=pendingRequest.begin();it!=pendingRequest.end();it++)
     {
@@ -184,7 +190,7 @@ namespace xios
          // When using attached mode, synchronise the processes to avoid that differents event be scheduled by differents processes
          // The best way to properly solve this problem will be to use the event scheduler also in attached mode
          // for now just set up a MPI barrier
-         if (!CServer::eventScheduler && CXios::isServer) MPI_Barrier(intraComm) ;
+         if (!CServer::eventScheduler) MPI_Barrier(intraComm) ;
 
          CTimer::get("Process events").resume();
          dispatchEvent(*event);

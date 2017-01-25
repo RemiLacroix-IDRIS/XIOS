@@ -4,17 +4,16 @@
 #include <vector>
 #include <map>
 
-#include "garbage_collector.hpp"
 #include "data_packet.hpp"
 
 namespace xios
 {
-  class COutputPin;
+  class CGarbageCollector;
 
   /*!
    * An input pin handles the data packets received by a filter.
    */
-  class CInputPin : public InvalidableObject
+  class CInputPin
   {
     public:
       /*!
@@ -27,14 +26,6 @@ namespace xios
       CInputPin(CGarbageCollector& gc, size_t slotsCount);
 
       /*!
-       * Sets the trigger for a specific input slot.
-       *
-       * \param inputSlot the input slot number
-       * \param trigger the corresponding trigger
-       */
-      void virtual setInputTrigger(size_t inputSlot, COutputPin* trigger);
-
-      /*!
        * Receives a data packet from an upstream filter on
        * the specified input slot.
        * The receiving filter takes ownership of the packet.
@@ -45,20 +36,6 @@ namespace xios
       void setInput(size_t inputSlot, CDataPacketPtr packet);
 
       /*!
-       * Triggers the input of any buffered packet for the specified timestamp.
-       *
-       * \param timestamp the timestamp for which we are triggering the input
-       */
-      void virtual trigger(Time timestamp);
-
-      /*!
-       * Tests if the pin can be triggered.
-       *
-       * \return true if the pin can be triggered
-       */
-      bool virtual canBeTriggered() const;
-
-      /*!
        * Removes all pending packets which are older than the specified timestamp.
        *
        * \param timestamp the timestamp used for invalidation
@@ -66,6 +43,8 @@ namespace xios
       void virtual invalidate(Time timestamp);
 
     protected:
+      CGarbageCollector& gc; //!< The garbage collector associated to the input pin
+
       /*!
        * Function triggered when all slots have been filled for a specific timestamp.
        * It should be implemented by the filter class to process the data.
@@ -95,18 +74,10 @@ namespace xios
         { /* Nothing to do */ };
       };
 
-      CGarbageCollector& gc; //!< The garbage collector associated to the input pin
-
       size_t slotsCount; //!< The number of slots
 
       //! Input buffer, store the packets until all slots are full for a timestep
       std::map<Time, InputBuffer> inputs;
-
-      //! Store the triggers corresponding to the input slots
-      std::vector<COutputPin*> triggers;
-
-      //! Whether some triggers have been set
-      bool hasTriggers;
   }; // class CInputPin
 } // namespace xios
 

@@ -2,7 +2,7 @@
 
 #include "onetcdf4.hpp"
 #include "group_template.hpp"
-#include "mpi.hpp"
+//#include "mpi_std.hpp"
 #include "netcdf.hpp"
 #include "netCdfInterface.hpp"
 #include "netCdfException.hpp"
@@ -47,6 +47,8 @@ namespace xios
                comm = NULL;
          }
          wmpi = comm && !multifile;
+         
+         MPI_Info info_null;
 
          if (wmpi)
             mode |= useClassicFormat ? NC_PNETCDF : NC_MPIIO;
@@ -55,7 +57,7 @@ namespace xios
          if (!append || !std::ifstream(filename.c_str()))
          {
             if (wmpi)
-               CNetCdfInterface::createPar(filename, mode, *comm, MPI_INFO_NULL, this->ncidp);
+               CNetCdfInterface::createPar(filename, mode, *comm, info_null, this->ncidp);
             else
                CNetCdfInterface::create(filename, mode, this->ncidp);
 
@@ -65,7 +67,7 @@ namespace xios
          {
             mode |= NC_WRITE;
             if (wmpi)
-               CNetCdfInterface::openPar(filename, mode, *comm, MPI_INFO_NULL, this->ncidp);
+               CNetCdfInterface::openPar(filename, mode, *comm, info_null, this->ncidp);
             else
                CNetCdfInterface::open(filename, mode, this->ncidp);
 

@@ -78,7 +78,7 @@ void CAxisAlgorithmReduceDomain::apply(const std::vector<std::pair<int,double> >
                                        std::vector<bool>& flagInitial,
                                        const double& defaultValue)
 {
-  reduction_->apply(localIndex, dataInput, dataOut, flagInitial, defaultValue);
+  reduction_->apply(localIndex, dataInput, dataOut, flagInitial);
 }
 
 void CAxisAlgorithmReduceDomain::updateData(CArray<double,1>& dataOut)

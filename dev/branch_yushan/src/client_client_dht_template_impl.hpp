@@ -9,6 +9,10 @@
 #include "client_client_dht_template.hpp"
 #include "utils.hpp"
 #include "mpi_tag.hpp"
+#ifdef _usingEP
+#include "ep_declaration.hpp"
+#endif
+
 
 namespace xios
 {
@@ -36,16 +40,21 @@ CClientClientDHTTemplate<T,H>::CClientClientDHTTemplate(const Index2InfoTypeMap&
                                                         const MPI_Comm& clientIntraComm)
   : H(clientIntraComm), index2InfoMapping_(), indexToInfoMappingLevel_(), nbClient_(0)
 {
+  
   MPI_Comm_size(clientIntraComm, &nbClient_);
   this->computeMPICommLevel();
-  int nbLvl = this->getNbLevel();
+  int nbLvl = this->getNbLevel();  
   sendRank_.resize(nbLvl);
   recvRank_.resize(nbLvl);
   Index2VectorInfoTypeMap indexToVecInfoMap;
-  indexToVecInfoMap.rehash(std::ceil(indexInfoMap.size()/indexToVecInfoMap.max_load_factor()));
-  typename Index2InfoTypeMap::const_iterator it = indexInfoMap.begin(), ite = indexInfoMap.end();
-  for (; it != ite; ++it) indexToVecInfoMap[it->first].push_back(it->second);
-  computeDistributedIndex(indexToVecInfoMap, clientIntraComm, nbLvl-1);
+  indexToVecInfoMap.rehash(std::ceil(indexInfoMap.size()/indexToVecInfoMap.max_load_factor())); 
+  typename Index2InfoTypeMap::const_iterator it = indexInfoMap.begin(), ite = indexInfoMap.end(); 
+  for (; it != ite; ++it)
+  {
+    indexToVecInfoMap[it->first].push_back(it->second);
+  } 
+  
+  computeDistributedIndex(indexToVecInfoMap, clientIntraComm, nbLvl-1); 
 }
 
 /*!
@@ -178,7 +187,9 @@ void CClientClientDHTTemplate<T,H>::computeIndexInfoMappingLevel(const CArray<si
   for (int idx = 0; idx < nbRecvClient; ++idx)
   {
     if (0 != recvNbIndexClientCount[idx])
+    {
       recvIndexFromClients(recvRankClient[idx], recvIndexBuff+currentIndex, recvNbIndexClientCount[idx], commLevel, request);
+    }
     currentIndex += recvNbIndexClientCount[idx];
   }
 
@@ -188,7 +199,13 @@ void CClientClientDHTTemplate<T,H>::computeIndexInfoMappingLevel(const CArray<si
     sendIndexToClients(itIndex->first, (itIndex->second), sendNbIndexBuff[itIndex->first-groupRankBegin], commLevel, request);
 
   std::vector<MPI_Status> status(request.size());
+
+  //printf("1(%d): calling wait all for %lu requests\n", clientRank, request.size());
+
   MPI_Waitall(request.size(), &request[0], &status[0]);
+
+
+  //printf("               1(%d): calling wait all for %lu requests OK\n", clientRank, request.size());
 
   CArray<size_t,1>* tmpGlobalIndex;
   if (0 != recvNbIndexCount)
@@ -293,7 +310,10 @@ void CClientClientDHTTemplate<T,H>::computeIndexInfoMappingLevel(const CArray<si
   }
 
   std::vector<MPI_Status> statusOnReturn(requestOnReturn.size());
+  //printf("2(%d): calling wait all for %lu requests\n", clientRank, requestOnReturn.size());
   MPI_Waitall(requestOnReturn.size(), &requestOnReturn[0], &statusOnReturn[0]);
+
+  //printf("            2(%d): calling wait all for %lu requests OK\n", clientRank, requestOnReturn.size());
 
   Index2VectorInfoTypeMap indexToInfoMapping;
   indexToInfoMapping.rehash(std::ceil(recvNbIndexCountOnReturn/indexToInfoMapping.max_load_factor()));
@@ -362,6 +382,7 @@ void CClientClientDHTTemplate<T,H>::computeDistributedIndex(const Index2VectorIn
                                                             const MPI_Comm& commLevel,
                                                             int level)
 {
+  //printf("in computeDistributedIndex(const Index2VectorInfoTypeMap& indexInfoMap, const MPI_Comm& commLevel, int level)\n");
   int clientRank;
   MPI_Comm_rank(commLevel,&clientRank);
   computeSendRecvRank(level, clientRank);
@@ -417,11 +438,14 @@ void CClientClientDHTTemplate<T,H>::computeDistributedIndex(const Index2VectorIn
     }
   }
 
+  //printf("check 4 OK. clientRank = %d\n", clientRank);
+
   // Calculate from how many clients each client receive message.
   // Calculate size of buffer for receiving message
   std::vector<int> recvRankClient, recvNbIndexClientCount;
   sendRecvRank(level, sendBuff, sendNbIndexBuff,
                recvRankClient, recvNbIndexClientCount);
+  //printf("sendRecvRank OK\n");
 
   int recvNbIndexCount = 0;
   for (int idx = 0; idx < recvNbIndexClientCount.size(); ++idx)
@@ -435,6 +459,8 @@ void CClientClientDHTTemplate<T,H>::computeDistributedIndex(const Index2VectorIn
     recvInfoBuff = new unsigned char[recvNbIndexCount*ProcessDHTElement<InfoType>::typeSize()];
   }
 
+  //printf("check 5 OK. clientRank = %d\n", clientRank);
+
   // If a client holds information about index and the corresponding which don't belong to it,
   // it will send a message to the correct clients.
   // Contents of the message are index and its corresponding informatioin
@@ -446,24 +472,39 @@ void CClientClientDHTTemplate<T,H>::computeDistributedIndex(const Index2VectorIn
     if (0 != recvNbIndexClientCount[idx])
     {
       recvIndexFromClients(recvRankClient[idx], recvIndexBuff+currentIndex, recvNbIndexClientCount[idx], commLevel, request);
+
       recvInfoFromClients(recvRankClient[idx],
                           recvInfoBuff+currentIndex*ProcessDHTElement<InfoType>::typeSize(),
                           recvNbIndexClientCount[idx]*ProcessDHTElement<InfoType>::typeSize(),
                           commLevel, request);
+
     }
     currentIndex += recvNbIndexClientCount[idx];
   }
 
+  //printf("check 6 OK. clientRank = %d\n", clientRank);
+
   boost::unordered_map<int, size_t* >::iterator itbIndex = client2ClientIndex.begin(), itIndex,
                                                 iteIndex = client2ClientIndex.end();
   for (itIndex = itbIndex; itIndex != iteIndex; ++itIndex)
+  {
     sendIndexToClients(itIndex->first, itIndex->second, sendNbIndexBuff[itIndex->first-groupRankBegin], commLevel, request);
+
+  }
+
+  //printf("check 7 OK. clientRank = %d\n", clientRank);
+
   boost::unordered_map<int, unsigned char*>::iterator itbInfo = client2ClientInfo.begin(), itInfo,
                                                       iteInfo = client2ClientInfo.end();
   for (itInfo = itbInfo; itInfo != iteInfo; ++itInfo)
+  {
     sendInfoToClients(itInfo->first, itInfo->second, sendNbInfo[itInfo->first-groupRankBegin], commLevel, request);
 
+  }
+
+  //printf("check 8 OK. clientRank = %d\n", clientRank);
   std::vector<MPI_Status> status(request.size());
+
   MPI_Waitall(request.size(), &request[0], &status[0]);
 
   Index2VectorInfoTypeMap indexToInfoMapping;
@@ -479,10 +520,14 @@ void CClientClientDHTTemplate<T,H>::computeDistributedIndex(const Index2VectorIn
     for (int i = 0; i < count; ++i)
     {
       ProcessDHTElement<InfoType>::unpackElement(infoValue, infoBuff, infoIndex);
+      unsigned long pp = *(recvIndexBuff+currentIndex+i);
+      
       indexToInfoMapping[*(recvIndexBuff+currentIndex+i)].push_back(infoValue);
     }
     currentIndex += count;
   }
+
+  //printf("check 9 OK. clientRank = %d\n", clientRank);
 
   if (0 != recvNbIndexCount)
   {
@@ -497,6 +542,7 @@ void CClientClientDHTTemplate<T,H>::computeDistributedIndex(const Index2VectorIn
                                                         it != client2ClientIndex.end(); ++it)
       delete [] it->second;
 
+  //printf("check 10 OK. clientRank = %d\n", clientRank);
   // Ok, now do something recursive
   if (0 < level)
   {
@@ -522,6 +568,7 @@ void CClientClientDHTTemplate<T,H>::sendIndexToClients(int clientDestRank, size_
 {
   MPI_Request request;
   requestSendIndex.push_back(request);
+
   MPI_Isend(indices, indiceSize, MPI_UNSIGNED_LONG,
             clientDestRank, MPI_DHT_INDEX, clientIntraComm, &(requestSendIndex.back()));
 }
@@ -540,6 +587,7 @@ void CClientClientDHTTemplate<T,H>::recvIndexFromClients(int clientSrcRank, size
 {
   MPI_Request request;
   requestRecvIndex.push_back(request);
+
   MPI_Irecv(indices, indiceSize, MPI_UNSIGNED_LONG,
             clientSrcRank, MPI_DHT_INDEX, clientIntraComm, &(requestRecvIndex.back()));
 }
@@ -559,7 +607,7 @@ void CClientClientDHTTemplate<T,H>::sendInfoToClients(int clientDestRank, unsign
 {
   MPI_Request request;
   requestSendInfo.push_back(request);
-
+  //printf("MPI_IsendInfo(info, infoSize, MPI_CHAR,... char count = %d, dest = %d, buf_size = %d\n", infoSize, clientDestRank, sizeof(*info) );
   MPI_Isend(info, infoSize, MPI_CHAR,
             clientDestRank, MPI_DHT_INFO, clientIntraComm, &(requestSendInfo.back()));
 }
@@ -667,8 +715,12 @@ void CClientClientDHTTemplate<T,H>::sendRecvOnReturn(const std::vector<int>& sen
               sendNbRank[idx], MPI_DHT_INDEX_1, this->internalComm_, &request[nRequest]);
     ++nRequest;
   }
-
+  
+  int clientRank;
+  MPI_Comm_rank(this->internalComm_,&clientRank);
+  //printf("4(%d): calling wait all for %lu requests\n", clientRank, sendNbRank.size()+recvNbRank.size());
   MPI_Waitall(sendNbRank.size()+recvNbRank.size(), &request[0], &requestStatus[0]);
+  //printf("        4(%d): calling wait all for %lu requests OK\n", clientRank, sendNbRank.size()+recvNbRank.size());
 }
 
 /*!
@@ -685,6 +737,9 @@ void CClientClientDHTTemplate<T,H>::sendRecvRank(int level,
                                                  const std::vector<int>& sendNbRank, const std::vector<int>& sendNbElements,
                                                  std::vector<int>& recvNbRank, std::vector<int>& recvNbElements)
 {
+  int myRank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+  //printf("myRank = %d, in sendRecvRank(int level, const std::vector<int>& sendNbRank, const std::vector<int>& sendNbElements, std::vector<int>& recvNbRank, std::vector<int>& recvNbElements)\n", myRank);
   int groupBegin = this->getGroupBegin()[level];
 
   int offSet = 0;
@@ -701,10 +756,14 @@ void CClientClientDHTTemplate<T,H>::sendRecvRank(int level,
   int nRequest = 0;
   for (int idx = 0; idx < recvBuffSize; ++idx)
   {
+    //printf("myRank = %d starts irecv with src = %d, tag = %d, idx = %d\n", myRank, recvRank[idx], MPI_DHT_INDEX_0, idx);
     MPI_Irecv(&recvBuff[0]+2*idx, 2, MPI_INT,
               recvRank[idx], MPI_DHT_INDEX_0, this->internalComm_, &request[nRequest]);
+    //printf("myRank = %d MPI_Irecv OK, idx = %d, nRequest = %d\n", myRank, idx, nRequest);
     ++nRequest;
   }
+
+  //printf("myRank = %d, check 1 OK\n", myRank);
 
   for (int idx = 0; idx < sendBuffSize; ++idx)
   {
@@ -715,12 +774,25 @@ void CClientClientDHTTemplate<T,H>::sendRecvRank(int level,
 
   for (int idx = 0; idx < sendBuffSize; ++idx)
   {
+    //printf("myRank = %d starts isend with dest = %d, tag = %d, idx = %d\n", myRank, sendRank[idx], MPI_DHT_INDEX_0, idx);
     MPI_Isend(&sendBuff[idx*2], 2, MPI_INT,
               sendRank[idx], MPI_DHT_INDEX_0, this->internalComm_, &request[nRequest]);
+    //printf("myRank = %d MPI_Isend OK, idx = %d, nRequest = %d\n", myRank, idx, nRequest);
     ++nRequest;
   }
 
+  MPI_Barrier(this->internalComm_);
+
+  //printf("myRank = %d, check 2 OK\n", myRank);
+
+  int clientRank;
+  MPI_Comm_rank(this->internalComm_,&clientRank);
+
+  //printf("5(%d): calling wait all for %lu requests\n", myRank, sendBuffSize+recvBuffSize);
   MPI_Waitall(sendBuffSize+recvBuffSize, &request[0], &requestStatus[0]);
+  //printf("            5(%d): calling wait all for %lu requests OK\n", myRank, sendBuffSize+recvBuffSize);
+  //printf("check 3 OK\n");
+
   int nbRecvRank = 0, nbRecvElements = 0;
   recvNbRank.clear();
   recvNbElements.clear();
@@ -732,6 +804,7 @@ void CClientClientDHTTemplate<T,H>::sendRecvRank(int level,
       recvNbElements.push_back(recvBuff[2*idx+1]);
     }
   }
+  //printf("check 4 OK\n");
 }
 
 }

@@ -34,15 +34,16 @@ PROGRAM test_client
 !!! MPI Initialization
 
   CALL MPI_INIT(ierr)
-
   CALL init_wait
-
-!!! XIOS Initialization (get the local communicator)
-
+  
   CALL xios_initialize(id,return_comm=comm)
+  
+  print*, "test_client xios_initialize OK"
 
   CALL MPI_COMM_RANK(comm,rank,ierr)
+  print*, "test_client MPI_COMM_RANK OK"
   CALL MPI_COMM_SIZE(comm,size,ierr)
+  
 
   DO j=1,nj_glo
     DO i=1,ni_glo
@@ -69,11 +70,17 @@ PROGRAM test_client
   lon(:,:)=lon_glo(ibegin+1:iend+1,jbegin+1:jend+1)
   lat(:,:)=lat_glo(ibegin+1:iend+1,jbegin+1:jend+1)
   field_A(1:ni,1:nj,:)=field_A_glo(ibegin+1:iend+1,jbegin+1:jend+1,:)
-
+  
   CALL xios_context_initialize("test",comm)
-  CALL xios_get_handle("test",ctx_hdl)
-  CALL xios_set_current_context(ctx_hdl)
 
+  CALL xios_get_handle("test",ctx_hdl)
+  print*, "Client xios_get_handle OK"
+  CALL xios_set_current_context(ctx_hdl)
+  print*, "Client xios_set_current_handle OK"  
+  
+  
+  
+  
   CALL xios_get_calendar_type(calendar_type)
   PRINT *, "calendar_type = ", calendar_type
 
@@ -90,9 +97,10 @@ PROGRAM test_client
   CALL xios_get_handle("output",file_hdl)
   CALL xios_add_child(file_hdl,field_hdl)
   CALL xios_set_attr(field_hdl,field_ref="field_A_zoom",name="field_C")
-
+  
   dtime%second = 3600
   CALL xios_set_timestep(dtime)
+  print*, "Client xios_set_timestep OK"  
 
   ! The calendar is created as soon as the calendar type is defined. This way
   ! calendar operations can be used before the context definition is closed
@@ -118,22 +126,28 @@ PROGRAM test_client
 
   ni=0 ; lonvalue(:,:)=0;
   CALL xios_get_domain_attr("domain_A",ni=ni,lonvalue_2D=lonvalue)
-
   print *,"ni",ni
-  print *,"lonvalue",lonvalue;
+  !print *,"lonvalue",lonvalue;
 
   CALL xios_is_defined_field_attr("field_A",enabled=ok)
   PRINT *,"field_A : attribute enabled is defined ? ",ok
+  
   CALL xios_close_context_definition()
+  print*, "xios_close_context_definition OK"  
 
   PRINT*,"field field_A is active ? ",xios_field_is_active("field_A")
-  DO ts=1,24*10
+  !DO ts=1,24*10
+  DO ts=1,24
     CALL xios_update_calendar(ts)
+    print*, "xios_update_calendar OK, ts = ", ts
     CALL xios_send_field("field_A",field_A)
-    CALL wait_us(5000) ;
+    print*, "xios_send_field OK, ts = ", ts
+    CALL wait_us(5000)
   ENDDO
+  
 
   CALL xios_context_finalize()
+  print*, "xios_context_finalize OK"  
 
   DEALLOCATE(lon, lat, field_A, lonvalue)
 

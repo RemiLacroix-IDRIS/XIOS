@@ -10,6 +10,12 @@
 /* skip C++ Binding for OpenMPI */
 #define OMPI_SKIP_MPICXX
 
-#include <mpi.h>
+#ifdef _usingEP
+  #include "../extern/src_ep/ep_lib.hpp"
+  using namespace ep_lib;
+#elif _usingMPI
+  #include <mpi.h>
+#endif
+
 
 #endif

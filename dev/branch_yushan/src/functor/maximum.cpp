@@ -1,6 +1,7 @@
 #include "maximum.hpp"
 #include "array_new.hpp"
-#include "utils.hpp"
+
+
 
 namespace xios
 {
@@ -33,9 +34,9 @@ namespace xios
            if (hasMissingValue) 
            { 
              for (; it1 != end1; it1++, it++) 
-               if (!NumTraits<double>::isnan(*it1))
+               if (*it1 != missingValue)
                {
-                 if (!NumTraits<double>::isnan(*it)) *it = std::max(*it1, *it);
+                 if ( *it != missingValue) *it = std::max(*it1, *it);
                  else *it=*it1 ;  
                }
            }

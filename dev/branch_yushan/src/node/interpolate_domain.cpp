@@ -47,45 +47,49 @@ namespace xios {
              << "Please define a correct one") ;
     }
 
-    if (this->mode.isEmpty()) this->mode.setValue(mode_attr::compute);
-    if (this->write_weight.isEmpty()) this->write_weight.setValue(false);
+    StdString weightFile = "interpolation_weights_" + domainSrc->getDomainOutputName();
 
-    StdString weightFile;
-    switch (this->mode)
-    {
-      case mode_attr::read:
-        if (this->weight_filename.isEmpty())
-        {
-          if (!this->write_weight)
+    if (!this->mode.isEmpty())
+    { 
+      if (mode_attr::read == this->mode)
+      {
+         if (this->file.isEmpty())
+         {
             ERROR("void CInterpolateDomain::checkValid(CDomain* domainSrc)",
                  << "Read mode is activated but there is no file specified." << std::endl
                  << "Please define a correct file containing interpolation weights with option 'file'. ");
-        }
-        else
-        {
-          weightFile = this->weight_filename;
-          ifstream f(weightFile.c_str());
-          if (!f.good())
-            ERROR("void CInterpolateDomain::checkValid(CDomain* domainSrc)",
-                  << "Read mode is activated but file "  << weightFile << " doesn't exist." << std::endl
-                  << "Please check this file ");
-        }
-        break;
-      case mode_attr::compute:
-        break;
-      case mode_attr::read_or_compute:
-        if (!this->weight_filename.isEmpty() && !this->write_weight)
-        {
-          weightFile = this->weight_filename;
-          ifstream f(weightFile.c_str());
-          if (!f.good())
-            ERROR("void CInterpolateDomain::checkValid(CDomain* domainSrc)",
-                  << "read_or_compute mode is activated but file "  << weightFile << " doesn't exist." << std::endl
-                  << "Please check this file ");
-        }
-        break;
-      default:
-        break;
+         }
+         else
+         {
+           weightFile = this->file;
+           ifstream f(weightFile.c_str());
+           if (!f.good())
+             ERROR("void CInterpolateDomain::checkValid(CDomain* domainSrc)",
+                   << "Read mode is activated but file "  << weightFile << " doesn't exist." << std::endl
+                   << "Please check this file ");
+         }
+      }
+      else
+      {
+        if (file.isEmpty())
+          this->file.setValue(weightFile);
+      }   
+    }
+    else
+    {
+      if (!file.isEmpty()) // set mode read
+      {
+         weightFile = this->file;
+         ifstream f(weightFile.c_str());
+         if (!f.good()) // file doesn't exist
+           this->mode.setValue(mode_attr::write);
+         else
+           this->mode.setValue(mode_attr::read);
+      }
+      else // only calculate weights() Mode set write but there is no file)
+      {
+        this->mode.setValue(mode_attr::write);
+      }
     }
 
   }

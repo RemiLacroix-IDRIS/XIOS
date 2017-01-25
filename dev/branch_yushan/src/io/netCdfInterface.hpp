@@ -16,6 +16,7 @@
 #endif
 
 #include "mpi.hpp"
+//#include <mpi.h>
 #include "netcdf.hpp"
 
 namespace xios

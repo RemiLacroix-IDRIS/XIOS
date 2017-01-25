@@ -10,7 +10,7 @@
 
 
 #include "xios.hpp"
-#include "oasis_cinterface.hpp"
+//#include "oasis_cinterface.hpp"
 
 #include "attribute_template.hpp"
 #include "object_template.hpp"
@@ -25,7 +25,6 @@
 #include "mpi.hpp"
 #include "timer.hpp"
 #include "array_new.hpp"
-
 
 extern "C"
 {
@@ -56,15 +55,23 @@ extern "C"
       std::string str;
       MPI_Comm local_comm;
       MPI_Comm return_comm;
+      
+      fc_comm_map.clear();
 
       if (!cstr2string(client_id, len_client_id, str)) return;
 
       int initialized;
       MPI_Initialized(&initialized);
       if (initialized) local_comm=MPI_Comm_f2c(*f_local_comm);
-      else local_comm=MPI_COMM_NULL;
+      else local_comm = MPI_COMM_NULL;
+      
+     
+
       CXios::initClientSide(str, local_comm, return_comm);
-      *f_return_comm=MPI_Comm_c2f(return_comm);
+      *f_return_comm = MPI_Comm_c2f(return_comm);
+
+      printf("in icdata.cpp, f_return_comm = %d\n", *f_return_comm);
+
       CTimer::get("XIOS init").suspend();
       CTimer::get("XIOS").suspend();
    }
@@ -78,7 +85,11 @@ extern "C"
      CTimer::get("XIOS").resume();
      CTimer::get("XIOS init context").resume();
      comm=MPI_Comm_f2c(*f_comm);
+    
      CClient::registerContext(str, comm);
+     
+     //printf("client register context OK\n");
+     
      CTimer::get("XIOS init context").suspend();
      CTimer::get("XIOS").suspend();
    }
@@ -99,7 +110,9 @@ extern "C"
      CTimer::get("XIOS").resume();
      CTimer::get("XIOS close definition").resume();
      CContext* context = CContext::getCurrent();
+     
      context->closeDefinition();
+     
      CTimer::get("XIOS close definition").suspend();
      CTimer::get("XIOS").suspend();
    }
@@ -108,8 +121,15 @@ extern "C"
    {
      CTimer::get("XIOS").resume();
      CTimer::get("XIOS context finalize").resume();
+     
+     
+     
      CContext* context = CContext::getCurrent();
+     //printf("CContext* context = CContext::getCurrent();\n");
      context->finalize();
+     
+     //printf("client context_finalize OK\n");
+     
      CTimer::get("XIOS context finalize").suspend();
      CTimer::get("XIOS").suspend();
    }
@@ -428,7 +448,9 @@ extern "C"
 
       CContext* context = CContext::getCurrent();
       if (!context->hasServer && !context->client->isAttachedModeEnabled())
+      {
         context->checkBuffersAndListen();
+      }  
 
       CArray<double, 3>data(data_k8, shape(data_Xsize, data_Ysize, data_Zsize), neverDeleteData);
       CField::get(fieldid_str)->setData(data);

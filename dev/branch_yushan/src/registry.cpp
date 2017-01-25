@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 
+
 namespace xios
 {
   using namespace std;
@@ -220,10 +221,11 @@ namespace xios
     MPI_Comm_size(comm,&mpiSize);
 
     int* sizes=new int[mpiSize] ;
-    CBufferOut localBuffer(this->size()) ;
+    size_t st = this->size();
+    CBufferOut localBuffer(st) ;
     this->toBuffer(localBuffer) ;
     int localSize=localBuffer.count() ;
-    MPI_Gather(&localSize,1,MPI_INT,sizes,1,MPI_INT,0,comm) ;
+    MPI_Gather(&localSize,1,MPI_INT,sizes,1,MPI_INT,0,comm) ;    
 
     char* globalBuffer ;
     int*   displs ;
@@ -251,13 +253,14 @@ namespace xios
       delete[] globalBuffer ;
     }
     else  MPI_Gatherv(localBuffer.start(),localSize,MPI_CHAR,globalBuffer,sizes,displs,MPI_CHAR,0,comm) ;   
+    
     delete[] sizes ;
     
   }
 
   void CRegistry::hierarchicalGatherRegistry(void)
   {
-    hierarchicalGatherRegistry(communicator) ;
+    //hierarchicalGatherRegistry(communicator) ;
   }
 
   void CRegistry::hierarchicalGatherRegistry(const MPI_Comm& comm)

@@ -29,11 +29,12 @@ namespace xios
   bool CXios::printLogs2Files;
   bool CXios::isOptPerformance = true;
   CRegistry* CXios::globalRegistry = 0;
-  double CXios::recvFieldTimeout = 10.0;
 
   //! Parse configuration file and create some objects from it
   void CXios::initialize()
   {
+    
+    
     set_new_handler(noMemory);
     parseFile(rootFile);
     parseXiosConfig();
@@ -63,11 +64,29 @@ namespace xios
 
     bufferSizeFactor = getin<double>("buffer_size_factor", defaultBufferSizeFactor);
     minBufferSize = getin<int>("min_buffer_size", 1024 * sizeof(double));
-    recvFieldTimeout = getin<double>("recv_field_timeout", 10.0);
-    if (recvFieldTimeout < 0.0)
-      ERROR("CXios::parseXiosConfig()", "recv_field_timeout cannot be negative.");
 
-    globalComm=MPI_COMM_WORLD ;
+    int num_ep;
+    if(isClient) 
+    { 
+      num_ep = 1;
+    }
+    
+    if(isServer) 
+    { 
+      num_ep = 1; 
+    }
+    
+    MPI_Info info;
+    MPI_Comm *ep_comm;
+    MPI_Comm_create_endpoints(MPI_COMM_WORLD, num_ep, info, ep_comm); 
+      
+    globalComm = ep_comm[0];
+    
+    int tmp_size;
+    MPI_Comm_size(globalComm, &tmp_size);
+    printf("globalcomm size = %d\n", tmp_size);
+
+    
   }
 
   /*!
@@ -78,17 +97,19 @@ namespace xios
   */
   void CXios::initClientSide(const string& codeId, MPI_Comm& localComm, MPI_Comm& returnComm)
   {
+    isClient = true;
+    
     initialize() ;
 
-    isClient = true;
-
+   
     CClient::initialize(codeId,localComm,returnComm) ;
     if (CClient::getRank()==0) globalRegistry = new CRegistry(returnComm) ;
 
     // If there are no server processes then we are in attached mode
     // and the clients are also servers
     isServer = !usingServer;
-
+    
+    
     if (printLogs2Files)
     {
       CClient::openInfoStream(clientFile);
@@ -99,6 +120,8 @@ namespace xios
       CClient::openInfoStream();
       CClient::openErrorStream();
     }
+    
+   
   }
 
   void CXios::clientFinalize(void)
@@ -122,6 +145,17 @@ namespace xios
   //! Init server by parsing only xios part of config file
   void CXios::initServer()
   {
+    int initialized;
+    MPI_Initialized(&initialized);
+    if (initialized) CServer::is_MPI_Initialized=true ;
+    else CServer::is_MPI_Initialized=false ;
+      
+ 
+    if(!CServer::is_MPI_Initialized)
+    {
+      MPI_Init(NULL, NULL);
+    }
+      
     set_new_handler(noMemory);
     std::set<StdString> parseList;
     parseList.insert("xios");
@@ -132,14 +166,18 @@ namespace xios
   //! Initialize server then put it into listening state
   void CXios::initServerSide(void)
   {
-    initServer();
+    
     isClient = false;
     isServer = true;
-
+    
+    initServer();
+    
+    
     // Initialize all aspects MPI
     CServer::initialize();
     if (CServer::getRank()==0) globalRegistry = new CRegistry(CServer::intraComm) ;
     
+      
     if (printLogs2Files)
     {
       CServer::openInfoStream(serverFile);
@@ -150,9 +188,11 @@ namespace xios
       CServer::openInfoStream();
       CServer::openErrorStream();
     }
-
+    
     // Enter the loop to listen message from Client
     CServer::eventLoop();
+    
+    printf("server eventloop OK\n");
 
     // Finalize
      if (CServer::getRank()==0)
@@ -161,7 +201,13 @@ namespace xios
        globalRegistry->toFile("xios_registry.bin") ;
        delete globalRegistry ;
      }
+     
+     printf("server globalRegistry OK\n");
+     
     CServer::finalize();
+    
+    printf("server finalize OK\n");
+    
     CServer::closeInfoStream();
   }
 

@@ -165,12 +165,16 @@ namespace xios {
 
    void CGrid::checkAttributesAfterTransformation()
    {
-      setAxisList();
-      std::vector<CAxis*> axisListP = this->getAxis();
+      int myRank;
+      MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+
+      setAxisList();  //printf("myRank = %d, setAxisList OK\n", myRank);
+      std::vector<CAxis*> axisListP = this->getAxis();  //printf("myRank = %d, this->getAxis OK\n", myRank);
       if (!axisListP.empty())
       {
         int idx = 0;
         axisPositionInGrid_.resize(0);
+        
         for (int i = 0; i < axis_domain_order.numElements(); ++i)
         {
           int elementDimension = axis_domain_order(i);
@@ -178,6 +182,7 @@ namespace xios {
           {
             axisPositionInGrid_.push_back(idx);
             ++idx;
+            //printf("myRank = %d, axisPositionInGrid_.push_back OK\n", myRank);
           }
           else if (2 == elementDimension) idx += 2;
         }
@@ -185,16 +190,19 @@ namespace xios {
         for (int i = 0; i < axisListP.size(); ++i)
         {
           axisListP[i]->checkAttributesOnClientAfterTransformation(globalDim_,axisPositionInGrid_[i]);
+          //printf("myRank = %d, axisListP[%d/%d]->checkAttributesOnClientAfterTransformation OK\n", myRank, i, axisListP.size());
         }
       }
 
-      setDomainList();
-      std::vector<CDomain*> domListP = this->getDomains();
+      setDomainList(); //printf("myRank = %d, setDomainList OK\n", myRank);
+      std::vector<CDomain*> domListP = this->getDomains(); //printf("myRank = %d, this->getDomains OK\n", myRank);
       if (!domListP.empty())
       {
         for (int i = 0; i < domListP.size(); ++i)
         {
+          //printf("myRank = %d, start domListP[%d]->checkAttributesOnClientAfterTransformation\n", myRank, i);
           domListP[i]->checkAttributesOnClientAfterTransformation();
+          //printf("myRank = %d, domListP[%d]->checkAttributesOnClientAfterTransformation OK\n", myRank, i);
         }
       }
    }
@@ -271,43 +279,47 @@ namespace xios {
 
    void CGrid::checkMaskIndex(bool doSendingIndex)
    {
-     CContext* context = CContext::getCurrent();
+     int myRank;
+     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+
+     CContext* context = CContext::getCurrent(); 
      CContextClient* client=context->client;
 
      if (isScalarGrid())
      {
        if (context->hasClient)
-          if (this->isChecked && doSendingIndex && !isIndexSent) { sendIndexScalarGrid(); this->isIndexSent = true; }
+          if (this->isChecked && doSendingIndex && !isIndexSent) 
+            { 
+              sendIndexScalarGrid(); 
+              this->isIndexSent = true; 
+            }
 
        if (this->isChecked) return;
-
        if (context->hasClient)
        {
           this->computeIndexScalarGrid();
        }
 
-       if (!(this->hasTransform() && !this->isTransformed()))
-        this->isChecked = true;
+       this->isChecked = true;
        return;
      }
-
+     
      if (context->hasClient)
-      if (this->isChecked && doSendingIndex && !isIndexSent) { sendIndex(); this->isIndexSent = true; }
+      if (this->isChecked && doSendingIndex && !isIndexSent) 
+        {
+          sendIndex(); 
+          this->isIndexSent = true;
+        }
 
      if (this->isChecked) return;
 
      if (context->hasClient)
      {
-        this->checkAttributesAfterTransformation();
-        this->checkMask();
-        this->computeIndex();
+        this->checkAttributesAfterTransformation(); 
+        this->checkMask();  
+        this->computeIndex();  
      }
-
-     if (!(this->hasTransform() && !this->isTransformed())) 
-      this->isChecked = true;
-
-     if (!(this->hasTransform() && (!this->isGenerated())))
-      this->isChecked = true; 
+     this->isChecked = true;
    }
 
    void CGrid::createMask(void)
@@ -1050,7 +1062,7 @@ namespace xios {
       {
         int rank = *itRank;
         int nb = 1;
-        storeIndex_toSrv.insert(std::make_pair(rank, CArray<int,1>(nb)));        
+        storeIndex_toSrv.insert(std::make_pair(rank, CArray<int,1>(nb)));
         listOutIndex.push_back(CArray<size_t,1>(nb));
 
         CArray<int, 1>& outLocalIndexToServer = storeIndex_toSrv[rank];
@@ -1062,7 +1074,6 @@ namespace xios {
           outLocalIndexToServer(k)  = 0;
         }
 
-        storeIndex_fromSrv.insert(std::make_pair(rank, CArray<int,1>(outLocalIndexToServer)));
         listMsg.push_back(CMessage());
         listMsg.back() << getId( )<< isDataDistributed_ << isCompressible_ << listOutIndex.back();
 
@@ -1071,21 +1082,7 @@ namespace xios {
       client->sendEvent(event);
     }
     else
-    {
-      const std::list<int>& ranks = client->getRanksServerNotLeader();
-      for (std::list<int>::const_iterator itRank = ranks.begin(), itRankEnd = ranks.end(); itRank != itRankEnd; ++itRank)
-      {
-        int rank = *itRank;
-        int nb = 1;        
-        storeIndex_fromSrv.insert(std::make_pair(rank, CArray<int,1>(nb)));
-        CArray<int, 1>& outLocalIndexToServer = storeIndex_fromSrv[rank];
-        for (int k = 0; k < nb; ++k)
-        {          
-          outLocalIndexToServer(k)  = 0;
-        }
-      }
       client->sendEvent(event);
-    }
   }
 
   void CGrid::sendIndex(void)
@@ -1113,12 +1110,12 @@ namespace xios {
           outGlobalIndexOnServer(idx) = itIndex->first;
           outLocalIndexToServer(idx) = itIndex->second;
         }
-        
+
+        //int nbClient = client->clientSize; // This stupid variable signals the servers the number of client connect to them
         const std::list<int>& ranks = client->getRanksServerLeader();
         for (std::list<int>::const_iterator itRank = ranks.begin(), itRankEnd = ranks.end(); itRank != itRankEnd; ++itRank)
         {
           storeIndex_toSrv.insert(std::make_pair(*itRank, CArray<int,1>(outLocalIndexToServer)));
-          storeIndex_fromSrv.insert(std::make_pair(*itRank, CArray<int,1>(outLocalIndexToServer)));
           listOutIndex.push_back(CArray<size_t,1>(outGlobalIndexOnServer));
 
           listMsg.push_back(CMessage());
@@ -1128,22 +1125,8 @@ namespace xios {
         }
         client->sendEvent(event);
       }
-      else 
-      {
-        int indexSize = globalLocalIndexSendToServer.size();        
-        CArray<int,1> outLocalIndexToServer(indexSize);
-        for (int idx = 0; itIndex != iteIndex; ++itIndex, ++idx)
-        {          
-          outLocalIndexToServer(idx) = itIndex->second;
-        }
-        
-        const std::list<int>& ranks = client->getRanksServerNotLeader();
-        for (std::list<int>::const_iterator itRank = ranks.begin(), itRankEnd = ranks.end(); itRank != itRankEnd; ++itRank)
-        {          
-          storeIndex_fromSrv.insert(std::make_pair(*itRank, CArray<int,1>(outLocalIndexToServer)));
-        }
+      else
         client->sendEvent(event);
-      }
     }
     else
     {
@@ -1176,7 +1159,7 @@ namespace xios {
         if (globalIndexTmp.end() != globalIndexTmp.find(rank))
           nb = globalIndexTmp[rank].size();
 
-        storeIndex_toSrv.insert(make_pair(rank, CArray<int,1>(nb)));        
+        storeIndex_toSrv.insert(make_pair(rank, CArray<int,1>(nb)));
         listOutIndex.push_back(CArray<size_t,1>(nb));
 
         CArray<int, 1>& outLocalIndexToServer = storeIndex_toSrv[rank];
@@ -1188,7 +1171,6 @@ namespace xios {
           outLocalIndexToServer(k)  = localIndexTmp[rank].at(k);
         }
 
-        storeIndex_fromSrv.insert(make_pair(rank, CArray<int,1>(outLocalIndexToServer)));
         listMsg.push_back(CMessage());
         listMsg.back() << getId() << isDataDistributed_ << isCompressible_ << listOutIndex.back();
 

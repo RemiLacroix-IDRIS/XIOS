@@ -4,23 +4,10 @@
 #include <map>
 #include <set>
 
-#include "date.hpp"
+#include "input_pin.hpp"
 
 namespace xios
 {
-  /*!
-   * Interface shared by all objects that might need to invalidate packets.
-   */
-  struct InvalidableObject
-  {
-    /*!
-     * Removes all pending packets which are older than the specified timestamp.
-     *
-     * \param timestamp the timestamp used for invalidation
-     */
-    void virtual invalidate(Time timestamp) = 0;
-  }; // struct InvalidableObject
-
   /*!
    * A basic garbage collector which ensures no old packets linger in the filter graph.
    */
@@ -34,23 +21,23 @@ namespace xios
       { /* Nothing to do */ };
 
       /*!
-       * Registers an object for a specified timestamp.
+       * Registers a filter for a specified timestamp.
        *
-       * \param object the object to register
-       * \param timestamp the timestamp for which the object is registered
+       * \param inputPin the input pin of the filter to register
+       * \param timestamp the timestamp for which the filter is registered
        */
-      void registerObject(InvalidableObject* object, Time timestamp);
+      void registerFilter(CInputPin* inputPin, Time timestamp);
 
       /*!
-       * Removes a object previously registered for a specified timestamp.
+       * Removes a filter previously registered for a specified timestamp.
        *
-       * \param object the object to unregister
-       * \param timestamp the timestamp for which the object is unregistered
+       * \param inputPin the input pin of the filter to unregister
+       * \param timestamp the timestamp for which the filter is unregistered
        */
-      void unregisterObject(InvalidableObject* object, Time timestamp);
+      void unregisterFilter(CInputPin* inputPin, Time timestamp);
 
       /*!
-       * Ensures all registered objects invalidate packets older than the specified timestamp.
+       * Ensures all registered filters invalidate packets older than the specified timestamp.
        *
        * \param timestamp the timestamp used for invalidation
        */
@@ -60,7 +47,7 @@ namespace xios
       CGarbageCollector(const CGarbageCollector&);
       CGarbageCollector& operator=(const CGarbageCollector&);
 
-      std::map<Time, std::set<InvalidableObject*> > registeredObjects; //!< Currently registered objects
+      std::map<Time, std::set<CInputPin*> > registeredFilters; //!< Currently registered filters
   }; // class CGarbageCollector
 } // namespace xios
 

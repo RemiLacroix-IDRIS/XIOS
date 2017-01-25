@@ -29,6 +29,8 @@ namespace xios
       MPI_Initialized(&initialized) ;
       if (initialized) is_MPI_Initialized=true ;
       else is_MPI_Initialized=false ;
+      
+      //return;
 
 // don't use OASIS
       if (!CXios::usingOasis)
@@ -86,6 +88,7 @@ namespace xios
           myColor=colors[hashClient] ;
 
           MPI_Comm_split(CXios::globalComm,myColor,rank,&intraComm) ;
+        
 
           if (CXios::usingServer)
           {
@@ -96,7 +99,7 @@ namespace xios
             MPI_Comm_size(intraComm,&intraCommSize) ;
             MPI_Comm_rank(intraComm,&intraCommRank) ;
             info(50)<<"intercommCreate::client "<<rank<<" intraCommSize : "<<intraCommSize
-                 <<" intraCommRank :"<<intraCommRank<<"  clientLeader "<< serverLeader<<endl ;
+                 <<" intraCommRank :"<<intraCommRank<<"  serverLeader "<< serverLeader<<endl ;
             MPI_Intercomm_create(intraComm,0,CXios::globalComm,serverLeader,0,&interComm) ;
           }
           else
@@ -147,6 +150,7 @@ namespace xios
       }
 
       MPI_Comm_dup(intraComm,&returnComm) ;
+
     }
 
 
@@ -159,11 +163,15 @@ namespace xios
 
       if (!CXios::isServer)
       {
+      
+        
+        
         int size,rank,globalRank ;
         size_t message_size ;
         int leaderRank ;
         MPI_Comm contextInterComm ;
 
+        
         MPI_Comm_size(contextComm,&size) ;
         MPI_Comm_rank(contextComm,&rank) ;
         MPI_Comm_rank(CXios::globalComm,&globalRank) ;
@@ -172,24 +180,35 @@ namespace xios
 
         CMessage msg ;
         msg<<idServer<<size<<globalRank ;
-//        msg<<id<<size<<globalRank ;
+
 
         int messageSize=msg.size() ;
-        char * buff = new char[messageSize] ;
-        CBufferOut buffer((void*)buff,messageSize) ;
+        void * buff = new char[messageSize] ;
+        CBufferOut buffer(buff,messageSize) ;
         buffer<<msg ;
+        
+        
 
-        MPI_Send((void*)buff,buffer.count(),MPI_CHAR,serverLeader,1,CXios::globalComm) ;
+        MPI_Send(buff,buffer.count(),MPI_CHAR,serverLeader,1,CXios::globalComm) ;
         delete [] buff ;
+        
+        printf("====== Client: begin context_init \n");
+      
 
         MPI_Intercomm_create(contextComm,0,CXios::globalComm,serverLeader,10+globalRank,&contextInterComm) ;
         info(10)<<"Register new Context : "<<id<<endl ;
+        
+        cout<<"Register new Context : "<<id<<endl ;
+              
 
         MPI_Comm inter ;
         MPI_Intercomm_merge(contextInterComm,0,&inter) ;
         MPI_Barrier(inter) ;
-
+        
+        
         context->initClient(contextComm,contextInterComm) ;
+        
+        printf("====== Client: context_init OK\n");
 
         contextInterComms.push_back(contextInterComm);
         MPI_Comm_free(&inter);
@@ -219,6 +238,8 @@ namespace xios
       int msg=0 ;
 
       MPI_Comm_rank(intraComm,&rank) ;
+      
+      printf("CClient::finalize called isServer = %d\n", CXios::isServer);
  
       if (!CXios::isServer)
       {
@@ -226,6 +247,7 @@ namespace xios
         if (rank==0)
         {
           MPI_Send(&msg,1,MPI_INT,0,0,interComm) ;
+          printf(" CClient : send finalize sign to server 0\n");
         }
       }
 
@@ -240,7 +262,7 @@ namespace xios
       if (!is_MPI_Initialized)
       {
         if (CXios::usingOasis) oasis_finalize();
-        else MPI_Finalize() ;
+        else {MPI_Finalize() ; printf("CClient::finalize called MPI_finalize\n");}
       }
       
       info(20) << "Client side context is finalized"<<endl ;
