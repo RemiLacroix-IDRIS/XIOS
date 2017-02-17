@@ -51,7 +51,7 @@ namespace ep_lib {
       MPI_Mrecv(request->buf, count, request->ep_datatype, &message, status);
       status->ep_datatype = request->ep_datatype;
 
-      check_sum_recv(request->buf, count, request->ep_datatype, request->ep_src, request->ep_tag, request->comm, 2);
+      //check_sum_recv(request->buf, count, request->ep_datatype, request->ep_src, request->ep_tag, request->comm, 2);
 
       return 0;
     }
@@ -69,7 +69,7 @@ namespace ep_lib {
 
       int count;
       MPI_Get_count(status, request->ep_datatype, &count);
-      check_sum_recv(request->buf, count, request->ep_datatype, request->ep_src, request->ep_tag, request->comm, 2);
+      //check_sum_recv(request->buf, count, request->ep_datatype, request->ep_src, request->ep_tag, request->comm, 2);
     }
 	  return MPI_SUCCESS;
 	}
@@ -105,7 +105,7 @@ namespace ep_lib {
             {
               int check_count;
               MPI_Get_count(&array_of_statuses[i], array_of_requests[i].ep_datatype, &check_count);
-              check_sum_recv(array_of_requests[i].buf, count, array_of_requests[i].ep_datatype, array_of_requests[i].ep_src, array_of_requests[i].ep_tag, array_of_requests[i].comm, 2);
+              //check_sum_recv(array_of_requests[i].buf, count, array_of_requests[i].ep_datatype, array_of_requests[i].ep_src, array_of_requests[i].ep_tag, array_of_requests[i].comm, 2);
             }
             finished++;
             finished_index[i] = true;
@@ -123,7 +123,7 @@ namespace ep_lib {
               int recv_count;
               MPI_Get_count(&array_of_statuses[i], array_of_requests[i].ep_datatype, &recv_count);
               MPI_Mrecv(array_of_requests[i].buf, recv_count, array_of_requests[i].ep_datatype, &message, &array_of_statuses[i]);
-              check_sum_recv(array_of_requests[i].buf, recv_count, array_of_requests[i].ep_datatype, array_of_requests[i].ep_src, array_of_requests[i].ep_tag, array_of_requests[i].comm, 2);
+              //check_sum_recv(array_of_requests[i].buf, recv_count, array_of_requests[i].ep_datatype, array_of_requests[i].ep_src, array_of_requests[i].ep_tag, array_of_requests[i].comm, 2);
 
               finished++;
               finished_index[i] = true;

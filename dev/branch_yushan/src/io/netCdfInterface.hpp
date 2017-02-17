@@ -15,8 +15,7 @@
 #include "exception.hpp"
 #endif
 
-#include "mpi.hpp"
-//#include <mpi.h>
+#include "mpi_std.hpp"
 #include "netcdf.hpp"
 
 namespace xios

@@ -32,7 +32,9 @@ namespace xios
     {
       // Unregister before calling onInputReady in case the filter registers again
       gc.unregisterFilter(this, packet->timestamp);
+      printf("filter/input_pin.cpp : onInputReady\n");
       onInputReady(it->second.packets);
+      printf("filter/input_pin.cpp : onInputReady OKOK\n");
       inputs.erase(it);
     }
   }

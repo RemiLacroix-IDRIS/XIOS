@@ -78,7 +78,7 @@ namespace xios
     
     MPI_Info info;
     MPI_Comm *ep_comm;
-    MPI_Comm_create_endpoints(MPI_COMM_WORLD, num_ep, info, ep_comm); 
+    MPI_Comm_create_endpoints(MPI_COMM_WORLD, num_ep, info, ep_comm);  // servers should reach here too.
       
     globalComm = ep_comm[0];
     

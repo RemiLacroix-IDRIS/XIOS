@@ -27,7 +27,7 @@ namespace xios
 
 /** Constructor, the communicator is used for bcast or gather operation between MPI processes */
      
-      CRegistry(const MPI_Comm& comm=MPI_COMM_WORLD) : communicator(comm) {}
+      CRegistry(const ep_lib::MPI_Comm& comm=MPI_COMM_WORLD) : communicator(comm) {}
       
      
       
@@ -126,7 +126,7 @@ namespace xios
       std::map<std::string,std::pair<size_t,char*> > registry ;
 
 /** MPI communicator used for broadcast and gather operation */
-      MPI_Comm communicator ;
+      ep_lib::MPI_Comm communicator ;
   } ;
 
   inline CMessage& operator<<(CMessage& msg, CRegistry& registry)

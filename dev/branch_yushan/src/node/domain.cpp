@@ -474,7 +474,7 @@ namespace xios {
    void CDomain::AllgatherRectilinearLonLat(CArray<double,1>& lon, CArray<double,1>& lat, CArray<double,1>& lon_g, CArray<double,1>& lat_g)
    {
 	  CContext* context = CContext::getCurrent();
-      CContextClient* client = context->client;
+    CContextClient* client = context->client;
 	  lon_g.resize(ni_glo) ;
 	  lat_g.resize(nj_glo) ;
 

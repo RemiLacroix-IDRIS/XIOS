@@ -12,6 +12,7 @@
 
 #include "mapper.hpp"
 
+
 namespace sphereRemap {
 
 /* A subdivition of an array into N sub-arays

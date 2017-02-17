@@ -158,7 +158,7 @@ namespace xios {
          int nbAxis, nbDomains;
          bool isOpen;
          bool allDomainEmpty;
-         MPI_Comm fileComm;
+         ep_lib::MPI_Comm fileComm;
 
       private :
          /// Propriétés privées ///

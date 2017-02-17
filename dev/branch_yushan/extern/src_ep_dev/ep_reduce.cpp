@@ -446,9 +446,6 @@ namespace ep_lib {
   {
     if(!comm.is_ep && comm.mpi_comm)
     {
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
       ::MPI_Reduce(sendbuf, recvbuf, count, static_cast< ::MPI_Datatype>(datatype), static_cast< ::MPI_Op>(op), root,
                    static_cast< ::MPI_Comm>(comm.mpi_comm));
       return 0;
@@ -472,9 +469,7 @@ namespace ep_lib {
 
 
     ::MPI_Aint recvsize, lb;
-    #ifdef _serialized
-    #pragma omp critical (_mpi_call)
-    #endif // _serialized
+
     ::MPI_Type_get_extent(static_cast< ::MPI_Datatype>(datatype), &lb, &recvsize);
 
     void *local_recvbuf;
@@ -488,9 +483,6 @@ namespace ep_lib {
 
     if(ep_rank_loc==0)
     {
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
       ::MPI_Reduce(local_recvbuf, recvbuf, count, static_cast< ::MPI_Datatype>(datatype), static_cast< ::MPI_Op>(op), root_mpi_rank, static_cast< ::MPI_Comm>(comm.mpi_comm));
     }
 
@@ -521,9 +513,6 @@ namespace ep_lib {
   {
     if(!comm.is_ep && comm.mpi_comm)
     {
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
       ::MPI_Allreduce(sendbuf, recvbuf, count, static_cast< ::MPI_Datatype>(datatype), static_cast< ::MPI_Op>(op),
                       static_cast< ::MPI_Comm>(comm.mpi_comm));
       return 0;
@@ -544,9 +533,7 @@ namespace ep_lib {
 
 
     ::MPI_Aint recvsize, lb;
-    #ifdef _serialized
-    #pragma omp critical (_mpi_call)
-    #endif // _serialized
+
     ::MPI_Type_get_extent(static_cast< ::MPI_Datatype>(datatype), &lb, &recvsize);
 
     void *local_recvbuf;
@@ -560,9 +547,6 @@ namespace ep_lib {
 
     if(ep_rank_loc==0)
     {
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
       ::MPI_Allreduce(local_recvbuf, recvbuf, count, static_cast< ::MPI_Datatype>(datatype), static_cast< ::MPI_Op>(op), static_cast< ::MPI_Comm>(comm.mpi_comm));
     }
 
@@ -589,9 +573,6 @@ namespace ep_lib {
 
     if(!comm.is_ep && comm.mpi_comm)
     {
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
       ::MPI_Reduce_scatter(sendbuf, recvbuf, recvcounts, static_cast< ::MPI_Datatype>(datatype), static_cast< ::MPI_Op>(op),
                            static_cast< ::MPI_Comm>(comm.mpi_comm));
       return 0;
@@ -615,9 +596,7 @@ namespace ep_lib {
     int local_buf2_size = accumulate(recvcounts+ep_rank-ep_rank_loc, recvcounts+ep_rank-ep_rank_loc+num_ep, 0);
 
     ::MPI_Aint datasize, lb;
-    #ifdef _serialized
-    #pragma omp critical (_mpi_call)
-    #endif // _serialized
+
     ::MPI_Type_get_extent(static_cast< ::MPI_Datatype>(datatype), &lb, &datasize);
 
     if(ep_rank_loc == 0)
@@ -635,9 +614,7 @@ namespace ep_lib {
       {
         local_recvcnt[i] = accumulate(recvcounts+ep_rank, recvcounts+ep_rank+num_ep, 0);
       }
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
+
       ::MPI_Reduce_scatter(local_buf, local_buf2, local_recvcnt, static_cast< ::MPI_Datatype>(datatype),
                          static_cast< ::MPI_Op>(op), static_cast< ::MPI_Comm>(comm.mpi_comm));
     }

@@ -30,7 +30,7 @@ namespace ep_lib
 
     Debug("Calling EP_Comm_size\n");
 
-    if(comm.mpi_comm)
+    if(comm.mpi_comm != MPI_COMM_NULL_STD)
     {
       ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm > (comm.mpi_comm); 
       int mpi_size;
@@ -53,12 +53,9 @@ namespace ep_lib
   {
     if(!comm.is_ep)
     {
-      if(comm.mpi_comm)
+      if(comm.mpi_comm != MPI_COMM_NULL_STD)
       {
         ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm > (comm.mpi_comm); 
-        #ifdef _serialized
-        #pragma omp critical (_mpi_call)
-        #endif // _serialized
         ::MPI_Comm_remote_size(mpi_comm, size);
         return 0;
       }

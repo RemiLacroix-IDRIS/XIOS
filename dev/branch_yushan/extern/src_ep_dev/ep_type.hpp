@@ -11,7 +11,7 @@
 #include <vector>
 #include <numeric>
 #include <bitset>
-#include <memory.h>
+//#include <memory.h>
 #include <algorithm>
 #include <assert.h>
 #include <math.h>
@@ -41,8 +41,8 @@ typedef struct
 namespace ep_lib
 {
   #define MPI_UNDEFINED -32766
-  #define MPI_STATUS_IGNORE NULL
-  #define MPI_INFO_NULL MPI_Info()
+  //#define MPI_STATUS_IGNORE NULL
+  //#define MPI_INFO_NULL MPI_Info(MPI_INFO_NULL_STD)
 
   class ep_communicator;
   class ep_intercomm;
@@ -83,11 +83,12 @@ namespace ep_lib
 
       void* mpi_status;
 
-      MPI_Message()
-      {
-        mpi_message = 0;
-        mpi_status = 0;
-      }
+      MPI_Message() {}
+      #ifdef _intelmpi
+      MPI_Message(int message): mpi_message(message) {}
+      #elif _openmpi
+      MPI_Message(void* message): mpi_message(message) {}
+      #endif
   };
 
   typedef std::list<MPI_Message > Message_list;
@@ -288,9 +289,9 @@ namespace ep_lib
       ep_comm_ptr = NULL;
       mem_bridge = NULL;
       mpi_bridge = NULL;
-      mpi_comm = 0;
     }
 
+    #ifdef _intelmpi
     MPI_Comm(int comm)
     {
       is_ep = false;
@@ -304,7 +305,21 @@ namespace ep_lib
       mpi_comm = comm;
     }
 
-    //MPI_Comm(const MPI_Comm &comm);
+    #elif _openmpi
+
+    MPI_Comm(void* comm)
+    {
+      is_ep = false;
+      is_intercomm = false;
+      my_buffer = NULL;
+      ep_barrier = NULL;
+      rank_map = NULL;
+      ep_comm_ptr = NULL;
+      mem_bridge = NULL;
+      mpi_bridge = NULL;
+      mpi_comm = comm;
+    }
+    #endif
 
 
     bool operator == (MPI_Comm right)
@@ -337,10 +352,13 @@ namespace ep_lib
       void * mpi_info;
       #endif
 
-      MPI_Info()
-      {
-        mpi_info = 0;
-      }
+      MPI_Info() {}
+      
+      #ifdef _intelmpi
+      MPI_Info(int info): mpi_info(info) {}
+      #elif _openmpi
+      MPI_Info(void* info): mpi_info(info) {}
+      #endif
   };
 
 
@@ -367,10 +385,24 @@ namespace ep_lib
 
       MPI_Comm comm;	//! EP communicator related to the communication
 
-      MPI_Request()
-      {
-        mpi_request = 0;
-      }
+      MPI_Request() {}
+
+      #ifdef _intelmpi
+      MPI_Request(int request): mpi_request(request) {}
+      #elif _openmpi
+      MPI_Request(void* request): mpi_request(request) {}
+      #endif
+  };
+
+  
+  class MPI_Aint
+  {
+    public:
+
+    unsigned long mpi_aint;
+
+    MPI_Aint() {}
+    MPI_Aint(int a): mpi_aint(a) {}
   };
 
   class MPI_Fint
@@ -378,13 +410,10 @@ namespace ep_lib
     public:
 
     int mpi_fint;
-  };
 
-  class MPI_Aint
-  {
-    public:
-
-    unsigned long mpi_aint;
+    MPI_Fint() {}
+    MPI_Fint(int f): mpi_fint(f) {}
+    
   };
 
 

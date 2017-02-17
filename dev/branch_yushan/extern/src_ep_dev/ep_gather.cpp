@@ -319,10 +319,7 @@ namespace ep_lib
   {
     if(!comm.is_ep && comm.mpi_comm)
     {
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
-      ::MPI_Gather(sendbuf, sendcount, static_cast< ::MPI_Datatype>(sendtype), recvbuf, recvcount, static_cast< ::MPI_Datatype>(recvtype),
+      ::MPI_Gather(const_cast<void*>(sendbuf), sendcount, static_cast< ::MPI_Datatype>(sendtype), recvbuf, recvcount, static_cast< ::MPI_Datatype>(recvtype),
                    root, static_cast< ::MPI_Comm>(comm.mpi_comm));
       return 0;
     }
@@ -350,9 +347,7 @@ namespace ep_lib
 
 
     ::MPI_Aint datasize, lb;
-    #ifdef _serialized
-    #pragma omp critical (_mpi_call)
-    #endif // _serialized
+
     ::MPI_Type_get_extent(static_cast< ::MPI_Datatype>(datatype), &lb, &datasize);
 
     void *local_gather_recvbuf;
@@ -376,9 +371,7 @@ namespace ep_lib
       gatherv_recvcnt = new int[mpi_size];
       gatherv_displs = new int[mpi_size];
 
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
+
       ::MPI_Allgather(&gatherv_cnt, 1, MPI_INT_STD, gatherv_recvcnt, 1, MPI_INT_STD, static_cast< ::MPI_Comm>(comm.mpi_comm));
 
       gatherv_displs[0] = 0;
@@ -387,9 +380,7 @@ namespace ep_lib
         gatherv_displs[i] = gatherv_recvcnt[i-1] + gatherv_displs[i-1];
       }
 
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
+
       ::MPI_Gatherv(local_gather_recvbuf, count*num_ep, static_cast< ::MPI_Datatype>(datatype), recvbuf, gatherv_recvcnt,
                     gatherv_displs, static_cast< ::MPI_Datatype>(datatype), root_mpi_rank, static_cast< ::MPI_Comm>(comm.mpi_comm));
 
@@ -441,10 +432,7 @@ namespace ep_lib
   {
     if(!comm.is_ep && comm.mpi_comm)
     {
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
-      ::MPI_Allgather(sendbuf, sendcount, static_cast< ::MPI_Datatype>(sendtype), recvbuf, recvcount, static_cast< ::MPI_Datatype>(recvtype),
+      ::MPI_Allgather(const_cast<void*>(sendbuf), sendcount, static_cast< ::MPI_Datatype>(sendtype), recvbuf, recvcount, static_cast< ::MPI_Datatype>(recvtype),
                       static_cast< ::MPI_Comm>(comm.mpi_comm));
       return 0;
     }
@@ -468,9 +456,7 @@ namespace ep_lib
 
 
     ::MPI_Aint datasize, lb;
-    #ifdef _serialized
-    #pragma omp critical (_mpi_call)
-    #endif // _serialized
+
     ::MPI_Type_get_extent(static_cast< ::MPI_Datatype>(datatype), &lb, &datasize);
 
     void *local_gather_recvbuf;
@@ -494,9 +480,6 @@ namespace ep_lib
       gatherv_recvcnt = new int[mpi_size];
       gatherv_displs = new int[mpi_size];
 
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
       ::MPI_Allgather(&gatherv_cnt, 1, MPI_INT_STD, gatherv_recvcnt, 1, MPI_INT_STD, static_cast< ::MPI_Comm>(comm.mpi_comm));
 
       gatherv_displs[0] = 0;
@@ -505,9 +488,6 @@ namespace ep_lib
         gatherv_displs[i] = gatherv_recvcnt[i-1] + gatherv_displs[i-1];
       }
 
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
       ::MPI_Allgatherv(local_gather_recvbuf, count*num_ep, static_cast< ::MPI_Datatype>(datatype), recvbuf, gatherv_recvcnt,
                     gatherv_displs, static_cast< ::MPI_Datatype>(datatype), static_cast< ::MPI_Comm>(comm.mpi_comm));
 

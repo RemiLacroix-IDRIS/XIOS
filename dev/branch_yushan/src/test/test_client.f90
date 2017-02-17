@@ -41,8 +41,9 @@ PROGRAM test_client
   print*, "test_client xios_initialize OK"
 
   CALL MPI_COMM_RANK(comm,rank,ierr)
-  print*, "test_client MPI_COMM_RANK OK"
+  print*, "test_client MPI_COMM_RANK OK", rank
   CALL MPI_COMM_SIZE(comm,size,ierr)
+  print*, "test_client MPI_COMM_SIZE OK", size
   
 
   DO j=1,nj_glo
@@ -137,7 +138,7 @@ PROGRAM test_client
 
   PRINT*,"field field_A is active ? ",xios_field_is_active("field_A")
   !DO ts=1,24*10
-  DO ts=1,24
+  DO ts=1,6
     CALL xios_update_calendar(ts)
     print*, "xios_update_calendar OK, ts = ", ts
     CALL xios_send_field("field_A",field_A)

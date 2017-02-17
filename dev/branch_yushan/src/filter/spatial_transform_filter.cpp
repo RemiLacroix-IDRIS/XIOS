@@ -149,7 +149,7 @@ namespace xios
       }
 
       idxSendBuff = 0;
-      std::vector<MPI_Request> sendRecvRequest;
+      std::vector<ep_lib::MPI_Request> sendRecvRequest;
       for (itSend = itbSend; itSend != iteSend; ++itSend, ++idxSendBuff)
       {
         int destRank = itSend->first;
@@ -159,7 +159,7 @@ namespace xios
         {
           sendBuff[idxSendBuff][idx] = dataCurrentSrc(localIndex_p(idx));
         }
-        sendRecvRequest.push_back(MPI_Request());
+        sendRecvRequest.push_back(ep_lib::MPI_Request());
         MPI_Isend(sendBuff[idxSendBuff], countSize, MPI_DOUBLE, destRank, 12, client->intraComm, &sendRecvRequest.back());
       }
 
@@ -177,11 +177,11 @@ namespace xios
       {
         int srcRank = itRecv->first;
         int countSize = itRecv->second.size();
-        sendRecvRequest.push_back(MPI_Request());
+        sendRecvRequest.push_back(ep_lib::MPI_Request());
         MPI_Irecv(recvBuff + currentBuff, countSize, MPI_DOUBLE, srcRank, 12, client->intraComm, &sendRecvRequest.back());
         currentBuff += countSize;
       }
-      std::vector<MPI_Status> status(sendRecvRequest.size());
+      std::vector<ep_lib::MPI_Status> status(sendRecvRequest.size());
       MPI_Waitall(sendRecvRequest.size(), &sendRecvRequest[0], &status[0]);
 
       dataCurrentDest.resize(*itNbListRecv);

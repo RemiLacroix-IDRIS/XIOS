@@ -142,9 +142,6 @@ namespace ep_lib
 
         if(ep_rank == new_local_leader)
         {
-          #ifdef _serialized
-          #pragma omp critical (_mpi_call)
-          #endif // _serialized
           ::MPI_Comm_rank(MPI_COMM_WORLD_STD, &leader_in_world[0]);
         }
 
@@ -189,20 +186,20 @@ namespace ep_lib
 
   int MPI_Comm_test_inter(MPI_Comm comm, int *flag)
   {
+    *flag = false;
     if(comm.is_ep)
     {
       *flag = comm.is_intercomm;
       return 0;
     } 
-    else
+    else if(comm.mpi_comm != MPI_COMM_NULL_STD)
     {
       ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm> (comm.mpi_comm);
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif
+      
       ::MPI_Comm_test_inter(mpi_comm, flag);
       return 0;  
     }
+    return 0;
   }
 
 

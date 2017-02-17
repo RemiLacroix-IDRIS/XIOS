@@ -1,6 +1,5 @@
 #include "registry.hpp"
 #include "type.hpp"
-#include <mpi.hpp>
 #include <fstream>
 #include <sstream>
 
@@ -260,7 +259,7 @@ namespace xios
 
   void CRegistry::hierarchicalGatherRegistry(void)
   {
-    //hierarchicalGatherRegistry(communicator) ;
+    hierarchicalGatherRegistry(communicator) ;
   }
 
   void CRegistry::hierarchicalGatherRegistry(const MPI_Comm& comm)
@@ -287,8 +286,11 @@ namespace xios
       
       if (mpiRank==0 || mpiRank==mpiSize/2+mpiSize%2) color=0 ;
       else color=1 ;
+      
       MPI_Comm_split(comm,color,mpiRank,&commDown) ;
+      
       if (color==0) gatherRegistry(commDown) ;
+      printf("gatherRegistry OKOK\n");
       MPI_Comm_free(&commDown) ;    
     }
   }

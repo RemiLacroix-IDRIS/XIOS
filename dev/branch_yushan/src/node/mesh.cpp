@@ -492,7 +492,7 @@ namespace xios {
  * \param [in] bounds_lon Array of boundary longitudes. Its size depends on the element type.
  * \param [in] bounds_lat Array of boundary latitudes. Its size depends on the element type.
  */
-  void CMesh::createMeshEpsilon(const MPI_Comm& comm,
+  void CMesh::createMeshEpsilon(const ep_lib::MPI_Comm& comm,
                                 const CArray<double, 1>& lonvalue, const CArray<double, 1>& latvalue,
                                 const CArray<double, 2>& bounds_lon, const CArray<double, 2>& bounds_lat)
   {
@@ -1533,7 +1533,7 @@ namespace xios {
    * \param [out] nghbFaces 2D array of storing global indexes of neighboring cells and their owner procs.
    */
 
-  void CMesh::getGloNghbFacesNodeType(const MPI_Comm& comm, const CArray<int, 1>& face_idx,
+  void CMesh::getGloNghbFacesNodeType(const ep_lib::MPI_Comm& comm, const CArray<int, 1>& face_idx,
                                const CArray<double, 2>& bounds_lon, const CArray<double, 2>& bounds_lat,
                                CArray<int, 2>& nghbFaces)
   {
@@ -1689,7 +1689,7 @@ namespace xios {
    * \param [out] nghbFaces 2D array of storing global indexes of neighboring cells and their owner procs.
    */
 
-  void CMesh::getGloNghbFacesEdgeType(const MPI_Comm& comm, const CArray<int, 1>& face_idx,
+  void CMesh::getGloNghbFacesEdgeType(const ep_lib::MPI_Comm& comm, const CArray<int, 1>& face_idx,
                                const CArray<double, 2>& bounds_lon, const CArray<double, 2>& bounds_lat,
                                CArray<int, 2>& nghbFaces)
   {
@@ -1870,7 +1870,7 @@ namespace xios {
    * \param [out] nghbFaces 2D array containing neighboring faces and owner ranks.
    */
 
-  void CMesh::getGlobalNghbFaces(const int nghbType, const MPI_Comm& comm,
+  void CMesh::getGlobalNghbFaces(const int nghbType, const ep_lib::MPI_Comm& comm,
                                  const CArray<int, 1>& face_idx,
                                  const CArray<double, 2>& bounds_lon, const CArray<double, 2>& bounds_lat,
                                  CArray<int, 2>& nghbFaces)

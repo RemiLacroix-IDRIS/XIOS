@@ -67,7 +67,7 @@ namespace ep_lib {
 		Message_Check(comm);
 		
 
-		request->mpi_request = NULL;
+		request->mpi_request = MPI_REQUEST_NULL_STD;
 		request->buf = buf;
     request->comm = comm;
 		request->type = 2;

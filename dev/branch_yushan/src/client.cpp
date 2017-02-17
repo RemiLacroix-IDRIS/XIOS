@@ -30,8 +30,6 @@ namespace xios
       if (initialized) is_MPI_Initialized=true ;
       else is_MPI_Initialized=false ;
       
-      //return;
-
 // don't use OASIS
       if (!CXios::usingOasis)
       {

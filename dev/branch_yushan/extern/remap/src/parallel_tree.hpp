@@ -5,13 +5,16 @@
 //#include "sample_tree.hpp"
 #include "mpi_cascade.hpp"
 #include "mpi.hpp"
+#ifdef _usingEP
+#include "ep_declaration.hpp"
+#endif
 
 namespace sphereRemap {
 
 class CParallelTree
 {
 public:
-	CParallelTree(MPI_Comm comm);
+	CParallelTree(ep_lib::MPI_Comm comm);
 	~CParallelTree();
 
 	void build(vector<Node>& node, vector<Node>& node2);
@@ -33,7 +36,7 @@ private:
 	//CSampleTree sampleTree;
 	vector<CSampleTree> treeCascade; // first for sample tree, then for routing tree
 	CMPICascade cascade;
-  MPI_Comm communicator ;
+  ep_lib::MPI_Comm communicator ;
 
 };
 

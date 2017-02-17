@@ -34,13 +34,10 @@ namespace ep_lib
 
     ::MPI_Comm local_mpi_comm = static_cast< ::MPI_Comm>(local_comm.mpi_comm);
 
-    #ifdef _serialized
-    #pragma omp critical (_mpi_call)
-    #endif // _serialized
-    {
-      ::MPI_Comm_rank(MPI_COMM_WORLD_STD, &rank_in_world);
-      ::MPI_Comm_rank(static_cast< ::MPI_Comm>(local_comm.mpi_comm), &rank_in_local_parent);
-    }
+    
+    ::MPI_Comm_rank(MPI_COMM_WORLD_STD, &rank_in_world);
+    ::MPI_Comm_rank(static_cast< ::MPI_Comm>(local_comm.mpi_comm), &rank_in_local_parent);
+    
 
     bool is_proc_master = false;
     bool is_local_leader = false;
@@ -82,9 +79,6 @@ namespace ep_lib
       send_buf[1] = rank_in_local_parent;
       send_buf[2] = num_ep;
 
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
       ::MPI_Allgather(send_buf.data(), 3, MPI_INT_STD, recv_buf.data(), 3, MPI_INT_STD, local_mpi_comm);
 
       for(int i=0; i<size_info[0]; i++)
@@ -99,9 +93,6 @@ namespace ep_lib
         leader_info[0] = rank_in_world;
         leader_info[1] = remote_leader;
 
-        #ifdef _serialized
-        #pragma omp critical (_mpi_call)
-        #endif // _serialized
         ::MPI_Comm_rank(static_cast< ::MPI_Comm>(peer_comm.mpi_comm), &rank_in_peer_mpi[0]);
 
         MPI_Status status;
@@ -125,9 +116,6 @@ namespace ep_lib
       send_buf[3] = rank_in_peer_mpi[0];
       send_buf[4] = rank_in_peer_mpi[1];
 
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
       ::MPI_Bcast(send_buf.data(), 5, MPI_INT_STD, local_comm.rank_map->at(local_leader).second, local_mpi_comm);
 
       size_info[1] = send_buf[0];
@@ -155,12 +143,8 @@ namespace ep_lib
 
         MPI_Send(send_buf.data(), 3*size_info[0], MPI_INT_STD, remote_leader, tag, peer_comm);
         MPI_Recv(recv_buf.data(), 3*size_info[1], MPI_INT_STD, remote_leader, tag, peer_comm, &status);
-
       }
 
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
       ::MPI_Bcast(recv_buf.data(), 3*size_info[1], MPI_INT_STD, local_comm.rank_map->at(local_leader).second, local_mpi_comm);
 
       std::copy ( recv_buf.data(), recv_buf.data() + size_info[1], rank_info[2].begin() );
@@ -282,9 +266,6 @@ namespace ep_lib
         MPI_Recv(&size_info[3], 1, MPI_INT_STD, remote_leader, tag, peer_comm, &status);
       }
 
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
       ::MPI_Bcast(&size_info[2], 2, MPI_INT_STD, local_comm.rank_map->at(local_leader).second, local_mpi_comm);
 
       new_rank_info[2].resize(size_info[3]);
@@ -306,10 +287,6 @@ namespace ep_lib
         MPI_Recv(recv_buf.data(), 3*size_info[3], MPI_INT_STD, remote_leader, tag, peer_comm, &status);
       }
 
-
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
       ::MPI_Bcast(recv_buf.data(),   3*size_info[3], MPI_INT_STD, local_comm.rank_map->at(local_leader).second, local_mpi_comm);
 
       std::copy ( recv_buf.data(), recv_buf.data() + size_info[3], new_rank_info[2].begin() );
@@ -329,53 +306,30 @@ namespace ep_lib
       ::MPI_Comm new_comm;
       ::MPI_Comm intercomm;
 
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
       ::MPI_Comm_group(local_mpi_comm, &local_group);
 
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
       ::MPI_Group_incl(local_group, size_info[2], new_rank_info[1].data(), &new_group);
 
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
       ::MPI_Comm_create(local_mpi_comm, new_group, &new_comm);
 
 
 
       if(is_local_leader)
       {
-        #ifdef _serialized
-        #pragma omp critical (_mpi_call)
-        #endif // _serialized
         ::MPI_Comm_rank(new_comm, &leader_info[2]);
       }
 
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
       ::MPI_Bcast(&leader_info[2], 1, MPI_INT_STD, local_comm.rank_map->at(local_leader).second, local_mpi_comm);
 
       if(new_comm != MPI_COMM_NULL_STD)
       {
 
-        #ifdef _serialized
-        #pragma omp critical (_mpi_call)
-        #endif // _serialized
         ::MPI_Barrier(new_comm);
 
-        #ifdef _serialized
-        #pragma omp critical (_mpi_call)
-        #endif // _serialized
         ::MPI_Intercomm_create(new_comm, leader_info[2], static_cast< ::MPI_Comm>(peer_comm.mpi_comm), rank_in_peer_mpi[1], tag, &intercomm);
 
         int id;
-        #ifdef _serialized
-        #pragma omp critical (_mpi_call)
-        #endif // _serialized
+
         ::MPI_Comm_rank(new_comm, &id);
         int my_num_ep = new_ep_info[0][id];
 
@@ -603,9 +557,6 @@ namespace ep_lib
 
     int rank_in_peer_mpi[2];
 
-    #ifdef _serialized
-    #pragma omp critical (_mpi_call)
-    #endif // _serialized
     ::MPI_Comm_rank(MPI_COMM_WORLD_STD, &rank_in_world);
 
 
@@ -662,10 +613,7 @@ namespace ep_lib
       if(ep_rank == local_leader)
       {
         ::MPI_Comm mpi_dup;
-
-        #ifdef _serialized
-        #pragma omp critical (_mpi_call)
-        #endif // _serialized
+        
         ::MPI_Comm_dup(static_cast< ::MPI_Comm>(local_comm.mpi_comm), &mpi_dup);
 
         MPI_Comm *ep_intercomm;

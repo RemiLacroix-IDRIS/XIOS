@@ -81,7 +81,7 @@ namespace ep_lib {
 
     // EP intracomm
 
-    check_sum_send(buf, count, datatype, dest, tag, comm, 1);
+    //check_sum_send(buf, count, datatype, dest, tag, comm, 1);
 
     int ep_src_loc = comm.ep_comm_ptr->size_rank_info[1].first;
     int ep_dest_loc = comm.ep_comm_ptr->comm_list->rank_map->at(dest).first;
@@ -138,7 +138,7 @@ namespace ep_lib {
 
     // EP intracomm
 
-    check_sum_send(buf, count, datatype, dest, tag, comm, 1);
+    //check_sum_send(buf, count, datatype, dest, tag, comm, 1);
 
     int ep_src_loc = comm.ep_comm_ptr->size_rank_info[1].first;
     int ep_dest_loc = comm.ep_comm_ptr->comm_list->rank_map->at(dest).first;
@@ -170,7 +170,7 @@ namespace ep_lib {
   {
     Debug("MPI_Isend with intercomm\n");
 
-    check_sum_send(buf, count, datatype, dest, tag, comm, 1);
+    //check_sum_send(buf, count, datatype, dest, tag, comm, 1);
 
     int dest_remote_ep_rank    = comm.ep_comm_ptr->intercomm->remote_rank_map->at(dest).first;
     int dest_remote_comm_label = comm.ep_comm_ptr->intercomm->remote_rank_map->at(dest).second;
@@ -243,7 +243,7 @@ namespace ep_lib {
   {
     Debug("MPI_Issend with intercomm\n");
 
-    check_sum_send(buf, count, datatype, dest, tag, comm, 1);
+    //check_sum_send(buf, count, datatype, dest, tag, comm, 1);
 
     int dest_remote_ep_rank    = comm.ep_comm_ptr->intercomm->remote_rank_map->at(dest).first;
     int dest_remote_comm_label = comm.ep_comm_ptr->intercomm->remote_rank_map->at(dest).second;

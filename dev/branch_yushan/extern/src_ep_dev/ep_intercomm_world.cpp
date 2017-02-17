@@ -280,8 +280,8 @@ namespace ep_lib
         std::copy ( new_rank_info[1].data(), new_rank_info[1].data() + size_info[2], send_buf.begin() + size_info[2] );
         std::copy ( new_ep_info[0].data(),   new_ep_info[0].data()   + size_info[0], send_buf.begin() + 2*size_info[2] );
 
-        MPI_Send(send_buf.data(), 3*size_info[2], MPI_INT_STD, mpi_remote_leader, tag, peer_comm);
-        MPI_Recv(recv_buf.data(), 3*size_info[3], MPI_INT_STD, mpi_remote_leader, tag, peer_comm, &mpi_status);
+        ::MPI_Send(send_buf.data(), 3*size_info[2], MPI_INT_STD, mpi_remote_leader, tag, peer_comm);
+        ::MPI_Recv(recv_buf.data(), 3*size_info[3], MPI_INT_STD, mpi_remote_leader, tag, peer_comm, &mpi_status);
 
       }
 

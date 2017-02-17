@@ -22,7 +22,7 @@
 #include "field.hpp"
 #include "context.hpp"
 #include "context_client.hpp"
-#include "mpi.hpp"
+#include "mpi_std.hpp"
 #include "timer.hpp"
 #include "array_new.hpp"
 
@@ -53,22 +53,24 @@ extern "C"
    void cxios_init_client(const char* client_id , int len_client_id, MPI_Fint* f_local_comm, MPI_Fint* f_return_comm )
    {
       std::string str;
-      MPI_Comm local_comm;
-      MPI_Comm return_comm;
+      ep_lib::MPI_Comm local_comm;
+      ep_lib::MPI_Comm return_comm;
       
-      fc_comm_map.clear();
+      ep_lib::fc_comm_map.clear();
 
       if (!cstr2string(client_id, len_client_id, str)) return;
 
       int initialized;
       MPI_Initialized(&initialized);
-      if (initialized) local_comm=MPI_Comm_f2c(*f_local_comm);
+      //if (initialized) local_comm.mpi_comm = MPI_Comm_f2c(*f_local_comm);
+      if (initialized) local_comm = ep_lib::EP_Comm_f2c(static_cast< int >(*f_local_comm));
       else local_comm = MPI_COMM_NULL;
       
      
 
       CXios::initClientSide(str, local_comm, return_comm);
-      *f_return_comm = MPI_Comm_c2f(return_comm);
+
+      *f_return_comm = ep_lib::EP_Comm_c2f(return_comm);
 
       printf("in icdata.cpp, f_return_comm = %d\n", *f_return_comm);
 
@@ -79,16 +81,16 @@ extern "C"
    void cxios_context_initialize(const char* context_id , int len_context_id, MPI_Fint* f_comm)
    {
      std::string str;
-     MPI_Comm comm;
+     ep_lib::MPI_Comm comm;
 
      if (!cstr2string(context_id, len_context_id, str)) return;
      CTimer::get("XIOS").resume();
      CTimer::get("XIOS init context").resume();
-     comm=MPI_Comm_f2c(*f_comm);
+     comm = ep_lib::EP_Comm_f2c(static_cast< int >(*f_comm));
     
      CClient::registerContext(str, comm);
      
-     //printf("client register context OK\n");
+     printf("icdata.cpp: client register context OK\n");
      
      CTimer::get("XIOS init context").suspend();
      CTimer::get("XIOS").suspend();

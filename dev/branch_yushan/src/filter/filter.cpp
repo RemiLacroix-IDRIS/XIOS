@@ -13,6 +13,10 @@ namespace xios
   {
     CDataPacketPtr outputPacket = engine->apply(data);
     if (outputPacket)
+    {
+      printf("filter/filter.cpp : deliverOuput(outputPacket)\n");
       deliverOuput(outputPacket);
+      printf("filter/filter.cpp : deliverOuput(outputPacket) OKOK\n");
+    }
   }
 } // namespace xios

@@ -27,7 +27,7 @@ namespace ep_lib
     }
 
 
-    if(comm.mpi_comm)
+    if(comm != MPI_COMM_NULL)
     {
       ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm > (comm.mpi_comm);
       ::MPI_Comm_rank(mpi_comm, rank);

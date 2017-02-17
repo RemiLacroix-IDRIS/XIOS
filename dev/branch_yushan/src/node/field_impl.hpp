@@ -19,11 +19,15 @@ namespace xios {
   {
     if (clientSourceFilter)
     {
+      printf("file_impl.hpp : clientSourceFilter->streamData\n");
       clientSourceFilter->streamData(CContext::getCurrent()->getCalendar()->getCurrentDate(), _data);
+      printf("file_impl.hpp : clientSourceFilter->streamData OKOK\n");
     }
     else if (!field_ref.isEmpty() || !content.empty())
+    {
       ERROR("void CField::setData(const CArray<double, N>& _data)",
             << "Impossible to receive data from the model for a field [ id = " << getId() << " ] with a reference or an arithmetic operation.");
+    }
   }
 
   template <int N>

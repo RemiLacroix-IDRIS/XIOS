@@ -28,7 +28,9 @@ namespace xios
 
     grid->inputField(data, packet->data);
 
+    printf("filter/source_filter.cpp : deliverOuput(packet) \n");
     deliverOuput(packet);
+    printf("filter/source_filter.cpp : deliverOuput(packet) OKOK\n");
   }
 
   template void CSourceFilter::streamData<1>(CDate date, const CArray<double, 1>& data);

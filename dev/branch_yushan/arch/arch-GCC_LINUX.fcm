@@ -2,9 +2,9 @@
 ###################                Projet XIOS               ###################
 ################################################################################
 
-%CCOMPILER      mpicc
-%FCOMPILER      mpif90
-%LINKER         mpif90  
+%CCOMPILER      mpicc -fopenmp -D_openmpi -D_usingEP 
+%FCOMPILER      mpif90 -fopenmp
+%LINKER         mpif90 -fopenmp -D_openmpi -D_usingEP 
 
 %BASE_CFLAGS    -ansi -w
 %PROD_CFLAGS    -O3 -DBOOST_DISABLE_ASSERTS

@@ -295,9 +295,6 @@ namespace ep_lib
   {
     if(!comm.is_ep)
     {
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
       ::MPI_Scatterv(sendbuf, sendcounts, displs, static_cast< ::MPI_Datatype>(sendtype), recvbuf, recvcount,
                      static_cast< ::MPI_Datatype>(recvtype), root, static_cast< ::MPI_Comm>(comm.mpi_comm));
       return 0;
@@ -328,9 +325,7 @@ namespace ep_lib
     int count = recvcount;
 
     ::MPI_Aint datasize, lb;
-    #ifdef _serialized
-    #pragma omp critical (_mpi_call)
-    #endif // _serialized
+
     ::MPI_Type_get_extent(static_cast< ::MPI_Datatype>(datatype), &lb, &datasize);
 
     assert(accumulate(sendcounts, sendcounts+ep_size-1, 0) == displs[ep_size-1]); // Only for contunuous gather.
@@ -357,9 +352,6 @@ namespace ep_lib
 
       local_recvbuf = new void*[datasize*mpi_sendcnt];
 
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
       ::MPI_Gather(&mpi_sendcnt, 1, MPI_INT_STD, mpi_scatterv_sendcnt, 1, MPI_INT_STD, root_mpi_rank, static_cast< ::MPI_Comm>(comm.mpi_comm));
 
       mpi_displs[0] = displs[0];
@@ -369,17 +361,11 @@ namespace ep_lib
 
       if(root_ep_loc!=0)
       {
-        #ifdef _serialized
-        #pragma omp critical (_mpi_call)
-        #endif // _serialized
         ::MPI_Scatterv(master_sendbuf, mpi_scatterv_sendcnt, mpi_displs, static_cast< ::MPI_Datatype>(datatype),
                      local_recvbuf, mpi_sendcnt, static_cast< ::MPI_Datatype>(datatype), root_mpi_rank, static_cast< ::MPI_Comm>(comm.mpi_comm));
       }
       else
       {
-        #ifdef _serialized
-        #pragma omp critical (_mpi_call)
-        #endif // _serialized
         ::MPI_Scatterv(sendbuf, mpi_scatterv_sendcnt, mpi_displs, static_cast< ::MPI_Datatype>(datatype),
                      local_recvbuf, mpi_sendcnt, static_cast< ::MPI_Datatype>(datatype), root_mpi_rank, static_cast< ::MPI_Comm>(comm.mpi_comm));
       }

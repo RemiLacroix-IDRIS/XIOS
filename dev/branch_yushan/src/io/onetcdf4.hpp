@@ -6,8 +6,7 @@
 #include "exception.hpp"
 #include "data_output.hpp"
 #include "array_new.hpp"
-#include "mpi.hpp"
-//#include <mpi.h>
+#include "mpi_std.hpp"
 #include "netcdf.hpp"
 
 #ifndef UNLIMITED_DIM
@@ -28,7 +27,7 @@ namespace xios
             /// Constructeurs ///
             CONetCDF4(const StdString& filename, bool append, bool useClassicFormat = false,
             		  bool useCFConvention = true,
-                      const MPI_Comm* comm = NULL, bool multifile = true,
+                      const ep_lib::MPI_Comm* comm = NULL, bool multifile = true,
                       const StdString& timeCounterName = "time_counter");
 
             CONetCDF4(const CONetCDF4& onetcdf4);       // Not implemented.
@@ -37,7 +36,7 @@ namespace xios
 
             /// Initialisation ///
             void initialize(const StdString& filename, bool append, bool useClassicFormat, bool useCFConvention,
-                            const MPI_Comm* comm, bool multifile, const StdString& timeCounterName);
+                            const ep_lib::MPI_Comm* comm, bool multifile, const StdString& timeCounterName);
             void close(void);
             void sync(void);
             void definition_start(void);

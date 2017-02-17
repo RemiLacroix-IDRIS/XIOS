@@ -20,6 +20,14 @@
 #undef MPI_COMM_WORLD
 #undef MPI_COMM_NULL
 
+#undef MPI_STATUS_IGNORE
+//#undef MPI_INFO_NULL
+#undef MPI_REQUEST_NULL
+
+#ifdef _openmpi
+//#undef MPI_Fint
+#endif
+
 // _STD defined in ep_type.cpp
 
 extern ::MPI_Datatype MPI_INT_STD;
@@ -37,6 +45,10 @@ extern ::MPI_Op MPI_MIN_STD;
 extern ::MPI_Comm MPI_COMM_WORLD_STD;
 extern ::MPI_Comm MPI_COMM_NULL_STD;
 
+extern ::MPI_Status MPI_STATUS_IGNORE_STD;
+//extern ::MPI_Info MPI_INFO_NULL_STD;
+extern ::MPI_Request MPI_REQUEST_NULL_STD;
+
 ep_lib::MPI_Datatype MPI_INT = MPI_INT_STD;
 ep_lib::MPI_Datatype MPI_FLOAT = MPI_FLOAT_STD;
 ep_lib::MPI_Datatype MPI_DOUBLE = MPI_DOUBLE_STD;
@@ -51,6 +63,11 @@ ep_lib::MPI_Op MPI_MIN = MPI_MIN_STD;
 
 ep_lib::MPI_Comm MPI_COMM_WORLD(MPI_COMM_WORLD_STD);
 ep_lib::MPI_Comm MPI_COMM_NULL(MPI_COMM_NULL_STD);
+
+//ep_lib::MPI_Info MPI_INFO_NULL(MPI_INFO_NULL_STD);
+ep_lib::MPI_Request MPI_REQUEST_NULL(MPI_REQUEST_NULL_STD);
+
+//ep_lib::MPI_Status MPI_STATUS_IGNORE_STD = MPI_STATUS_IGNORE_STD;
 
 //ep_lib::MPI_Comm EP_COMM_WORLD;
 //ep_lib::MPI_Comm EP_COMM_NULL;

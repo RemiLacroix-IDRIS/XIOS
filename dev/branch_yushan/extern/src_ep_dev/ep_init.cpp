@@ -10,7 +10,7 @@ namespace ep_lib
 
   int MPI_Init_thread(int *argc, char*** argv, int required, int*provided)
   {
-    printf("MPI_Init_thread\n");
+    //printf("MPI_Init_thread\n");
 
     int id = omp_get_thread_num();
 
@@ -23,7 +23,7 @@ namespace ep_lib
 
   int MPI_Init(int *argc, char ***argv)
   {
-    printf("MPI_init called\n");
+    //printf("MPI_init called\n");
     int id = omp_get_thread_num();
 
     if(id == 0)
@@ -35,7 +35,7 @@ namespace ep_lib
 
   int MPI_Initialized(int *flag)
   {
-    printf("MPI_initialized called\n");
+    //printf("MPI_initialized called\n");
 
     ::MPI_Initialized(flag);
     

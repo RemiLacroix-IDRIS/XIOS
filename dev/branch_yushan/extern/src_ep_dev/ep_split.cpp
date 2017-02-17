@@ -143,9 +143,7 @@ namespace ep_lib
       {
         int master_color = 1;
         if(matched_number_loc[j] == 0) master_color = MPI_UNDEFINED;
-        #ifdef _serialized
-        #pragma omp critical (_mpi_call)
-        #endif // _serialized
+
         ::MPI_Comm_split(static_cast< ::MPI_Comm>(comm.mpi_comm), master_color, mpi_rank, &split_mpi_comm[j]);
         
         comm.ep_comm_ptr->comm_list->mpi_bridge = split_mpi_comm[j];

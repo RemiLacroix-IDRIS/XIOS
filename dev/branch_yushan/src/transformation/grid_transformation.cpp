@@ -474,8 +474,8 @@ void CGridTransformation::computeTransformationMapping(const SourceDestinationIn
   }
 
   // Sending global index of grid source to corresponding process as well as the corresponding mask
-  std::vector<MPI_Request> requests;
-  std::vector<MPI_Status> status;
+  std::vector<ep_lib::MPI_Request> requests;
+  std::vector<ep_lib::MPI_Status> status;
   boost::unordered_map<int, unsigned char* > recvMaskDst;
   boost::unordered_map<int, unsigned long* > recvGlobalIndexSrc;
   for (std::map<int,int>::const_iterator itRecv = recvRankSizeMap.begin(); itRecv != recvRankSizeMap.end(); ++itRecv)
@@ -485,9 +485,9 @@ void CGridTransformation::computeTransformationMapping(const SourceDestinationIn
     recvMaskDst[recvRank] = new unsigned char [recvSize];
     recvGlobalIndexSrc[recvRank] = new unsigned long [recvSize];
 
-    requests.push_back(MPI_Request());
+    requests.push_back(ep_lib::MPI_Request());
     MPI_Irecv(recvGlobalIndexSrc[recvRank], recvSize, MPI_UNSIGNED_LONG, recvRank, 46, client->intraComm, &requests.back());
-    requests.push_back(MPI_Request());
+    requests.push_back(ep_lib::MPI_Request());
     MPI_Irecv(recvMaskDst[recvRank], recvSize, MPI_UNSIGNED_CHAR, recvRank, 47, client->intraComm, &requests.back());
   }
 
@@ -523,9 +523,9 @@ void CGridTransformation::computeTransformationMapping(const SourceDestinationIn
     }
 
     // Send global index source and mask
-    requests.push_back(MPI_Request());
+    requests.push_back(ep_lib::MPI_Request());
     MPI_Isend(sendGlobalIndexSrc[sendRank], sendSize, MPI_UNSIGNED_LONG, sendRank, 46, client->intraComm, &requests.back());
-    requests.push_back(MPI_Request());
+    requests.push_back(ep_lib::MPI_Request());
     MPI_Isend(sendMaskDst[sendRank], sendSize, MPI_UNSIGNED_CHAR, sendRank, 47, client->intraComm, &requests.back());
   }
 
@@ -535,15 +535,15 @@ void CGridTransformation::computeTransformationMapping(const SourceDestinationIn
   //printf("(%d) src/transformation/grid_transformation 1st waitall OK\n", clientRank);
 
   // Okie, now use the mask to identify which index source we need to send, then also signal the destination which masked index we will return
-  std::vector<MPI_Request>().swap(requests);
-  std::vector<MPI_Status>().swap(status);
+  std::vector<ep_lib::MPI_Request>().swap(requests);
+  std::vector<ep_lib::MPI_Status>().swap(status);
   // Okie, on destination side, we will wait for information of masked index of source
   for (std::map<int,int>::const_iterator itSend = sendRankSizeMap.begin(); itSend != sendRankSizeMap.end(); ++itSend)
   {
     int recvRank = itSend->first;
     int recvSize = itSend->second;
 
-    requests.push_back(MPI_Request());
+    requests.push_back(ep_lib::MPI_Request());
     MPI_Irecv(sendMaskDst[recvRank], recvSize, MPI_UNSIGNED_CHAR, recvRank, 48, client->intraComm, &requests.back());
   }
 
@@ -580,7 +580,7 @@ void CGridTransformation::computeTransformationMapping(const SourceDestinationIn
     }
 
     // Okie, now inform the destination which source index are masked
-    requests.push_back(MPI_Request());
+    requests.push_back(ep_lib::MPI_Request());
     MPI_Isend(recvMaskDst[recvRank], recvSize, MPI_UNSIGNED_CHAR, recvRank, 48, client->intraComm, &requests.back());
   }
   status.resize(requests.size());

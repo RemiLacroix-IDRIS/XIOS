@@ -62,11 +62,11 @@ namespace ep_lib {
       {
         status->mpi_status = new ::MPI_Status(mpi_status);
         status->ep_src = request->ep_src;
-      status->ep_tag = request->ep_tag;
-      status->ep_datatype = request->ep_datatype;
+        status->ep_tag = request->ep_tag;
+        status->ep_datatype = request->ep_datatype;
         int count;
         MPI_Get_count(status, request->ep_datatype, &count);
-        check_sum_recv(request->buf, count, request->ep_datatype, request->ep_src, request->ep_tag, request->comm, 2);
+        //check_sum_recv(request->buf, count, request->ep_datatype, request->ep_src, request->ep_tag, request->comm, 2);
       }
 
       status->ep_src = request->ep_src;

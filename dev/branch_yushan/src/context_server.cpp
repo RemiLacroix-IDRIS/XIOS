@@ -9,7 +9,7 @@
 #include "field.hpp"
 #include "file.hpp"
 #include "grid.hpp"
-#include "mpi.hpp"
+#include "mpi_std.hpp"
 #include "tracer.hpp"
 #include "timer.hpp"
 #include "cxios.hpp"
@@ -22,7 +22,7 @@
 namespace xios
 {
 
-  CContextServer::CContextServer(CContext* parent,MPI_Comm intraComm_,MPI_Comm interComm_)
+  CContextServer::CContextServer(CContext* parent, ep_lib::MPI_Comm intraComm_, ep_lib::MPI_Comm interComm_)
   {
     context=parent;
     intraComm=intraComm_;
@@ -70,7 +70,7 @@ namespace xios
     int flag;
     int count;
     char * addr;
-    MPI_Status status;
+    ep_lib::MPI_Status status;
     map<int,CServerBuffer*>::iterator it;
 
     for(rank=0;rank<commSize;rank++)
@@ -100,7 +100,7 @@ namespace xios
             if (it->second->isBufferFree(count))
             {
               addr=(char*)it->second->getBuffer(count);
-              MPI_Irecv(addr,count,MPI_CHAR,rank,20,interComm,&pendingRequest[rank]);
+              ep_lib::MPI_Irecv(addr,count,MPI_CHAR,rank,20,interComm,&pendingRequest[rank]);
               bufferRequest[rank]=addr;
               //printf("find message, i-receiving to buffer %p, rank = %d, commSize = %d\n", addr, rank, commSize);
             }
@@ -112,13 +112,13 @@ namespace xios
 
   void CContextServer::checkPendingRequest(void)
   {
-    map<int,MPI_Request>::iterator it;
+    map<int,ep_lib::MPI_Request>::iterator it;
     list<int> recvRequest;
     list<int>::iterator itRecv;
     int rank;
     int flag;
     int count;
-    MPI_Status status;
+    ep_lib::MPI_Status status;
 
     //printf("enter checkPendingRequest\n");
 

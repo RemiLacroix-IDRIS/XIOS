@@ -11,7 +11,7 @@
 #define OMPI_SKIP_MPICXX
 
 #ifdef _usingEP
-  #include "../extern/src_ep/ep_lib.hpp"
+  #include "../extern/src_ep_dev/ep_lib.hpp"
   using namespace ep_lib;
 #elif _usingMPI
   #include <mpi.h>

@@ -3,7 +3,7 @@
 
 #include "xios_spl.hpp"
 #include "buffer.hpp"
-#include "mpi.hpp"
+#include "mpi_std.hpp"
 #include "cxios.hpp"
 
 namespace xios

@@ -434,7 +434,7 @@ namespace ep_lib
 
     if(!comm.is_ep)
     {
-      ::MPI_Exscan(sendbuf, recvbuf, count, static_cast< ::MPI_Datatype>(datatype),
+      ::MPI_Exscan(const_cast<void*>(sendbuf), recvbuf, count, static_cast< ::MPI_Datatype>(datatype),
                    static_cast< ::MPI_Op>(op), static_cast< ::MPI_Comm>(comm.mpi_comm));
       return 0;
     }
@@ -480,9 +480,6 @@ namespace ep_lib
 
     if(ep_rank_loc == 0)
     {
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
       ::MPI_Exscan(local_sum, mpi_scan_recvbuf, count, static_cast< ::MPI_Datatype>(datatype), static_cast< ::MPI_Op>(op), static_cast< ::MPI_Comm>(comm.mpi_comm));
     }
 

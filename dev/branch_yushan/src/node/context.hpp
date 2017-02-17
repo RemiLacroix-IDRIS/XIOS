@@ -87,8 +87,8 @@ namespace xios {
 
       public :
          // Initialize server or client
-         void initServer(MPI_Comm intraComm, MPI_Comm interComm, CContext* cxtClient = 0);
-         void initClient(MPI_Comm intraComm, MPI_Comm interComm, CContext* cxtServer = 0);
+         void initServer(ep_lib::MPI_Comm intraComm, ep_lib::MPI_Comm interComm, CContext* cxtClient = 0);
+         void initClient(ep_lib::MPI_Comm intraComm, ep_lib::MPI_Comm interComm, CContext* cxtServer = 0);
          bool isInitialized(void);
 
          // Put sever or client into loop state
@@ -228,7 +228,7 @@ namespace xios {
          bool finalized;
          StdString idServer_;
          CGarbageCollector garbageCollector;
-         std::list<MPI_Comm> comms; //!< Communicators allocated internally
+         std::list<ep_lib::MPI_Comm> comms; //!< Communicators allocated internally
 
       public: // Some function maybe removed in the near future
         // virtual void toBinary  (StdOStream & os) const;

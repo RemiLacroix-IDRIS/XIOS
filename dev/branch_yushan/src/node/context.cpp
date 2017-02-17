@@ -235,7 +235,7 @@ namespace xios {
    ///---------------------------------------------------------------
 
    //! Initialize client side
-   void CContext::initClient(MPI_Comm intraComm, MPI_Comm interComm, CContext* cxtServer /*= 0*/)
+   void CContext::initClient(ep_lib::MPI_Comm intraComm, ep_lib::MPI_Comm interComm, CContext* cxtServer /*= 0*/)
    {
      hasClient=true;
      client = new CContextClient(this,intraComm, interComm, cxtServer);
@@ -247,7 +247,7 @@ namespace xios {
      registryOut=new CRegistry(intraComm) ;
      registryOut->setPath(getId()) ;
 
-     MPI_Comm intraCommServer, interCommServer;
+     ep_lib::MPI_Comm intraCommServer, interCommServer;
      if (cxtServer) // Attached mode
      {
        intraCommServer = intraComm;
@@ -310,7 +310,7 @@ namespace xios {
    }
 
    //! Initialize server
-   void CContext::initServer(MPI_Comm intraComm,MPI_Comm interComm, CContext* cxtClient /*= 0*/)
+   void CContext::initServer(ep_lib::MPI_Comm intraComm, ep_lib::MPI_Comm interComm, CContext* cxtClient /*= 0*/)
    {
      hasServer=true;
      server = new CContextServer(this,intraComm,interComm);
@@ -322,7 +322,7 @@ namespace xios {
      registryOut=new CRegistry(intraComm) ;
      registryOut->setPath(getId()) ;
 
-     MPI_Comm intraCommClient, interCommClient;
+     ep_lib::MPI_Comm intraCommClient, interCommClient;
      if (cxtClient) // Attached mode
      {
        intraCommClient = intraComm;
@@ -368,10 +368,11 @@ namespace xios {
         {
           closeAllFile();
           registryOut->hierarchicalGatherRegistry() ;
+          //registryOut->gatherRegistry() ;
           if (server->intraCommRank==0) CXios::globalRegistry->mergeRegistry(*registryOut) ;
         }
 
-        for (std::list<MPI_Comm>::iterator it = comms.begin(); it != comms.end(); ++it)
+        for (std::list<ep_lib::MPI_Comm>::iterator it = comms.begin(); it != comms.end(); ++it)
           MPI_Comm_free(&(*it));
         comms.clear();
       }

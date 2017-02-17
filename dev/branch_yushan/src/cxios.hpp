@@ -18,7 +18,7 @@ namespace xios
   {
     public:
      static void initialize(void) ;
-     static void initClientSide(const string & codeId, MPI_Comm& localComm, MPI_Comm& returnComm) ;
+     static void initClientSide(const string & codeId, ep_lib::MPI_Comm& localComm, ep_lib::MPI_Comm& returnComm) ;
      static void initServerSide(void) ;
      static void clientFinalize(void) ;
      static void parseFile(const string& filename) ;

@@ -19,7 +19,7 @@ namespace xios
     \param [in] interComm_ communicator of group server
     \cxtSer [in] cxtSer Pointer to context of server side. (It is only used on case of attached mode)
     */
-    CContextClient::CContextClient(CContext* parent, MPI_Comm intraComm_, MPI_Comm interComm_, CContext* cxtSer)
+    CContextClient::CContextClient(CContext* parent, ep_lib::MPI_Comm intraComm_, ep_lib::MPI_Comm interComm_, CContext* cxtSer)
      : mapBufferSize_(), parentServer(cxtSer), maxBufferedEvents(4)
     {
       context = parent;
@@ -162,7 +162,12 @@ namespace xios
 
       for (itBuffer = bufferList.begin(), itSize = sizeList.begin(); itBuffer != bufferList.end(); itBuffer++, itSize++)
       {
-        retBuffer.push_back((*itBuffer)->getBuffer(*itSize));
+        CBufferOut* m_buf = (*itBuffer)->getBuffer(*itSize);
+        //retBuffer.push_back((*itBuffer)->getBuffer(*itSize));
+        //int m_size = retBuffer.size();
+        //retBuffer.resize(m_size+1);
+        //m_size = retBuffer.size();
+        retBuffer.push_back(m_buf);
       }
       return retBuffer;
    }

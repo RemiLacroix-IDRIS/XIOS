@@ -39,20 +39,6 @@ namespace ep_lib {
     local_mpi_size = inter_comm.ep_comm_ptr->intercomm->local_comm->ep_comm_ptr->size_rank_info[2].second;
 
 
-//    if(local_ep_rank == 0 && high == false)
-//    {
-//      MPI_Status status;
-//      MPI_Send(&local_high, 1, MPI_INT, 0, inter_comm.ep_comm_ptr->intercomm->intercomm_tag, inter_comm);
-//      MPI_Recv(&remote_high, 1, MPI_INT, 0, inter_comm.ep_comm_ptr->intercomm->intercomm_tag, inter_comm, &status);
-//    }
-//
-//    if(local_ep_rank == 0 && high == true)
-//    {
-//      MPI_Status status;
-//      MPI_Recv(&remote_high, 1, MPI_INT, 0, inter_comm.ep_comm_ptr->intercomm->intercomm_tag, inter_comm, &status);
-//      MPI_Send(&local_high, 1, MPI_INT, 0, inter_comm.ep_comm_ptr->intercomm->intercomm_tag, inter_comm);
-//    }
-
     if(local_ep_rank == 0)
     {
       MPI_Status status;
@@ -99,9 +85,6 @@ namespace ep_lib {
     MPI_Gather(&my_ep_rank, 1, MPI_INT, reorder, 1, MPI_INT, 0, *newintracomm);
     if(intra_ep_rank_loc == 0)
     {
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
       ::MPI_Bcast(reorder, intra_ep_size, MPI_INT_STD, 0, static_cast< ::MPI_Comm>(newintracomm->mpi_comm));
 
       vector< pair<int, int> > tmp_rank_map(intra_ep_size);
@@ -216,9 +199,7 @@ namespace ep_lib {
     {
 
       ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm>(inter_comm.ep_comm_ptr->intercomm->mpi_inter_comm);
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
+
       ::MPI_Intercomm_merge(mpi_comm, intercomm_high, &mpi_intracomm);
       MPI_Info info;
       MPI_Comm_create_endpoints(mpi_intracomm, num_ep, info, ep_intracomm);
@@ -261,9 +242,7 @@ namespace ep_lib {
     MPI_Gather(&my_ep_rank, 1, MPI_INT, reorder, 1, MPI_INT, 0, *newintracomm);
     if(intra_ep_rank_loc == 0)
     {
-      #ifdef _serialized
-      #pragma omp critical (_mpi_call)
-      #endif // _serialized
+
       ::MPI_Bcast(reorder, intra_ep_size, MPI_INT_STD, 0, static_cast< ::MPI_Comm>(newintracomm->mpi_comm));
 
       vector< pair<int, int> > tmp_rank_map(intra_ep_size);

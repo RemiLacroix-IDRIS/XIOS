@@ -33,7 +33,8 @@ namespace ep_lib
     //printf("iprobe, message queue size = %lu, queue = %p\n", comm.ep_comm_ptr->message_queue->size(), comm.ep_comm_ptr->message_queue);
 
     #pragma omp flush
-    #pragma critical (_query)
+
+    #pragma omp critical (_query)
     if(comm.ep_comm_ptr->message_queue->size() > 0)
     {
       for(Message_list::iterator it = comm.ep_comm_ptr->message_queue->begin(); it!= comm.ep_comm_ptr->message_queue->end(); it++)
@@ -103,7 +104,8 @@ namespace ep_lib
     Message_Check(comm);
 
     #pragma omp flush
-    #pragma critical (_query)
+
+    #pragma omp critical (_query)
     if(comm.ep_comm_ptr->message_queue->size() > 0)
     {
       for(Message_list::iterator it = comm.ep_comm_ptr->message_queue->begin(); it!= comm.ep_comm_ptr->message_queue->end(); it++)
@@ -126,7 +128,7 @@ namespace ep_lib
           message->ep_tag = it->ep_tag;
           message->ep_src = it->ep_src;
 
-          #pragma omp critical (_query)
+          #pragma omp critical (_query2)
           {              
             //printf("local message erased. src = %d, dest = %d, tag = %d\n", it->ep_src, it->ep_dest, it->ep_tag);     
             delete it->mpi_status;

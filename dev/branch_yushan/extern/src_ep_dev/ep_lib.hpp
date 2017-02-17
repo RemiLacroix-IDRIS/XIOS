@@ -19,8 +19,13 @@ namespace ep_lib
   typedef void* MPI_Op;
 #endif
 
+#ifdef _intelmpi
   #define MPI_ANY_SOURCE -2 
   #define MPI_ANY_TAG -1 
+#elif _openmpi
+  #define MPI_ANY_SOURCE -1 
+  #define MPI_ANY_TAG -1 
+#endif
 
   int MPI_Init_thread(int* argc, char*** argv, int required, int*provided);
 
