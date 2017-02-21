@@ -73,7 +73,7 @@ namespace ep_lib
     matched_number_loc.resize(all_color.size(), 0);
 
 
-    while(color_list.size())
+    while(!color_list.empty())
     {
       int target_color = color_list.front();
       for(list<int>::iterator it = color_list.begin(); it != color_list.end(); ++it)
@@ -123,7 +123,7 @@ namespace ep_lib
       }
       if(color == all_color[i])
       {
-        color_index = i;
+        //color_index = i;
         for(int j=0; j<colored_key_loc[i].size(); j++)
         {
           if(key == colored_key_loc[i][j])

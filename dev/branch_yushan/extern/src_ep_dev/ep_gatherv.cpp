@@ -322,9 +322,6 @@ namespace ep_lib
                   MPI_Datatype recvtype, int root, MPI_Comm comm)
   {
   
-    
-    
-
     if(!comm.is_ep && comm.mpi_comm)
     {
       ::MPI_Gatherv(const_cast<void*>(sendbuf), sendcount, static_cast< ::MPI_Datatype>(sendtype), recvbuf, const_cast<int*>(recvcounts), const_cast<int*>(displs),
@@ -348,6 +345,12 @@ namespace ep_lib
     ep_size = comm.ep_comm_ptr->size_rank_info[0].second;
     num_ep = comm.ep_comm_ptr->size_rank_info[1].second;
     mpi_size = comm.ep_comm_ptr->size_rank_info[2].second;
+    
+    if(ep_rank != root)
+    {
+      recvcounts = new int[ep_size];
+      displs = new int[ep_size];
+    }
     
     MPI_Bcast(const_cast< int* >(recvcounts), ep_size, MPI_INT, root, comm);
     MPI_Bcast(const_cast< int* >(displs), ep_size, MPI_INT, root, comm);
@@ -440,6 +443,11 @@ namespace ep_lib
       {
         delete[] static_cast<char*>(local_gather_recvbuf);
       }
+    }
+    else
+    {
+      delete[] recvcounts;
+      delete[] displs;
     }
     return 0;
   }

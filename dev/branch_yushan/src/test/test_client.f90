@@ -137,6 +137,11 @@ PROGRAM test_client
   print*, "xios_close_context_definition OK"  
 
   PRINT*,"field field_A is active ? ",xios_field_is_active("field_A")
+
+
+  call MPI_Barrier(comm, ierr)
+  PRINT*,"MPI_Barrier OK "
+
   !DO ts=1,24*10
   DO ts=1,6
     CALL xios_update_calendar(ts)

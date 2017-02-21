@@ -259,7 +259,8 @@ namespace xios
 
   void CRegistry::hierarchicalGatherRegistry(void)
   {
-    hierarchicalGatherRegistry(communicator) ;
+   // hierarchicalGatherRegistry(communicator) ;
+    gatherRegistry(communicator) ;
   }
 
   void CRegistry::hierarchicalGatherRegistry(const MPI_Comm& comm)

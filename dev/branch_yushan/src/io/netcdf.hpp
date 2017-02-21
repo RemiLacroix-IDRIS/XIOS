@@ -29,10 +29,10 @@ extern "C"
 
 namespace xios
 {
-  inline int nc_create_par(const char *path, int cmode, ep_lib::MPI_Comm comm, MPI_Info info,int *ncidp)
+  inline int nc_create_par(const char *path, int cmode, MPI_Comm comm, MPI_Info info,int *ncidp)
   {
 #if defined(USING_NETCDF_PAR)
-    return ::nc_create_par(path, cmode, static_cast<MPI_Comm>(comm.mpi_comm), info, ncidp) ;
+    return ::nc_create_par(path, cmode, comm, info, ncidp) ;
 #else
     ERROR("int nc_create_par(const char *path, int cmode, MPI_Comm comm, MPI_Info info,int *ncidp)",
            << "must not be use with netcdf sequential version") ;
@@ -40,10 +40,10 @@ namespace xios
 #endif
   }
 
-  inline int nc_open_par(const char *path, int mode, ep_lib::MPI_Comm comm, MPI_Info info,int *ncidp)
+  inline int nc_open_par(const char *path, int mode, MPI_Comm comm, MPI_Info info,int *ncidp)
   {
 #if defined(USING_NETCDF_PAR)
-    return ::nc_open_par(path, mode, static_cast<MPI_Comm>(comm.mpi_comm), info, ncidp) ;
+    return ::nc_open_par(path, mode, comm, info, ncidp) ;
 #else
     ERROR("int nc_open_par(const char *path, int mode, MPI_Comm comm, MPI_Info info,int *ncidp)",
            << "must not be use with netcdf sequential version") ;

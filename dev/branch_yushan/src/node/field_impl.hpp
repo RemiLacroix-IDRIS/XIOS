@@ -19,9 +19,7 @@ namespace xios {
   {
     if (clientSourceFilter)
     {
-      printf("file_impl.hpp : clientSourceFilter->streamData\n");
       clientSourceFilter->streamData(CContext::getCurrent()->getCalendar()->getCurrentDate(), _data);
-      printf("file_impl.hpp : clientSourceFilter->streamData OKOK\n");
     }
     else if (!field_ref.isEmpty() || !content.empty())
     {

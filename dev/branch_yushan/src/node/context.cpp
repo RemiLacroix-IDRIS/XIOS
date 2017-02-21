@@ -19,7 +19,7 @@ namespace xios {
 
   shared_ptr<CContextGroup> CContext::root;
 
-   /// ////////////////////// Définitions ////////////////////// ///
+   /// ////////////////////// Dfinitions ////////////////////// ///
 
    CContext::CContext(void)
       : CObjectTemplate<CContext>(), CContextAttributes()
@@ -176,7 +176,7 @@ namespace xios {
           << SuperClassAttribute::toString() << ">" << std::endl;
       if (!this->hasChild())
       {
-         //oss << "<!-- No definition -->" << std::endl; // fait planter l'incrémentation
+         //oss << "<!-- No definition -->" << std::endl; // fait planter l'incrmentation
       }
       else
       {
@@ -403,6 +403,8 @@ namespace xios {
      }
      setClientServerBuffer(); //printf("myRank = %d, setClientServerBuffer OK\n", myRank);
 
+     //printf("hasClient = %d, hasServer = %d\n", hasClient, hasServer);
+
      if (hasClient && !hasServer)
      {
       // Send all attributes of current context to server
@@ -549,11 +551,11 @@ namespace xios {
 
    void CContext::solveAllInheritance(bool apply)
    {
-     // Résolution des héritages descendants (càd des héritages de groupes)
+     // Rsolution des hritages descendants (cd des hritages de groupes)
      // pour chacun des contextes.
       solveDescInheritance(apply);
 
-     // Résolution des héritages par référence au niveau des fichiers.
+     // Rsolution des hritages par rfrence au niveau des fichiers.
       const vector<CFile*> allFiles=CFile::getAll();
       const vector<CGrid*> allGrids= CGrid::getAll();
 
@@ -576,16 +578,16 @@ namespace xios {
       const std::vector<CFile*> allFiles = CFile::getAll();
 
       for (unsigned int i = 0; i < allFiles.size(); i++)
-         if (!allFiles[i]->enabled.isEmpty()) // Si l'attribut 'enabled' est défini.
+         if (!allFiles[i]->enabled.isEmpty()) // Si l'attribut 'enabled' est dfini.
          {
-            if (allFiles[i]->enabled.getValue()) // Si l'attribut 'enabled' est fixé à vrai.
+            if (allFiles[i]->enabled.getValue()) // Si l'attribut 'enabled' est fix  vrai.
                enabledFiles.push_back(allFiles[i]);
          }
          else enabledFiles.push_back(allFiles[i]); // otherwise true by default
 
 
       if (enabledFiles.size() == 0)
-         DEBUG(<<"Aucun fichier ne va être sorti dans le contexte nommé \""
+         DEBUG(<<"Aucun fichier ne va tre sorti dans le contexte nomm \""
                << getId() << "\" !");
    }
 
@@ -826,7 +828,7 @@ namespace xios {
       // Warning: This must be done after solving the inheritance and before the rest of post-processing
       prepareTimeseries();  //printf("myRank = %d, prepareTimeseries OK\n", myRank);
 
-      //Initialisation du vecteur 'enabledFiles' contenant la liste des fichiers à sortir.
+      //Initialisation du vecteur 'enabledFiles' contenant la liste des fichiers  sortir.
       this->findEnabledFiles();  //printf("myRank = %d, this->findEnabledFiles OK\n", myRank);
       this->findEnabledReadModeFiles();  //printf("myRank = %d, this->findEnabledReadModeFiles OK\n", myRank);
 

@@ -21,9 +21,7 @@ namespace xios
     std::vector<std::pair<boost::shared_ptr<CInputPin>, size_t> >::iterator it, itEnd;
     for (it = outputs.begin(), itEnd = outputs.end(); it != itEnd; ++it)
     {
-      printf("filter/output_pin.cpp : setInput\n");
       it->first->setInput(it->second, packet);
-      printf("filter/output_pin.cpp : setInput OKOK\n");
     }
   }
 } // namespace xios

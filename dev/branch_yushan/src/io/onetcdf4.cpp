@@ -46,7 +46,7 @@ namespace xios
          }
          wmpi = comm && !multifile;
          
-         MPI_Info info_null;
+         ep_lib::MPI_Info info_null;
 
          if (wmpi)
             mode |= useClassicFormat ? NC_PNETCDF : NC_MPIIO;
@@ -56,7 +56,7 @@ namespace xios
          {
             if (wmpi)
             {
-               CNetCdfInterface::createPar(filename, mode, static_cast<MPI_Comm>(comm->mpi_comm), info_null, this->ncidp);
+               CNetCdfInterface::createPar(filename, mode, static_cast<MPI_Comm>(comm->mpi_comm), static_cast<MPI_Info>(info_null.mpi_info), this->ncidp);
                printf("creating file with createPar\n");
             }
             else
@@ -73,7 +73,7 @@ namespace xios
             mode |= NC_WRITE;
             if (wmpi)
             {
-               CNetCdfInterface::openPar(filename, mode, static_cast<MPI_Comm>(comm->mpi_comm), info_null, this->ncidp);
+               CNetCdfInterface::openPar(filename, mode, static_cast<MPI_Comm>(comm->mpi_comm), static_cast<MPI_Info>(info_null.mpi_info), this->ncidp);
                printf("opening file with openPar\n");
             }
             else
