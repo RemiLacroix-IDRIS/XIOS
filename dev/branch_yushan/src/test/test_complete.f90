@@ -127,12 +127,14 @@ PROGRAM test_complete
   ni=0 ; lonvalue(:,:)=0
   CALL xios_get_domain_attr("domain_atm",ni=ni,lonvalue_2D=lonvalue)
 
-  PRINT *,"ni",ni
-  PRINT *,"lonvalue",lonvalue;
+  !PRINT *,"ni",ni
+  !PRINT *,"lonvalue",lonvalue;
 
 !!! Fin de la definition du contexte
 
   CALL xios_close_context_definition()
+
+  print *, "xios_close_context_definition(atmosphere)"
 
 !!! Test des valeurs des champs/fichiers
 
@@ -207,19 +209,22 @@ PROGRAM test_complete
   ni=0 ; lonvalue(:,:)=0
   CALL xios_get_domain_attr("domain_srf",ni=ni,lonvalue_2D=lonvalue)
 
-  PRINT *,"ni",ni
-  PRINT *,"lonvalue",lonvalue ;
+  !PRINT *,"ni",ni
+  !PRINT *,"lonvalue",lonvalue ;
 
 !!! Fin de la definition du contexte SRF
 
   CALL xios_close_context_definition()
+
+  print *, "xios_close_context_definition(surface)" 
 
 
 !####################################################################################
 !!! Boucle temporelle
 !####################################################################################
 
-    DO ts=1,24*10
+    !DO ts=1,24*10
+    DO ts=1,24
 
       CALL xios_get_handle("atmosphere",ctx_hdl)
       CALL xios_set_current_context(ctx_hdl)
@@ -246,7 +251,11 @@ PROGRAM test_complete
       CALL xios_send_field("field_A_srf",field_A_srf)
 
       CALL wait_us(5000) ;
+
+
     ENDDO
+
+    print *, "end temporal loop"
 
 !####################################################################################
 !!! Finalisation
@@ -254,10 +263,21 @@ PROGRAM test_complete
 
 !!! Fin des contextes
 
+    print *, "start : xios_context_finalize(surface)"
+
+    CALL xios_get_handle("surface",ctx_hdl) 
+    print *, "xios_get_handle OK"
+    CALL xios_set_current_context(ctx_hdl)
+    print *, "xios_set_current_context OK"
     CALL xios_context_finalize()
+
+    print *, "xios_context_finalize(surface)" 
+
     CALL xios_get_handle("atmosphere",ctx_hdl)
     CALL xios_set_current_context(ctx_hdl)
     CALL xios_context_finalize()
+
+    print *, "xios_context_finalize(atmosphere)"
 
     DEALLOCATE(lon, lat, field_A_atm, lonvalue)
     DEALLOCATE(kindex, field_A_srf)
@@ -267,6 +287,8 @@ PROGRAM test_complete
     CALL MPI_COMM_FREE(comm, ierr)
 
     CALL xios_finalize()
+
+    print *, "xios_finalize"
 
     CALL MPI_FINALIZE(ierr)
 
