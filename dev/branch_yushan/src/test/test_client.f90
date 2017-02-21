@@ -152,7 +152,7 @@ PROGRAM test_client
   ENDDO
   
 
-  !CALL xios_context_finalize()
+  CALL xios_context_finalize()
   print*, "xios_context_finalize OK"  
 
   DEALLOCATE(lon, lat, field_A, lonvalue)
