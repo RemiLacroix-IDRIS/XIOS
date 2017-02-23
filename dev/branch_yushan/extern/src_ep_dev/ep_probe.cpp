@@ -35,9 +35,9 @@ namespace ep_lib
     #pragma omp flush
 
     #pragma omp critical (_query)
-    if(comm.ep_comm_ptr->message_queue->size() > 0)
+    if(!comm.ep_comm_ptr->message_queue->empty())
     {
-      for(Message_list::iterator it = comm.ep_comm_ptr->message_queue->begin(); it!= comm.ep_comm_ptr->message_queue->end(); it++)
+      for(Message_list::iterator it = comm.ep_comm_ptr->message_queue->begin(); it!= comm.ep_comm_ptr->message_queue->end(); ++it)
       {
         bool src_matched = src<0? true: it->ep_src == src;
         bool tag_matched = tag<0? true: it->ep_tag == tag;
@@ -106,9 +106,9 @@ namespace ep_lib
     #pragma omp flush
 
     #pragma omp critical (_query)
-    if(comm.ep_comm_ptr->message_queue->size() > 0)
+    if(! comm.ep_comm_ptr->message_queue->empty())
     {
-      for(Message_list::iterator it = comm.ep_comm_ptr->message_queue->begin(); it!= comm.ep_comm_ptr->message_queue->end(); it++)
+      for(Message_list::iterator it = comm.ep_comm_ptr->message_queue->begin(); it!= comm.ep_comm_ptr->message_queue->end(); ++it)
       {
         bool src_matched = src<0? true: it->ep_src == src;
         bool tag_matched = tag<0? true: it->ep_tag == tag;

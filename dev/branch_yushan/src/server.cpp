@@ -31,9 +31,18 @@ namespace xios
    
     void CServer::initialize(void)
     {
+      // int initialized ;
+      // MPI_Initialized(&initialized) ;
+      // if (initialized) is_MPI_Initialized=true ;
+      // else is_MPI_Initialized=false ;
+
       // Not using OASIS
       if (!CXios::usingOasis)
       {
+        // if (!is_MPI_Initialized)
+        // {
+        //   MPI_Init(NULL, NULL);
+        // }
 
         CTimer::get("XIOS").resume() ;
 
@@ -78,7 +87,7 @@ namespace xios
         int clientLeader;
 
          serverLeader=leaders[hashServer] ;
-         for(it=leaders.begin();it!=leaders.end();it++)
+         for(it=leaders.begin();it!=leaders.end();++it)
          {
            if (it->first!=hashServer)
            {
@@ -91,7 +100,7 @@ namespace xios
 
              MPI_Intercomm_create(intraComm,0,CXios::globalComm,clientLeader,0,&newComm) ;
              interComm.push_back(newComm) ;
-             printf("after inter create, interComm.size = %lu\n", interComm.size());
+             //printf("after inter create, interComm.size = %lu\n", interComm.size());
            }
          }
 
@@ -130,7 +139,6 @@ namespace xios
 	      oasis_enddef() ;
       }
 
-//      int rank;
       MPI_Comm_rank(intraComm,&rank) ;
       if (rank==0) isRoot=true;
       else isRoot=false;
@@ -146,10 +154,10 @@ namespace xios
       
       
 
-      for (std::list<MPI_Comm>::iterator it = contextInterComms.begin(); it != contextInterComms.end(); it++)
+      for (std::list<MPI_Comm>::iterator it = contextInterComms.begin(); it != contextInterComms.end(); ++it)
         MPI_Comm_free(&(*it));
 
-      for (std::list<MPI_Comm>::iterator it = interComm.begin(); it != interComm.end(); it++)
+      for (std::list<MPI_Comm>::iterator it = interComm.begin(); it != interComm.end(); ++it)
         MPI_Comm_free(&(*it));
 
       MPI_Comm_free(&intraComm);
@@ -213,7 +221,7 @@ namespace xios
            if (flag==true)
            {
               MPI_Recv(&msg,1,MPI_INT,0,0,*it,&status) ;
-              printf(" CServer : Receive client finalize\n");
+              printf(" CServer : Receive finalize sign from client 0\n");
               info(20)<<" CServer : Receive client finalize"<<endl ;
 
               MPI_Comm_free(&(*it));
@@ -409,9 +417,9 @@ namespace xios
        
        MPI_Intercomm_create(intraComm,0,CXios::globalComm,leaderRank,10+leaderRank,&contextIntercomm);
 
-       MPI_Comm inter;
-       MPI_Intercomm_merge(contextIntercomm,1,&inter);
-       MPI_Barrier(inter);
+       // MPI_Comm inter;
+       // MPI_Intercomm_merge(contextIntercomm,1,&inter);
+       // MPI_Barrier(inter);
        
 
        CContext* context=CContext::create(contextId);
@@ -423,9 +431,9 @@ namespace xios
        contextInterComms.push_back(contextIntercomm);
        
        
-       MPI_Comm_free(&inter);
+       // MPI_Comm_free(&inter);
        
-       printf(" ****   server: register context OK\n");
+       //printf(" ****   server: register context OK\n");
      }
 
      void CServer::contextEventLoop(void)

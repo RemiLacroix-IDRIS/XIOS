@@ -23,7 +23,7 @@ namespace xios
     StdOFStream CClient::m_infoStream;
     StdOFStream CClient::m_errorStream;
 
-    void CClient::initialize(const string& codeId,MPI_Comm& localComm,MPI_Comm& returnComm)
+    void CClient::initialize(const string& codeId, MPI_Comm& localComm, MPI_Comm& returnComm)
     {
       int initialized ;
       MPI_Initialized(&initialized) ;
@@ -160,10 +160,7 @@ namespace xios
       idServer += "_server";
 
       if (!CXios::isServer)
-      {
-      
-        
-        
+      {      
         int size,rank,globalRank ;
         size_t message_size ;
         int leaderRank ;
@@ -190,26 +187,26 @@ namespace xios
         MPI_Send(buff,buffer.count(),MPI_CHAR,serverLeader,1,CXios::globalComm) ;
         delete [] buff ;
         
-        printf("====== Client: begin context_init \n");
+        //printf("====== Client: begin context_init \n");
       
 
         MPI_Intercomm_create(contextComm,0,CXios::globalComm,serverLeader,10+globalRank,&contextInterComm) ;
         info(10)<<"Register new Context : "<<id<<endl ;
         
-        cout<<"Register new Context : "<<id<<endl ;
+        //cout<<"Register new Context : "<<id<<endl ;
               
 
-        MPI_Comm inter ;
-        MPI_Intercomm_merge(contextInterComm,0,&inter) ;
-        MPI_Barrier(inter) ;
+        // MPI_Comm inter ;
+        // MPI_Intercomm_merge(contextInterComm,0,&inter) ;
+        // MPI_Barrier(inter) ;
         
         
         context->initClient(contextComm,contextInterComm) ;
         
-        printf("====== Client: context_init OK\n");
+        //printf("====== Client: context_init OK\n");
 
         contextInterComms.push_back(contextInterComm);
-        MPI_Comm_free(&inter);
+        // MPI_Comm_free(&inter);
       }
       else
       {
@@ -251,6 +248,7 @@ namespace xios
 
       for (std::list<MPI_Comm>::iterator it = contextInterComms.begin(); it != contextInterComms.end(); it++)
         MPI_Comm_free(&(*it));
+      
       MPI_Comm_free(&interComm);
       MPI_Comm_free(&intraComm);
 

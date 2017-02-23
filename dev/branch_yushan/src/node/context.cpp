@@ -368,7 +368,6 @@ namespace xios {
         {
           closeAllFile();
           registryOut->hierarchicalGatherRegistry() ;
-          //registryOut->gatherRegistry() ;
           if (server->intraCommRank==0) CXios::globalRegistry->mergeRegistry(*registryOut) ;
         }
 

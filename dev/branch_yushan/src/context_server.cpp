@@ -121,7 +121,7 @@ namespace xios
     ep_lib::MPI_Status status;
 
     //printf("enter checkPendingRequest\n");
-
+    if(!pendingRequest.empty())
     for(it=pendingRequest.begin();it!=pendingRequest.end();it++)
     {
       rank=it->first;

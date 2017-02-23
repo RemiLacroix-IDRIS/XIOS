@@ -32,9 +32,7 @@ namespace xios
 
   //! Parse configuration file and create some objects from it
   void CXios::initialize()
-  {
-    
-    
+  {    
     set_new_handler(noMemory);
     parseFile(rootFile);
     parseXiosConfig();
@@ -84,7 +82,8 @@ namespace xios
     
     int tmp_size;
     MPI_Comm_size(globalComm, &tmp_size);
-    printf("globalcomm size = %d\n", tmp_size);
+    if(isClient) printf("Client : globalcomm size = %d\n", tmp_size);
+    if(isServer) printf("Server : globalcomm size = %d\n", tmp_size);
 
     
   }
@@ -175,6 +174,7 @@ namespace xios
     
     // Initialize all aspects MPI
     CServer::initialize();
+    
     if (CServer::getRank()==0) globalRegistry = new CRegistry(CServer::intraComm) ;
     
       
@@ -192,7 +192,7 @@ namespace xios
     // Enter the loop to listen message from Client
     CServer::eventLoop();
     
-    printf("server eventloop OK\n");
+    printf("server start finalize \n");
 
     // Finalize
      if (CServer::getRank()==0)

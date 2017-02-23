@@ -51,7 +51,7 @@ namespace ep_lib
     {
       if(  comm.ep_comm_ptr->intercomm->remote_rank_map->at(i).first  == inter_rank  )
       {
-        printf("get_ep_rank for intercomm, ep_rank_loc = %d, mpi_rank = %d => ep_src = %d\n", ep_rank_loc, mpi_rank, i);
+        //printf("get_ep_rank for intercomm, ep_rank_loc = %d, mpi_rank = %d => ep_src = %d\n", ep_rank_loc, mpi_rank, i);
         return i;
       }
     }

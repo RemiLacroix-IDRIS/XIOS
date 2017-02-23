@@ -62,7 +62,7 @@ extern "C"
 
       int initialized;
       MPI_Initialized(&initialized);
-      //if (initialized) local_comm.mpi_comm = MPI_Comm_f2c(*f_local_comm);
+
       if (initialized) local_comm = ep_lib::EP_Comm_f2c(static_cast< int >(*f_local_comm));
       else local_comm = MPI_COMM_NULL;
       
@@ -72,7 +72,7 @@ extern "C"
 
       *f_return_comm = ep_lib::EP_Comm_c2f(return_comm);
 
-      printf("in icdata.cpp, f_return_comm = %d\n", *f_return_comm);
+      //printf("in icdata.cpp, f_return_comm = %d\n", *f_return_comm);
 
       CTimer::get("XIOS init").suspend();
       CTimer::get("XIOS").suspend();
@@ -90,7 +90,7 @@ extern "C"
     
      CClient::registerContext(str, comm);
      
-     printf("icdata.cpp: client register context OK\n");
+     //printf("icdata.cpp: client register context OK\n");
      
      CTimer::get("XIOS init context").suspend();
      CTimer::get("XIOS").suspend();
@@ -127,10 +127,9 @@ extern "C"
      
      
      CContext* context = CContext::getCurrent();
-     //printf("CContext* context = CContext::getCurrent();\n");
      context->finalize();
      
-     //printf("client context_finalize OK\n");
+     printf("client context_finalize OK\n");
      
      CTimer::get("XIOS context finalize").suspend();
      CTimer::get("XIOS").suspend();

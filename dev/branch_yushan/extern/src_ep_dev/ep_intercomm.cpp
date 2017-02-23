@@ -55,7 +55,7 @@ namespace ep_lib
     {
       if( leader_ranks[1] * leader_ranks[4] == 1)
       {
-        if(ep_rank == local_leader) printf("calling MPI_Intercomm_create_unique_leader\n");
+        if(ep_rank == local_leader) Debug("calling MPI_Intercomm_create_unique_leader\n");
         local_comm.ep_comm_ptr->comm_label = -99;
 
         return MPI_Intercomm_create_unique_leader(local_comm, local_leader, peer_comm, remote_leader, tag, newintercomm);
@@ -63,7 +63,7 @@ namespace ep_lib
       else // leader_ranks[1] * leader_ranks[4] != 1
       {
         // change leader
-        if(ep_rank == local_leader) printf("calling MPI_Intercomm_create_from_world\n");
+        if(ep_rank == local_leader) Debug("calling MPI_Intercomm_create_from_world\n");
 
         int new_local_leader;
 
@@ -178,7 +178,7 @@ namespace ep_lib
       }
     }
 
-    if(ep_rank == local_leader) printf("calling MPI_Intercomm_create_kernel\n");
+    if(ep_rank == local_leader) Debug("calling MPI_Intercomm_create_kernel\n");
 
     return MPI_Intercomm_create_kernel(local_comm, local_leader, peer_comm, remote_leader, tag, newintercomm);
 

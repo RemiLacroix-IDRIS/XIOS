@@ -198,6 +198,7 @@ namespace xios
    {
       map<int,CClientBuffer*>::iterator itBuff;
       bool pending = false;
+      if(! buffers.empty())
       for (itBuff = buffers.begin(); itBuff != buffers.end(); itBuff++) pending |= itBuff->second->checkBuffer();
       return pending;
    }
@@ -306,7 +307,7 @@ namespace xios
      {
        checkBuffers();
        stop = false;
-       for (itBuff = buffers.begin(); itBuff != buffers.end(); itBuff++) stop |= itBuff->second->hasPendingRequest();
+       for (itBuff = buffers.begin(); itBuff != buffers.end(); ++itBuff) stop |= itBuff->second->hasPendingRequest();
      }
      CTimer::get("Blocking time").suspend();
 

@@ -184,7 +184,7 @@ namespace ep_lib {
       }
     }
 
-    printf("ep_lib::MPI_Comm_create_endpoints()       OK from void*\n");
+    //printf("ep_lib::MPI_Comm_create_endpoints()       OK from void*\n");
 
     return 0;
 
