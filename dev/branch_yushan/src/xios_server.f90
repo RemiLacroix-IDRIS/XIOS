@@ -8,5 +8,7 @@ PROGRAM server_main
     CALL MPI_INIT(ierr)
     CALL init_wait
     CALL xios_init_server
+    
+    CALL MPI_FINALIZE(ierr)
 
   END PROGRAM server_main

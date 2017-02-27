@@ -100,7 +100,7 @@ namespace xios
 
              MPI_Intercomm_create(intraComm,0,CXios::globalComm,clientLeader,0,&newComm) ;
              interComm.push_back(newComm) ;
-             //printf("after inter create, interComm.size = %lu\n", interComm.size());
+             printf("after inter create, interComm.size = %lu\n", interComm.size());
            }
          }
 
@@ -165,7 +165,7 @@ namespace xios
       if (!is_MPI_Initialized)
       {
         if (CXios::usingOasis) oasis_finalize();
-        else  {MPI_Finalize() ; printf("CServer::finalize called MPI_finalize\n");}
+        //else  {MPI_Finalize() ; printf("CServer::finalize called MPI_finalize\n");}
       }
 
       
@@ -212,7 +212,7 @@ namespace xios
         int flag ;
         
 
-        for(it=interComm.begin();it!=interComm.end();it++)
+        for(it=interComm.begin();it!=interComm.end();++it)
         {
            MPI_Status status ;
            traceOff() ;
@@ -440,7 +440,7 @@ namespace xios
      {
        bool finished ;
        map<string,CContext*>::iterator it ;
-       for(it=contextList.begin();it!=contextList.end();it++)
+       for(it=contextList.begin();it!=contextList.end();++it)
        {
          finished=it->second->checkBuffersAndListen();
          if (finished)

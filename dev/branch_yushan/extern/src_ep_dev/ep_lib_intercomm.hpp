@@ -10,6 +10,12 @@ namespace ep_lib
   typedef void* MPI_Datatype;
   typedef void* MPI_Op;
   #endif
+  
+  int MPI_Comm_dup_intercomm(MPI_Comm comm, MPI_Comm *newcomm);
+
+  int MPI_Comm_free_intercomm(MPI_Comm* comm);
+
+  int MPI_Barrier_intercomm(MPI_Comm comm);
 
   int Message_Check_intercomm(MPI_Comm comm);
 

@@ -517,7 +517,7 @@ namespace xios
                                  const std::vector<StdSize>& sstart,
                                  const std::vector<StdSize>& scount, const int* data)
       {
-          CNetCdfInterface::putVaraType(grpid, varid, &sstart[0], &scount[0], data);
+         CNetCdfInterface::putVaraType(grpid, varid, &sstart[0], &scount[0], data);
       }
 
       //---------------------------------------------------------------
@@ -527,7 +527,7 @@ namespace xios
                                  const std::vector<StdSize>& sstart,
                                  const std::vector<StdSize>& scount, const float* data)
       {
-          CNetCdfInterface::putVaraType(grpid, varid, &sstart[0], &scount[0], data);
+         CNetCdfInterface::putVaraType(grpid, varid, &sstart[0], &scount[0], data);
       }
 
       //---------------------------------------------------------------

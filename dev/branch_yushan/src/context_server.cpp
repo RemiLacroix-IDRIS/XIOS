@@ -122,7 +122,7 @@ namespace xios
 
     //printf("enter checkPendingRequest\n");
     if(!pendingRequest.empty())
-    for(it=pendingRequest.begin();it!=pendingRequest.end();it++)
+    for(it=pendingRequest.begin();it!=pendingRequest.end();++it)
     {
       rank=it->first;
       traceOff();
@@ -135,7 +135,8 @@ namespace xios
         processRequest(rank,bufferRequest[rank],count);
       }
     }
-
+    
+    if(!recvRequest.empty())
     for(itRecv=recvRequest.begin();itRecv!=recvRequest.end();itRecv++)
     {
       pendingRequest.erase(*itRecv);

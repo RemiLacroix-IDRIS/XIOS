@@ -246,7 +246,7 @@ namespace xios
         }
       }
 
-      for (std::list<MPI_Comm>::iterator it = contextInterComms.begin(); it != contextInterComms.end(); it++)
+      for (std::list<MPI_Comm>::iterator it = contextInterComms.begin(); it != contextInterComms.end(); ++it)
         MPI_Comm_free(&(*it));
       
       MPI_Comm_free(&interComm);
