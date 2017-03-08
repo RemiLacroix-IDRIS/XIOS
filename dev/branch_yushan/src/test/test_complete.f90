@@ -9,7 +9,7 @@ PROGRAM test_complete
   INTEGER :: ierr
 
   CHARACTER(len=*),PARAMETER :: id="client"
-  INTEGER :: comm
+  INTEGER :: comm, comm2
   TYPE(xios_duration)  :: dtime
   TYPE(xios_context) :: ctx_hdl
   INTEGER,PARAMETER :: ni_glo=100
@@ -47,7 +47,7 @@ PROGRAM test_complete
 ! Contexte ATM
 !###########################################################################
 
-!!! Initialisation des coordonnées globales et locales pour la grille régulière
+!!! Initialisation des coordonnes globales et locales pour la grille rgulire
 
   DO j=1,nj_glo
     DO i=1,ni_glo
@@ -79,6 +79,8 @@ PROGRAM test_complete
 !!! Context ATMOSPHERE
 
   CALL xios_context_initialize("atmosphere",comm)
+  print*, "init context atmosphere comm = ", comm
+
   CALL xios_get_handle("atmosphere",ctx_hdl)
   CALL xios_set_current_context(ctx_hdl)
 
@@ -102,7 +104,7 @@ PROGRAM test_complete
 
   CALL xios_set_fieldgroup_attr("field_definition",enabled=.TRUE.)
 
-!!! Création d un nouveau champ
+!!! Cration d un nouveau champ
 
   CALL xios_get_handle("field_definition",fieldgroup_hdl)
   CALL xios_add_child(fieldgroup_hdl,field_hdl,"field_B_atm")
@@ -122,7 +124,7 @@ PROGRAM test_complete
   dtime%second=3600
   CALL xios_set_timestep(timestep=dtime)
 
-!!! Recupration des valeurs des longitudes et de taille des domaines locaux (pour test de fonctionnalité)
+!!! Recupration des valeurs des longitudes et de taille des domaines locaux (pour test de fonctionnalit)
 
   ni=0 ; lonvalue(:,:)=0
   CALL xios_get_domain_attr("domain_atm",ni=ni,lonvalue_2D=lonvalue)
@@ -161,7 +163,7 @@ PROGRAM test_complete
 ! Contexte SRF
 !###########################################################################
 
-!!! Initialisation des coordonnées globales et locales pour la grille indexee (1 point sur 2)
+!!! Initialisation des coordonnes globales et locales pour la grille indexee (1 point sur 2)
 
     nb_pt=ni*nj/2
     ALLOCATE(kindex(nb_pt),field_A_srf(nb_pt,llm))
@@ -171,6 +173,8 @@ PROGRAM test_complete
     field_A_srf(1:nb_pt,:)=RESHAPE(field_A_glo(ibegin+1:iend+1:2,jbegin+1:jend+1,:),(/ nb_pt,llm /))
 
   CALL xios_context_initialize("surface",comm)
+  print*, "init context surface comm = ", comm
+
   CALL xios_get_handle("surface",ctx_hdl)
   CALL xios_set_current_context(ctx_hdl)
 
@@ -184,7 +188,7 @@ PROGRAM test_complete
   CALL xios_set_domain_attr("domain_srf",data_i_index=kindex)
   CALL xios_set_domain_attr("domain_srf",lonvalue_2D=lon,latvalue_2D=lat)
 
-!!! Création d un nouveau champ
+!!! Cration d un nouveau champ
 
   CALL xios_get_handle("field_definition",fieldgroup_hdl)
   CALL xios_add_child(fieldgroup_hdl,field_hdl,"field_B_srf")
@@ -204,7 +208,7 @@ PROGRAM test_complete
   dtime%second=1800
   CALL xios_set_timestep(timestep=dtime)
 
-!!! Recupration des valeurs des longitudes et de taille des domaines locaux (pour test de fonctionnalité)
+!!! Recupration des valeurs des longitudes et de taille des domaines locaux (pour test de fonctionnalit)
 
   ni=0 ; lonvalue(:,:)=0
   CALL xios_get_domain_attr("domain_srf",ni=ni,lonvalue_2D=lonvalue)
@@ -216,15 +220,15 @@ PROGRAM test_complete
 
   CALL xios_close_context_definition()
 
-  print *, "xios_close_context_definition(surface)" 
+ print *, "xios_close_context_definition(surface)" 
 
 
 !####################################################################################
 !!! Boucle temporelle
 !####################################################################################
 
-    !DO ts=1,24*10
-    DO ts=1,24
+    DO ts=1,24*10
+    !DO ts=1,24
 
       CALL xios_get_handle("atmosphere",ctx_hdl)
       CALL xios_set_current_context(ctx_hdl)
@@ -263,24 +267,26 @@ PROGRAM test_complete
 
 !!! Fin des contextes
 
-    print *, "start : xios_context_finalize(surface)"
+    !print *, "start : xios_context_finalize(surface)"
 
     CALL xios_get_handle("surface",ctx_hdl) 
-    print *, "xios_get_handle OK"
+    !print *, "xios_get_handle (surface) OK"
     CALL xios_set_current_context(ctx_hdl)
-    print *, "xios_set_current_context OK"
+    !print *, "xios_set_current_context (surface) OK"
     CALL xios_context_finalize()
 
     print *, "xios_context_finalize(surface)" 
 
-    CALL xios_get_handle("atmosphere",ctx_hdl)
-    CALL xios_set_current_context(ctx_hdl)
-    CALL xios_context_finalize()
+     CALL xios_get_handle("atmosphere",ctx_hdl)
+!     !print *, "xios_get_handle (atmosphere) OK"
+     CALL xios_set_current_context(ctx_hdl)
+!     !print *, "xios_set_current_context (atmosphere) OK"
+     CALL xios_context_finalize()
 
     print *, "xios_context_finalize(atmosphere)"
 
     DEALLOCATE(lon, lat, field_A_atm, lonvalue)
-    DEALLOCATE(kindex, field_A_srf)
+   ! DEALLOCATE(kindex, field_A_srf)
 
 !!! Fin de XIOS
 

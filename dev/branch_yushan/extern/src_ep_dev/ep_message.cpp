@@ -23,7 +23,7 @@ namespace ep_lib
     if(!comm.is_ep) return 0;
 
     if(comm.is_intercomm)
-	  {
+    {
       return  Message_Check_intercomm(comm);
     }
 

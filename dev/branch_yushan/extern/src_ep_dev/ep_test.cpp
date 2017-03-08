@@ -64,8 +64,8 @@ namespace ep_lib {
         status->ep_src = request->ep_src;
         status->ep_tag = request->ep_tag;
         status->ep_datatype = request->ep_datatype;
-        int count;
-        MPI_Get_count(status, request->ep_datatype, &count);
+        //int count;
+        //MPI_Get_count(status, request->ep_datatype, &count);
         //check_sum_recv(request->buf, count, request->ep_datatype, request->ep_src, request->ep_tag, request->comm, 2);
       }
 

@@ -67,8 +67,8 @@ namespace ep_lib {
       status->ep_tag = request->ep_tag;
       status->ep_datatype = request->ep_datatype;
 
-      int count;
-      MPI_Get_count(status, request->ep_datatype, &count);
+      //int count;
+      //MPI_Get_count(status, request->ep_datatype, &count);
       //check_sum_recv(request->buf, count, request->ep_datatype, request->ep_src, request->ep_tag, request->comm, 2);
     }
 	  return MPI_SUCCESS;
@@ -103,8 +103,8 @@ namespace ep_lib {
             MPI_Wait(&array_of_requests[i], &array_of_statuses[i]);
             if(array_of_requests[i].type == 3)
             {
-              int check_count;
-              MPI_Get_count(&array_of_statuses[i], array_of_requests[i].ep_datatype, &check_count);
+              //int check_count;
+              //MPI_Get_count(&array_of_statuses[i], array_of_requests[i].ep_datatype, &check_count);
               //check_sum_recv(array_of_requests[i].buf, count, array_of_requests[i].ep_datatype, array_of_requests[i].ep_src, array_of_requests[i].ep_tag, array_of_requests[i].comm, 2);
             }
             finished++;

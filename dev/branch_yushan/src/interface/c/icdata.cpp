@@ -1,5 +1,5 @@
 /* ************************************************************************** *
- *      Copyright © IPSL/LSCE, xios, Avril 2010 - Octobre 2011         *
+ *      Copyright  IPSL/LSCE, xios, Avril 2010 - Octobre 2011         *
  * ************************************************************************** */
 
 #include <boost/multi_array.hpp>
@@ -28,15 +28,15 @@
 
 extern "C"
 {
-// /////////////////////////////// Définitions ////////////////////////////// //
+// /////////////////////////////// Dfinitions ////////////////////////////// //
 
-   // ----------------------- Redéfinition de types ----------------------------
+   // ----------------------- Redfinition de types ----------------------------
 
    typedef enum { NETCDF4 = 0 } XFileType;
 
    typedef xios::CContext* XContextPtr;
 
-   // -------------------- Traitement des données ------------------------------
+   // -------------------- Traitement des donnes ------------------------------
 
    // This function is not exported to the public Fortran interface,
    // it is only used from the parse_xml.exe standalone test tool.
@@ -87,10 +87,13 @@ extern "C"
      CTimer::get("XIOS").resume();
      CTimer::get("XIOS init context").resume();
      comm = ep_lib::EP_Comm_f2c(static_cast< int >(*f_comm));
+
+     //ep_lib::MPI_Comm ctx_comm;
+     //ep_lib::MPI_Comm_dup(comm, &ctx_comm);
     
-     CClient::registerContext(str, comm);
+     CClient::registerContext(str,comm);
      
-     //printf("icdata.cpp: client register context OK\n");
+     printf("icdata.cpp: client register context %s : %p\n", context_id, &comm);
      
      CTimer::get("XIOS init context").suspend();
      CTimer::get("XIOS").suspend();
@@ -383,7 +386,7 @@ extern "C"
    }
 
 
-   // ---------------------- Ecriture des données ------------------------------
+   // ---------------------- Ecriture des donnes ------------------------------
 
    void cxios_write_data_k80(const char* fieldid, int fieldid_size, double* data_k8, int data_Xsize)
    {
@@ -718,7 +721,7 @@ extern "C"
       CTimer::get("XIOS").suspend();
     }
 
-   // ---------------------- Lecture des données ------------------------------
+   // ---------------------- Lecture des donnes ------------------------------
 
    void cxios_read_data_k80(const char* fieldid, int fieldid_size, double* data_k8, int data_Xsize)
    {

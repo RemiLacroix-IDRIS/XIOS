@@ -221,7 +221,6 @@ namespace xios
            if (flag==true)
            {
               MPI_Recv(&msg,1,MPI_INT,0,0,*it,&status) ;
-              printf(" CServer : Receive finalize sign from client 0\n");
               info(20)<<" CServer : Receive client finalize"<<endl ;
 
               MPI_Comm_free(&(*it));
@@ -308,7 +307,6 @@ namespace xios
            #endif
            MPI_Get_count(&status,MPI_CHAR,&count) ;
            recvContextMessage(buffer,count) ;
-           printf("listerContext register context OK, interComm size = %lu\n", interComm.size());
            
            delete [] buffer ;
            recept=false ;
@@ -352,7 +350,6 @@ namespace xios
          }
          MPI_Waitall(size-1,requests,status) ;
          registerContext(buff,count,it->second.leaderRank) ;
-         printf("recvContextMessage register context OK\n");
 
          recvContextId.erase(it) ;
          delete [] requests ;
@@ -394,7 +391,6 @@ namespace xios
          {
            MPI_Get_count(&status,MPI_CHAR,&count) ;
            registerContext(buffer,count) ;
-           printf("listenRootContext register context OK, interComm size = %lu\n", interComm.size());
            delete [] buffer ;
            recept=false ;
          }
@@ -417,9 +413,11 @@ namespace xios
        
        MPI_Intercomm_create(intraComm,0,CXios::globalComm,leaderRank,10+leaderRank,&contextIntercomm);
 
-       // MPI_Comm inter;
-       // MPI_Intercomm_merge(contextIntercomm,1,&inter);
-       // MPI_Barrier(inter);
+       MPI_Comm inter;
+       MPI_Intercomm_merge(contextIntercomm,1,&inter);
+       MPI_Barrier(inter);
+
+       info(20) << "CServer : MPI_Intercomm_merge and MPI_Barrier " << contextId << endl;
        
 
        CContext* context=CContext::create(contextId);
@@ -431,9 +429,9 @@ namespace xios
        contextInterComms.push_back(contextIntercomm);
        
        
-       // MPI_Comm_free(&inter);
+       MPI_Comm_free(&inter);
        
-       //printf(" ****   server: register context OK\n");
+       info(20) << "CServer : Register new Context OKOK " << contextId << endl;
      }
 
      void CServer::contextEventLoop(void)

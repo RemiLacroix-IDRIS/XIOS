@@ -35,6 +35,9 @@ PROGRAM test_client
 
   CALL MPI_INIT(ierr)
   CALL init_wait
+
+  CALL MPI_COMM_RANK(MPI_COMM_WORLD,rank,ierr)
+  if(rank < 2) then
   
   CALL xios_initialize(id,return_comm=comm)
   
@@ -160,6 +163,13 @@ PROGRAM test_client
   CALL MPI_COMM_FREE(comm, ierr)
 
   CALL xios_finalize()
+
+   else
+
+   CALL xios_init_server
+  
+   endif
+    
 
   CALL MPI_FINALIZE(ierr)
 

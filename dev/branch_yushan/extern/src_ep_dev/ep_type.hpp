@@ -281,7 +281,7 @@ namespace ep_lib
 
     MPI_Comm()
     {
-      is_ep = false;
+      is_ep = true;
       is_intercomm = false;
       my_buffer = NULL;
       ep_barrier = NULL;
@@ -337,6 +337,7 @@ namespace ep_lib
       bool b = is_intercomm != right.is_intercomm;
       bool c = mpi_comm != right.mpi_comm;
       bool d = is_ep ? ep_comm_ptr != right.ep_comm_ptr : true;
+
       return a||b||c||d;
     }
   };
@@ -423,7 +424,7 @@ namespace ep_lib
 
   static std::list<std::pair<std::pair<int, int>, MPI_Comm * > > tag_list;
 
-  static std::map<std::pair<int, int>, MPI_Comm  >  fc_comm_map;
+  static std::map<std::pair<int, int>, MPI_Comm >  fc_comm_map;
             //    <MPI_Fint,thread_num>   EP_Comm
 
 }

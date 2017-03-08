@@ -260,7 +260,6 @@ namespace xios {
        MPI_Comm_dup(interComm, &interCommServer);
        comms.push_back(interCommServer);
        
-       printf("comm_dup OK\n");
      }
      server = new CContextServer(this,intraCommServer,interCommServer);
    }

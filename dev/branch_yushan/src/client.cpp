@@ -50,7 +50,7 @@ namespace xios
           int size ;
           int myColor ;
           int i,c ;
-          MPI_Comm newComm ;
+          //MPI_Comm newComm ;
 
           MPI_Comm_size(CXios::globalComm,&size) ;
           MPI_Comm_rank(CXios::globalComm,&rank);
@@ -186,27 +186,22 @@ namespace xios
 
         MPI_Send(buff,buffer.count(),MPI_CHAR,serverLeader,1,CXios::globalComm) ;
         delete [] buff ;
-        
-        //printf("====== Client: begin context_init \n");
-      
+              
 
         MPI_Intercomm_create(contextComm,0,CXios::globalComm,serverLeader,10+globalRank,&contextInterComm) ;
         info(10)<<"Register new Context : "<<id<<endl ;
-        
-        //cout<<"Register new Context : "<<id<<endl ;
-              
+                      
 
-        // MPI_Comm inter ;
-        // MPI_Intercomm_merge(contextInterComm,0,&inter) ;
-        // MPI_Barrier(inter) ;
+        MPI_Comm inter ;
+        MPI_Intercomm_merge(contextInterComm,0,&inter) ;
+        MPI_Barrier(inter) ;
         
         
         context->initClient(contextComm,contextInterComm) ;
         
-        //printf("====== Client: context_init OK\n");
 
         contextInterComms.push_back(contextInterComm);
-        // MPI_Comm_free(&inter);
+        MPI_Comm_free(&inter);
       }
       else
       {

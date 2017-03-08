@@ -79,7 +79,7 @@ namespace xios
       if (pendingRequest.find(rank)==pendingRequest.end())
       {
         traceOff();
-        MPI_Iprobe(rank,20,interComm,&flag,&status);
+        ep_lib::MPI_Iprobe(rank,20,interComm,&flag,&status);
         traceOn();
         if (flag==true)
         {
@@ -88,7 +88,7 @@ namespace xios
           if (it==buffers.end()) // Receive the buffer size and allocate the buffer
           {
             StdSize buffSize = 0;
-            MPI_Recv(&buffSize, 1, MPI_LONG, rank, 20, interComm, &status);
+            ep_lib::MPI_Recv(&buffSize, 1, MPI_LONG, rank, 20, interComm, &status);
             mapBufferSize_.insert(std::make_pair(rank, buffSize));
             it=(buffers.insert(pair<int,CServerBuffer*>(rank,new CServerBuffer(buffSize)))).first;
             //printf("find message, is buffer end, receiving, buffSize = %d, rank = %d, commSize = %d\n", buffSize, rank, commSize);
@@ -96,7 +96,7 @@ namespace xios
           else
           {
             
-            MPI_Get_count(&status,MPI_CHAR,&count);
+            ep_lib::MPI_Get_count(&status,MPI_CHAR,&count);
             if (it->second->isBufferFree(count))
             {
               addr=(char*)it->second->getBuffer(count);
@@ -120,18 +120,17 @@ namespace xios
     int count;
     ep_lib::MPI_Status status;
 
-    //printf("enter checkPendingRequest\n");
     if(!pendingRequest.empty())
     for(it=pendingRequest.begin();it!=pendingRequest.end();++it)
     {
       rank=it->first;
       traceOff();
-      MPI_Test(& it->second, &flag, &status);
+      ep_lib::MPI_Test(& it->second, &flag, &status);
       traceOn();
       if (flag==true)
       {
         recvRequest.push_back(rank);
-        MPI_Get_count(&status,MPI_CHAR,&count);
+        ep_lib::MPI_Get_count(&status,MPI_CHAR,&count);
         processRequest(rank,bufferRequest[rank],count);
       }
     }
@@ -148,8 +147,9 @@ namespace xios
   {
 
     CBufferIn buffer(buff,count);
-    char* startBuffer,endBuffer;
-    int size, offset;
+    //char* startBuffer,endBuffer;
+    int size;
+    //int offset;
     size_t timeLine;
     map<size_t,CEventServer*>::iterator it;
 
