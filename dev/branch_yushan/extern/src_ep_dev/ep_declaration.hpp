@@ -17,8 +17,8 @@ extern ::MPI_Comm MPI_COMM_WORLD_STD;
 extern ::MPI_Comm MPI_COMM_NULL_STD;
 
 extern ::MPI_Status MPI_STATUS_IGNORE_STD;
-//extern ::MPI_Info MPI_INFO_NULL_STD;
 extern ::MPI_Request MPI_REQUEST_NULL_STD;
+extern ::MPI_Info MPI_INFO_NULL_STD;
 
 #undef MPI_INT
 #undef MPI_FLOAT
@@ -35,12 +35,9 @@ extern ::MPI_Request MPI_REQUEST_NULL_STD;
 #undef MPI_COMM_WORLD
 #undef MPI_COMM_NULL
 
-//#undef MPI_INFO_NULL
 #undef MPI_REQUEST_NULL
 
-#ifdef _openmpi
-//#undef MPI_Fint
-#endif
+
 
 #undef MPI_STATUS_IGNORE
 
@@ -60,8 +57,8 @@ extern ep_lib::MPI_Comm MPI_COMM_WORLD;
 extern ep_lib::MPI_Comm MPI_COMM_NULL;
 
 extern ep_lib::MPI_Status MPI_STATUS_IGNORE;
-//extern ep_lib::MPI_Info MPI_INFO_NULL;
 extern ep_lib::MPI_Request MPI_REQUEST_NULL;
+//extern ep_lib::MPI_Info MPI_INFO_NULL;
 
 #endif // EP_DECLARATION_HPP_INCLUDED
 

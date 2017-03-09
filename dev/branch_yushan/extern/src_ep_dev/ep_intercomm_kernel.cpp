@@ -350,7 +350,7 @@ namespace ep_lib
 
         #pragma omp critical (write_to_tag_list)
         tag_list.push_back(make_pair( make_pair(tag, min(leader_info[0], leader_info[1])) , ep_intercomm));
-        printf("tag_list size = %lu\n", tag_list.size());
+        //printf("tag_list size = %lu\n", tag_list.size());
       }
 
 

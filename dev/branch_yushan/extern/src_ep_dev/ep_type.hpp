@@ -41,8 +41,6 @@ typedef struct
 namespace ep_lib
 {
   #define MPI_UNDEFINED -32766
-  //#define MPI_STATUS_IGNORE NULL
-  //#define MPI_INFO_NULL MPI_Info(MPI_INFO_NULL_STD)
 
   class ep_communicator;
   class ep_intercomm;
@@ -84,6 +82,7 @@ namespace ep_lib
       void* mpi_status;
 
       MPI_Message() {}
+
       #ifdef _intelmpi
       MPI_Message(int message): mpi_message(message) {}
       #elif _openmpi
@@ -353,7 +352,7 @@ namespace ep_lib
       void * mpi_info;
       #endif
 
-      MPI_Info() {}
+      MPI_Info(){ }
       
       #ifdef _intelmpi
       MPI_Info(int info): mpi_info(info) {}

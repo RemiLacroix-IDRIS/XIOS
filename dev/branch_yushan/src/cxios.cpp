@@ -76,9 +76,15 @@ namespace xios
     
     MPI_Info info;
     MPI_Comm *ep_comm;
-    MPI_Comm_create_endpoints(MPI_COMM_WORLD, num_ep, info, ep_comm);  // servers should reach here too.
+    if(omp_get_thread_num()==0)
+    {
+      MPI_Comm_create_endpoints(MPI_COMM_WORLD, num_ep, info, ep_comm);  // servers should reach here too.
+      passage = ep_comm;  
+    }
+    
+    #pragma omp barrier
       
-    globalComm = ep_comm[0];
+    globalComm = passage[omp_get_thread_num()];
     
     int tmp_size;
     MPI_Comm_size(globalComm, &tmp_size);

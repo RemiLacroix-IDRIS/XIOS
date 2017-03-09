@@ -6,17 +6,17 @@
 namespace ep_lib
 {
   
-  #ifdef _intelmpi
+  // #ifdef _intelmpi
   
-  MPI_Fint MPI_Comm_c2f(MPI_Comm comm);
-  MPI_Comm MPI_Comm_f2c(MPI_Fint comm);
+  // MPI_Fint MPI_Comm_c2f(MPI_Comm comm);
+  // MPI_Comm MPI_Comm_f2c(MPI_Fint comm);
   
-  #elif _openmpi
+  // #elif _openmpi
   
-  int MPI_Comm_c2f(MPI_Comm comm);
-  ep_lib::MPI_Comm MPI_Comm_f2c(MPI_Fint comm);
+  // int MPI_Comm_c2f(MPI_Comm comm);
+  // ep_lib::MPI_Comm MPI_Comm_f2c(MPI_Fint comm);
   
-  #endif
+  // #endif
 
   int EP_Comm_c2f(MPI_Comm comm);
   MPI_Comm EP_Comm_f2c(int comm);

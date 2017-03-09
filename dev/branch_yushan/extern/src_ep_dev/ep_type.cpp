@@ -11,11 +11,12 @@ using namespace std;
 ::MPI_Comm MPI_COMM_NULL_STD = MPI_COMM_NULL;
 #undef MPI_COMM_NULL
 
-//::MPI_Info MPI_INFO_NULL_STD = MPI_INFO_NULL;
-//#undef MPI_INFO_NULL
 
 ::MPI_Request MPI_REQUEST_NULL_STD = MPI_REQUEST_NULL;
 #undef MPI_REQUEST_NULL
+
+::MPI_Info MPI_INFO_NULL_STD = MPI_INFO_NULL;
+#undef MPI_INFO_NULL
 
 ::MPI_Datatype MPI_INT_STD = MPI_INT;
 ::MPI_Datatype MPI_FLOAT_STD = MPI_FLOAT;
@@ -42,9 +43,6 @@ using namespace std;
 #undef MPI_MAX
 #undef MPI_MIN
 
-#ifdef _openmpi
-//#undef MPI_Fint
-#endif
 
 
 

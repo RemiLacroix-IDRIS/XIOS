@@ -14,15 +14,11 @@ namespace ep_lib
 #ifdef _intelmpi
   typedef int MPI_Datatype;
   typedef int MPI_Op;
-#elif _openmpi
-  typedef void* MPI_Datatype;
-  typedef void* MPI_Op;
-#endif
-
-#ifdef _intelmpi
   #define MPI_ANY_SOURCE -2 
   #define MPI_ANY_TAG -1 
 #elif _openmpi
+  typedef void* MPI_Datatype;
+  typedef void* MPI_Op;
   #define MPI_ANY_SOURCE -1 
   #define MPI_ANY_TAG -1 
 #endif

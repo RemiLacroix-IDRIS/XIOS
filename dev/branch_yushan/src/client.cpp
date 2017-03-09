@@ -229,7 +229,7 @@ namespace xios
 
       MPI_Comm_rank(intraComm,&rank) ;
       
-      printf("CClient::finalize called isServer = %d\n", CXios::isServer);
+      //printf("CClient::finalize called isServer = %d\n", CXios::isServer);
  
       if (!CXios::isServer)
       {
@@ -237,7 +237,7 @@ namespace xios
         if (rank==0)
         {
           MPI_Send(&msg,1,MPI_INT,0,0,interComm) ;
-          printf(" CClient : send finalize sign to server 0\n");
+          //printf(" CClient : send finalize sign to server 0\n");
         }
       }
 

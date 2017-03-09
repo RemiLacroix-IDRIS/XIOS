@@ -19,7 +19,6 @@ namespace ep_lib
     int myRank;
     MPI_Comm_rank(comm, &myRank);
 
-    //printf("myRank = %d, comm.is_ep = %d, comm.is_intercomm = %d\n", myRank, comm.is_ep, comm.is_intercomm);
     if(!comm.is_ep) return 0;
 
     if(comm.is_intercomm)
@@ -52,7 +51,6 @@ namespace ep_lib
       #elif _intelmpi
       //::MPI_Improbe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpi_comm, &flag, &message, &status); 
       ::MPI_Improbe(-2, -1, mpi_comm, &flag, &message, &status); 
-      //printf("myRank = %d, ::MPI_Improbe flag = %d\n", myRank, flag);     
       #endif
 
       if(flag)
@@ -158,7 +156,6 @@ namespace ep_lib
         {
           #pragma omp flush
           ptr_comm_target->ep_comm_ptr->message_queue->push_back(*msg_block);
-          //printf("probed one message, ep_src = %d, ep_dest = %d, tag = %d, queue = %p, message = %d\n", msg_block->ep_src, msg_block->ep_dest, msg_block->ep_tag, ptr_comm_target->ep_comm_ptr->message_queue, msg_block->mpi_message);
           #pragma omp flush
         }
         
