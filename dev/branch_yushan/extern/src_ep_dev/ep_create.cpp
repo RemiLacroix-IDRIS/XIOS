@@ -102,7 +102,7 @@ namespace ep_lib {
       }
     }
 
-    printf("ep_lib::MPI_Comm_create_endpoints()       OK from int\n");
+    // printf("ep_lib::MPI_Comm_create_endpoints()       OK from int\n");
 
     return 0;
 
@@ -272,7 +272,7 @@ namespace ep_lib {
       }
     }
 
-    printf("ep_lib::MPI_Comm_create_endpoints()       OK from MPI_Comm\n");
+    // printf("ep_lib::MPI_Comm_create_endpoints()       OK from MPI_Comm\n");
 
     return 0;
 

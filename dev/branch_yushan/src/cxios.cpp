@@ -86,10 +86,10 @@ namespace xios
       
     globalComm = passage[omp_get_thread_num()];
     
-    int tmp_size;
-    MPI_Comm_size(globalComm, &tmp_size);
-    if(isClient) printf("Client : globalcomm size = %d\n", tmp_size);
-    if(isServer) printf("Server : globalcomm size = %d\n", tmp_size);
+    // int tmp_size;
+    // MPI_Comm_size(globalComm, &tmp_size);
+    // if(isClient) printf("Client : globalcomm size = %d\n", tmp_size);
+    // if(isServer) printf("Server : globalcomm size = %d\n", tmp_size);
 
     
   }
@@ -198,8 +198,6 @@ namespace xios
     // Enter the loop to listen message from Client
     CServer::eventLoop();
     
-    printf("server start finalize \n");
-
     // Finalize
      if (CServer::getRank()==0)
      {
@@ -208,12 +206,9 @@ namespace xios
        delete globalRegistry ;
      }
      
-     printf("server globalRegistry OK\n");
      
     CServer::finalize();
-    
-    printf("server finalize OK\n");
-    
+        
     CServer::closeInfoStream();
   }
 

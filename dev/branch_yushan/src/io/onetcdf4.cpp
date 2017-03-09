@@ -64,7 +64,7 @@ namespace xios
             else
             {
                CNetCdfInterface::create(filename, mode, this->ncidp);
-               printf("creating file with create\n");  
+               // printf("creating file with create\n");  
             }  
                
 
@@ -83,7 +83,7 @@ namespace xios
             else
             {
                CNetCdfInterface::open(filename, mode, this->ncidp);
-               printf("opening file with open\n");
+               // printf("opening file with open\n");
             }
 
             this->appendMode = true;

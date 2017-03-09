@@ -100,7 +100,6 @@ namespace xios
 
              MPI_Intercomm_create(intraComm,0,CXios::globalComm,clientLeader,0,&newComm) ;
              interComm.push_back(newComm) ;
-             printf("after inter create, interComm.size = %lu\n", interComm.size());
            }
          }
 

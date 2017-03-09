@@ -210,9 +210,7 @@ void CAxisAlgorithmInverse::updateAxisValue()
   }
 
   status.resize(requests.size());
-  //printf("(%d) src/transformation/axis_algorithm_inverse 1st waitall\n", clientRank);
   MPI_Waitall(requests.size(), &requests[0], &status[0]);
-  //printf("(%d) src/transformation/axis_algorithm_inverse 1st waitall OK\n", clientRank);
 
   std::vector<ep_lib::MPI_Request>().swap(requests);
   std::vector<ep_lib::MPI_Status>().swap(status);
@@ -245,10 +243,8 @@ void CAxisAlgorithmInverse::updateAxisValue()
     MPI_Isend(sendValueToDest[recvRank], recvSize, MPI_DOUBLE, recvRank, 48, client->intraComm, &requests.back());
   }
   status.resize(requests.size());
-  //printf("(%d) src/transformation/axis_algorithm_inverse 2nd waitall\n", clientRank);
-
   MPI_Waitall(requests.size(), &requests[0], &status[0]);
-  //printf("(%d) src/transformation/axis_algorithm_inverse 2nd waitall OK\n", clientRank);
+
 
   size_t nGloAxisDest = axisDest_->n_glo.getValue() - 1;
   for (std::map<int,int>::const_iterator itSend = sendRankSizeMap.begin(); itSend != sendRankSizeMap.end(); ++itSend)

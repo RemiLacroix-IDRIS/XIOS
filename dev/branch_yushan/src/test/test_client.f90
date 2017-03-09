@@ -41,12 +41,8 @@ PROGRAM test_client
   
   CALL xios_initialize(id,return_comm=comm)
   
-  print*, "test_client xios_initialize OK"
-
   CALL MPI_COMM_RANK(comm,rank,ierr)
-  print*, "test_client MPI_COMM_RANK OK", rank
   CALL MPI_COMM_SIZE(comm,size,ierr)
-  print*, "test_client MPI_COMM_SIZE OK", size
   
 
   DO j=1,nj_glo
@@ -78,15 +74,10 @@ PROGRAM test_client
   CALL xios_context_initialize("test",comm)
 
   CALL xios_get_handle("test",ctx_hdl)
-  print*, "Client xios_get_handle OK"
   CALL xios_set_current_context(ctx_hdl)
-  print*, "Client xios_set_current_handle OK"  
-  
-  
   
   
   CALL xios_get_calendar_type(calendar_type)
-  PRINT *, "calendar_type = ", calendar_type
 
   CALL xios_set_axis_attr("axis_A",n_glo=llm ,value=lval) ;
   CALL xios_set_domain_attr("domain_A",ni_glo=ni_glo, nj_glo=nj_glo, ibegin=ibegin, ni=ni,jbegin=jbegin,nj=nj,type='curvilinear')
@@ -104,7 +95,6 @@ PROGRAM test_client
   
   dtime%second = 3600
   CALL xios_set_timestep(dtime)
-  print*, "Client xios_set_timestep OK"  
 
   ! The calendar is created as soon as the calendar type is defined. This way
   ! calendar operations can be used before the context definition is closed
@@ -143,30 +133,28 @@ PROGRAM test_client
 
 
   call MPI_Barrier(comm, ierr)
-  PRINT*,"MPI_Barrier OK "
 
   !DO ts=1,24*10
   DO ts=1,6
     CALL xios_update_calendar(ts)
-    print*, "xios_update_calendar OK, ts = ", ts
     CALL xios_send_field("field_A",field_A)
-    print*, "xios_send_field OK, ts = ", ts
     CALL wait_us(5000)
   ENDDO
   
 
   CALL xios_context_finalize()
-  print*, "xios_context_finalize OK"  
 
   DEALLOCATE(lon, lat, field_A, lonvalue)
 
   CALL MPI_COMM_FREE(comm, ierr)
 
   CALL xios_finalize()
+  print *, "Client : xios_finalize "
 
    else
 
    CALL xios_init_server
+   print *, "Server : xios_finalize "
   
    endif
     

@@ -33,7 +33,13 @@ PROGRAM test_complete
 
   CALL MPI_INIT(ierr)
 
+  CALL MPI_COMM_RANK(MPI_COMM_WORLD,rank,ierr)  
+
+  
+
   CALL init_wait
+
+  if (rank <2) then
 
 !!! XIOS Initialization (get the local communicator)
 
@@ -79,7 +85,7 @@ PROGRAM test_complete
 !!! Context ATMOSPHERE
 
   CALL xios_context_initialize("atmosphere",comm)
-  print*, "init context atmosphere comm = ", comm
+!   print*, "init context atmosphere comm = ", comm
 
   CALL xios_get_handle("atmosphere",ctx_hdl)
   CALL xios_set_current_context(ctx_hdl)
@@ -136,7 +142,7 @@ PROGRAM test_complete
 
   CALL xios_close_context_definition()
 
-  print *, "xios_close_context_definition(atmosphere)"
+!   print *, "xios_close_context_definition(atmosphere)"
 
 !!! Test des valeurs des champs/fichiers
 
@@ -173,7 +179,7 @@ PROGRAM test_complete
     field_A_srf(1:nb_pt,:)=RESHAPE(field_A_glo(ibegin+1:iend+1:2,jbegin+1:jend+1,:),(/ nb_pt,llm /))
 
   CALL xios_context_initialize("surface",comm)
-  print*, "init context surface comm = ", comm
+!   print*, "init context surface comm = ", comm
 
   CALL xios_get_handle("surface",ctx_hdl)
   CALL xios_set_current_context(ctx_hdl)
@@ -220,7 +226,7 @@ PROGRAM test_complete
 
   CALL xios_close_context_definition()
 
- print *, "xios_close_context_definition(surface)" 
+!  print *, "xios_close_context_definition(surface)" 
 
 
 !####################################################################################
@@ -259,7 +265,7 @@ PROGRAM test_complete
 
     ENDDO
 
-    print *, "end temporal loop"
+!     print *, "end temporal loop"
 
 !####################################################################################
 !!! Finalisation
@@ -275,7 +281,7 @@ PROGRAM test_complete
     !print *, "xios_set_current_context (surface) OK"
     CALL xios_context_finalize()
 
-    print *, "xios_context_finalize(surface)" 
+!     print *, "xios_context_finalize(surface)" 
 
      CALL xios_get_handle("atmosphere",ctx_hdl)
 !     !print *, "xios_get_handle (atmosphere) OK"
@@ -283,7 +289,7 @@ PROGRAM test_complete
 !     !print *, "xios_set_current_context (atmosphere) OK"
      CALL xios_context_finalize()
 
-    print *, "xios_context_finalize(atmosphere)"
+!     print *, "xios_context_finalize(atmosphere)"
 
     DEALLOCATE(lon, lat, field_A_atm, lonvalue)
    ! DEALLOCATE(kindex, field_A_srf)
@@ -294,7 +300,13 @@ PROGRAM test_complete
 
     CALL xios_finalize()
 
-    print *, "xios_finalize"
+     print *, "Client : xios_finalize "
+
+  else 
+    CALL xios_init_server
+
+    print *, "Server : xios_finalize "
+  endif
 
     CALL MPI_FINALIZE(ierr)
 
