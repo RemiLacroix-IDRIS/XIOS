@@ -620,11 +620,9 @@ namespace xios{
 
    void CField::solveAllReferenceEnabledField(bool doSending2Server)
    {
-     int myRank;
-     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
 
-     CContext* context = CContext::getCurrent();  //printf("my_Rank = %d, CContext* context = CContext::getCurrent OK\n", myRank);
-     solveOnlyReferenceEnabledField(doSending2Server);  //printf("my_Rank = %d, solveOnlyReferenceEnabledField(doSending2Server) OK\n", myRank);
+     CContext* context = CContext::getCurrent(); 
+     solveOnlyReferenceEnabledField(doSending2Server);
 
      if (!areAllReferenceSolved)
      {
@@ -632,30 +630,30 @@ namespace xios{
 
         if (context->hasClient)
         {
-          solveRefInheritance(true);  //printf("my_Rank = %d, solveRefInheritance(true) OK\n", myRank);
+          solveRefInheritance(true);  
           if (hasDirectFieldReference()) 
           {
             getDirectFieldReference()->solveAllReferenceEnabledField(false); 
-            //printf("my_Rank = %d, getDirectFieldReference()->solveAllReferenceEnabledField(false) OK\n", myRank);
+            
           }
         }
         else if (context->hasServer)
         {
           solveServerOperation();
-          //printf("my_Rank = %d, solveServerOperation OK\n", myRank);
+          
         }
 
-        solveGridReference();  //printf("my_Rank = %d, solveGridReference OK\n", myRank);
+        solveGridReference();  
      }
 
-     solveGridDomainAxisRef(doSending2Server);  //printf("my_Rank = %d, solveGridDomainAxisRef(doSending2Server) OK\n", myRank);
+     solveGridDomainAxisRef(doSending2Server); 
 
      if (context->hasClient)
      {
-       solveTransformedGrid();  //printf("my_Rank = %d, solveTransformedGrid OK\n", myRank);
+       solveTransformedGrid(); 
      }
 
-     solveCheckMaskIndex(doSending2Server);  //printf("FIELD.CPP: my_Rank = %d, solveCheckMaskIndex(doSending2Server) OK\n", myRank);
+     solveCheckMaskIndex(doSending2Server); 
    }
 
    std::map<int, StdSize> CField::getGridAttributesBufferSize()

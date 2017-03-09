@@ -50,7 +50,6 @@ namespace xios
           int size ;
           int myColor ;
           int i,c ;
-          //MPI_Comm newComm ;
 
           MPI_Comm_size(CXios::globalComm,&size) ;
           MPI_Comm_rank(CXios::globalComm,&rank);
@@ -228,16 +227,13 @@ namespace xios
       int msg=0 ;
 
       MPI_Comm_rank(intraComm,&rank) ;
-      
-      //printf("CClient::finalize called isServer = %d\n", CXios::isServer);
- 
+       
       if (!CXios::isServer)
       {
         MPI_Comm_rank(intraComm,&rank) ;
         if (rank==0)
         {
           MPI_Send(&msg,1,MPI_INT,0,0,interComm) ;
-          //printf(" CClient : send finalize sign to server 0\n");
         }
       }
 
@@ -253,7 +249,7 @@ namespace xios
       if (!is_MPI_Initialized)
       {
         if (CXios::usingOasis) oasis_finalize();
-        else {MPI_Finalize() ; printf("CClient::finalize called MPI_finalize\n");}
+        else  MPI_Finalize(); 
       }
       
       info(20) << "Client side context is finalized"<<endl ;

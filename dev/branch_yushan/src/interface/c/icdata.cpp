@@ -94,11 +94,8 @@ extern "C"
      CTimer::get("XIOS init context").resume();
      comm = ep_lib::EP_Comm_f2c(static_cast< int >(*f_comm));
 
-    
      CClient::registerContext(str,comm);
-     
-     //printf("icdata.cpp: client register context %s : %p\n", context_id, &comm);
-     
+          
      CTimer::get("XIOS init context").suspend();
      CTimer::get("XIOS").suspend();
    }
@@ -288,7 +285,6 @@ extern "C"
       if (*isVarExisted)
       {
         CVariable::get(context->getId(), varIdStr)->setData<double>(data);
-        //CVariable::get(context->getId(), varIdStr)->sendValue();
       }
 
       CTimer::get("XIOS set variable data").suspend();
@@ -309,7 +305,6 @@ extern "C"
       if (*isVarExisted)
       {
         CVariable::get(context->getId(), varIdStr)->setData<float>(data);
-        //CVariable::get(context->getId(), varIdStr)->sendValue();
       }
 
       CTimer::get("XIOS set variable data").suspend();
@@ -330,7 +325,6 @@ extern "C"
       if (*isVarExisted)
       {
         CVariable::get(context->getId(), varIdStr)->setData<int>(data);
-        //CVariable::get(context->getId(), varIdStr)->sendValue();
       }
 
 
@@ -352,7 +346,6 @@ extern "C"
       if (*isVarExisted)
       {
         CVariable::get(context->getId(), varIdStr)->setData<bool>(data);
-        //CVariable::get(context->getId(), varIdStr)->sendValue();
       }
 
       CTimer::get("XIOS set variable data").suspend();
@@ -378,7 +371,6 @@ extern "C"
       if (*isVarExisted)
       {
         CVariable::get(context->getId(), varIdStr)->setData<string>(dataStr);
-        //CVariable::get(context->getId(), varIdStr)->sendValue();
       }
 
       CTimer::get("XIOS set variable data").suspend();

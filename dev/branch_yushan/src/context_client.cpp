@@ -115,7 +115,7 @@ namespace xios
 
       while (parentServer->server->hasPendingEvent())
       {
-       parentServer->server->eventLoop(); //printf("parentServer->server->eventLoop()\n");
+       parentServer->server->eventLoop();
       }
     }
 

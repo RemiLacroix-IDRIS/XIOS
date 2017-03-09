@@ -164,7 +164,7 @@ namespace xios
       if (!is_MPI_Initialized)
       {
         if (CXios::usingOasis) oasis_finalize();
-        //else  {MPI_Finalize() ; printf("CServer::finalize called MPI_finalize\n");}
+        //else  {MPI_Finalize() ;}
       }
 
       

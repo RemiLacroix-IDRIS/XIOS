@@ -86,12 +86,6 @@ namespace xios
       
     globalComm = passage[omp_get_thread_num()];
     
-    // int tmp_size;
-    // MPI_Comm_size(globalComm, &tmp_size);
-    // if(isClient) printf("Client : globalcomm size = %d\n", tmp_size);
-    // if(isServer) printf("Server : globalcomm size = %d\n", tmp_size);
-
-    
   }
 
   /*!

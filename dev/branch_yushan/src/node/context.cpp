@@ -389,43 +389,34 @@ namespace xios {
    */
    void CContext::closeDefinition(void)
    {
-     int myRank;
-     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
-
-     //printf("myRank = %d, hasClient = %d, hasServer = %d\n", myRank, hasClient, hasServer);
 
      // There is nothing client need to send to server
      if (hasClient)
      {
        // After xml is parsed, there are some more works with post processing
        postProcessing(); 
-       //printf("myRank = %d,                postProcessing OK\n", myRank);
      }
-     setClientServerBuffer(); //printf("myRank = %d, setClientServerBuffer OK\n", myRank);
-
-     //printf("hasClient = %d, hasServer = %d\n", hasClient, hasServer);
+     setClientServerBuffer(); 
 
      if (hasClient && !hasServer)
      {
       // Send all attributes of current context to server
-      this->sendAllAttributesToServer(); //printf("myRank = %d, this->sendAllAttributesToServer OK\n", myRank);
+      this->sendAllAttributesToServer();
 
       // Send all attributes of current calendar
       CCalendarWrapper::get(CCalendarWrapper::GetDefName())->sendAllAttributesToServer();
-      //printf("myRank = %d, CCalendarWrapper::get(CCalendarWrapper::GetDefName())->sendAllAttributesToServer OK\n", myRank);
 
       // We have enough information to send to server
       // First of all, send all enabled files
-       sendEnabledFiles();  //printf("myRank = %d, sendEnabledFiles OK\n", myRank);
+       sendEnabledFiles(); 
 
       // Then, send all enabled fields
-       sendEnabledFields();  //printf("myRank = %d, sendEnabledFields OK\n", myRank);
+       sendEnabledFields(); 
 
       // At last, we have all info of domain and axis, then send them
-       sendRefDomainsAxis();  //printf("myRank = %d, sendRefDomainsAxis OK\n", myRank);
-
+       sendRefDomainsAxis(); 
       // After that, send all grid (if any)
-       sendRefGrid(); //printf("myRank = %d, sendRefGrid OK\n", myRank);
+       sendRefGrid(); 
     }
 
     // We have a xml tree on the server side and now, it should be also processed
@@ -434,9 +425,9 @@ namespace xios {
     // There are some processings that should be done after all of above. For example: check mask or index
     if (hasClient)
     {
-      this->buildFilterGraphOfEnabledFields();  //printf("myRank = %d, buildFilterGraphOfEnabledFields OK\n", myRank);
-      buildFilterGraphOfFieldsWithReadAccess();  //printf("myRank = %d, buildFilterGraphOfFieldsWithReadAccess OK\n", myRank);
-      this->solveAllRefOfEnabledFields(true);  //printf("myRank = %d, solveAllRefOfEnabledFields OK\n", myRank);
+      this->buildFilterGraphOfEnabledFields();  
+      buildFilterGraphOfFieldsWithReadAccess();  
+      this->solveAllRefOfEnabledFields(true); 
     }
 
     // Now tell server that it can process all messages from client
@@ -447,9 +438,9 @@ namespace xios {
 
     if (hasClient)
     {
-      sendCreateFileHeader();  //printf("myRank = %d, sendCreateFileHeader OK\n", myRank);
+      sendCreateFileHeader(); 
 
-      startPrefetchingOfEnabledReadModeFiles();  //printf("myRank = %d, startPrefetchingOfEnabledReadModeFiles OK\n", myRank);
+      startPrefetchingOfEnabledReadModeFiles();  
     }
    }
 

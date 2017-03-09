@@ -75,7 +75,6 @@ namespace xios
 
     for(rank=0;rank<commSize;rank++)
     {
-      //printf("in CContextServer::listen, rank = %d, commSize = %d, pendingRequest.find(rank) = %d\n", rank, commSize, pendingRequest.find(rank));
       if (pendingRequest.find(rank)==pendingRequest.end())
       {
         traceOff();
@@ -91,7 +90,6 @@ namespace xios
             ep_lib::MPI_Recv(&buffSize, 1, MPI_LONG, rank, 20, interComm, &status);
             mapBufferSize_.insert(std::make_pair(rank, buffSize));
             it=(buffers.insert(pair<int,CServerBuffer*>(rank,new CServerBuffer(buffSize)))).first;
-            //printf("find message, is buffer end, receiving, buffSize = %d, rank = %d, commSize = %d\n", buffSize, rank, commSize);
           }
           else
           {
@@ -102,7 +100,6 @@ namespace xios
               addr=(char*)it->second->getBuffer(count);
               ep_lib::MPI_Irecv(addr,count,MPI_CHAR,rank,20,interComm,&pendingRequest[rank]);
               bufferRequest[rank]=addr;
-              //printf("find message, i-receiving to buffer %p, rank = %d, commSize = %d\n", addr, rank, commSize);
             }
           }
         }
@@ -147,9 +144,7 @@ namespace xios
   {
 
     CBufferIn buffer(buff,count);
-    //char* startBuffer,endBuffer;
     int size;
-    //int offset;
     size_t timeLine;
     map<size_t,CEventServer*>::iterator it;
 

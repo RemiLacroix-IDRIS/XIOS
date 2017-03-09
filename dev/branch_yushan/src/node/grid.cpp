@@ -165,11 +165,9 @@ namespace xios {
 
    void CGrid::checkAttributesAfterTransformation()
    {
-      int myRank;
-      MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
-
-      setAxisList();  //printf("myRank = %d, setAxisList OK\n", myRank);
-      std::vector<CAxis*> axisListP = this->getAxis();  //printf("myRank = %d, this->getAxis OK\n", myRank);
+      
+      setAxisList();  
+      std::vector<CAxis*> axisListP = this->getAxis(); 
       if (!axisListP.empty())
       {
         int idx = 0;
@@ -182,7 +180,7 @@ namespace xios {
           {
             axisPositionInGrid_.push_back(idx);
             ++idx;
-            //printf("myRank = %d, axisPositionInGrid_.push_back OK\n", myRank);
+            
           }
           else if (2 == elementDimension) idx += 2;
         }
@@ -190,19 +188,16 @@ namespace xios {
         for (int i = 0; i < axisListP.size(); ++i)
         {
           axisListP[i]->checkAttributesOnClientAfterTransformation(globalDim_,axisPositionInGrid_[i]);
-          //printf("myRank = %d, axisListP[%d/%d]->checkAttributesOnClientAfterTransformation OK\n", myRank, i, axisListP.size());
         }
       }
 
-      setDomainList(); //printf("myRank = %d, setDomainList OK\n", myRank);
-      std::vector<CDomain*> domListP = this->getDomains(); //printf("myRank = %d, this->getDomains OK\n", myRank);
+      setDomainList(); 
+      std::vector<CDomain*> domListP = this->getDomains();
       if (!domListP.empty())
       {
         for (int i = 0; i < domListP.size(); ++i)
         {
-          //printf("myRank = %d, start domListP[%d]->checkAttributesOnClientAfterTransformation\n", myRank, i);
           domListP[i]->checkAttributesOnClientAfterTransformation();
-          //printf("myRank = %d, domListP[%d]->checkAttributesOnClientAfterTransformation OK\n", myRank, i);
         }
       }
    }
