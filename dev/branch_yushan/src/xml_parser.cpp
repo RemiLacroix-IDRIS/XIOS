@@ -14,6 +14,7 @@ namespace xios
 
       void CXMLParser::ParseFile(const StdString & filename, const std::set<StdString>& parseContextList)
       {
+         //printf("thread %d, parsefile = %s\n", omp_get_thread_num(), filename.c_str());
          StdIFStream ifs ( filename.c_str() , StdIFStream::in );
          if ( (ifs.rdstate() & std::ifstream::failbit ) != 0 )
            ERROR("void CXMLParser::ParseFile(const StdString & filename)",

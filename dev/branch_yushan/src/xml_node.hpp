@@ -48,6 +48,7 @@ namespace xios
             int level;
 
             static StdString RootName;
+            //#pragma omp threadprivate(RootName)
 
       }; //class CXMLParser
 

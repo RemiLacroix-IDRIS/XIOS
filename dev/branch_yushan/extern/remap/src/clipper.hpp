@@ -72,11 +72,19 @@ enum PolyFillType { pftEvenOdd, pftNonZero, pftPositive, pftNegative };
 #ifdef use_int32
   typedef int cInt;
   static cInt const loRange = 0x7FFF;
+  #pragma omp threadprivate(loRange)
+
   static cInt const hiRange = 0x7FFF;
+  #pragma omp threadprivate(hiRange)
+
 #else
   typedef signed long long cInt;
   static cInt const loRange = 0x3FFFFFFF;
+  #pragma omp threadprivate(loRange)
+
   static cInt const hiRange = 0x3FFFFFFFFFFFFFFFLL;
+  #pragma omp threadprivate(hiRange)
+  
   typedef signed long long long64;     //used by Int128 class
   typedef unsigned long long ulong64;
 

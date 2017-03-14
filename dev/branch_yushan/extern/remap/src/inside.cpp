@@ -10,6 +10,7 @@
 namespace sphereRemap {
 
 static const double SNAP = 1e-11;
+#pragma omp threadprivate(SNAP)
 
 using namespace std;
 

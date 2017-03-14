@@ -267,8 +267,14 @@ namespace xios
        MPI_Status status ;
        int flag = false ;
        static void* buffer ;
+       #pragma omp threadprivate(buffer)
+
        static MPI_Request request ;
+       #pragma omp threadprivate(request)
+
        static bool recept=false ;
+       #pragma omp threadprivate(recept)
+
        int rank ;
        int count ; 
 
@@ -363,8 +369,14 @@ namespace xios
        MPI_Status status ;
        int flag ;
        static void* buffer ;
+       #pragma omp threadprivate(buffer)
+
        static MPI_Request request ;
+       #pragma omp threadprivate(request)
+
        static bool recept=false ;
+       #pragma omp threadprivate(recept)
+       
        int rank ;
        int count ;
        const int root=0 ;

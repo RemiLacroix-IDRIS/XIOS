@@ -15,6 +15,8 @@ struct CCFKeywords
   static const StdString XIOS_CF_standard_name;
   static const StdString XIOS_CF_coordinates;
   static const StdString XIOS_CF_bounds;
+
+  #pragma omp threadprivate(XIOS_CF_units, XIOS_CF_standard_name, XIOS_CF_coordinates, XIOS_CF_bounds)
 };
 const StdString CCFKeywords::XIOS_CF_units("units");
 const StdString CCFKeywords::XIOS_CF_standard_name("standard_name");
@@ -25,6 +27,8 @@ struct CCFConvention
 {
   static const std::set<StdString> XIOS_CF_Latitude_units;
   static const std::set<StdString> XIOS_CF_Longitude_units;
+
+  // #pragma omp threadprivate(XIOS_CF_Latitude_units, XIOS_CF_Longitude_units)
 
 private:
   CCFConvention();

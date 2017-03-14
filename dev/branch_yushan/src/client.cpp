@@ -38,14 +38,18 @@ namespace xios
         {
           if (!is_MPI_Initialized)
           {
-            MPI_Init(NULL, NULL);
+            //MPI_Init(NULL, NULL);
+            int return_level;
+            MPI_Init_thread(NULL, NULL, 3, &return_level);
+            assert(return_level == 3);
           }
           CTimer::get("XIOS").resume() ;
           CTimer::get("XIOS init").resume() ;
           boost::hash<string> hashString ;
 
           unsigned long hashClient=hashString(codeId) ;
-          unsigned long hashServer=hashString(CXios::xiosCodeId) ;
+          unsigned long hashServer; //=hashString(CXios::xiosCodeId) ;
+          hashServer=hashString("xios.x") ;
           unsigned long* hashAll ;
           int size ;
           int myColor ;
@@ -95,9 +99,14 @@ namespace xios
             int intraCommSize, intraCommRank ;
             MPI_Comm_size(intraComm,&intraCommSize) ;
             MPI_Comm_rank(intraComm,&intraCommRank) ;
-            info(50)<<"intercommCreate::client "<<rank<<" intraCommSize : "<<intraCommSize
-                 <<" intraCommRank :"<<intraCommRank<<"  serverLeader "<< serverLeader<<endl ;
+            #pragma omp critical(_output)
+            {
+              info(50)<<"intercommCreate::client "<<rank<<" intraCommSize : "<<intraCommSize
+                 <<" intraCommRank :"<<intraCommRank<<"  serverLeader "<< serverLeader<<endl ;  
+            }
+            
             MPI_Intercomm_create(intraComm,0,CXios::globalComm,serverLeader,0,&interComm) ;
+
           }
           else
           {
@@ -288,10 +297,15 @@ namespace xios
       }
 
       fileNameClient << fileName << "_" << std::setfill('0') << std::setw(numDigit) << getRank() << ext;
-      fb->open(fileNameClient.str().c_str(), std::ios::out);
-      if (!fb->is_open())
-        ERROR("void CClient::openStream(const StdString& fileName, const StdString& ext, std::filebuf* fb)",
-              << std::endl << "Can not open <" << fileNameClient << "> file to write the client log(s).");
+      printf("getrank() = %d, file name = %s\n", getRank(), fileNameClient.str().c_str());
+      #pragma omp critical(_output)
+      {
+        fb->open(fileNameClient.str().c_str(), std::ios::out);
+        if (!fb->is_open())
+          ERROR("void CClient::openStream(const StdString& fileName, const StdString& ext, std::filebuf* fb)",
+              << std::endl << "Can not open <" << fileNameClient << "> file to write the client log(s).");  
+      }
+      
     }
 
     /*!

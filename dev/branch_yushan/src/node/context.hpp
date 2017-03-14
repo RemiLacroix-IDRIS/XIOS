@@ -208,6 +208,7 @@ namespace xios {
 
          // Context root
          static shared_ptr<CContextGroup> root;
+         // #pragma omp threadprivate(root)
 
          // Determine context on client or not
          bool hasClient;

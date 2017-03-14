@@ -9,7 +9,11 @@ namespace xios
   {
     public:
     static int defaultIncSize;
+    //#pragma omp threadprivate(defaultIncSize)
+    
     static int index ;
+    //#pragma omp threadprivate(index)
+    
     int incSize ;
     int offset ;
     bool reset ;

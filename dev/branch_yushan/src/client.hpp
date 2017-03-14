@@ -18,10 +18,19 @@ namespace xios
         static void registerContext(const string& id, ep_lib::MPI_Comm contextComm);
 
         static MPI_Comm intraComm;
+        #pragma omp threadprivate(intraComm)
+
         static MPI_Comm interComm;
+        #pragma omp threadprivate(interComm)
+
         static std::list<MPI_Comm> contextInterComms;
+        // #pragma omp threadprivate(contextInterComms)
+
         static int serverLeader;
+        #pragma omp threadprivate(serverLeader)
+
         static bool is_MPI_Initialized ;
+        #pragma omp threadprivate(is_MPI_Initialized)
 
         //! Get rank of the current process
         static int getRank();
@@ -42,8 +51,13 @@ namespace xios
 
       protected:
         static int rank;
+        #pragma omp threadprivate(rank)
+
         static StdOFStream m_infoStream;
+        #pragma omp threadprivate(m_infoStream) 
+
         static StdOFStream m_errorStream;
+        #pragma omp threadprivate(m_errorStream)
 
         static void openStream(const StdString& fileName, const StdString& ext, std::filebuf* fb);
     };

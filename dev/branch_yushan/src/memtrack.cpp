@@ -67,6 +67,7 @@ namespace MemTrack
     {
         private:    // static member variables
             static BlockHeader *ourFirstNode;
+            //#pragma omp threadprivate(ourFirstNode)
     
         private:    // member variables
             BlockHeader *myPrevNode;
@@ -243,6 +244,8 @@ namespace MemTrack
         private:    // constants
             static const unsigned int SIGNATURE1 = 0xCAFEBABE;
             static const unsigned int SIGNATURE2 = 0xFACEFACE;
+
+            //#pragma omp threadprivate(SIGNATURE1, SIGNATURE2)
         
         private:    // member variables
             unsigned int mySignature1;

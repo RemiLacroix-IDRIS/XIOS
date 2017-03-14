@@ -70,7 +70,7 @@ extern "C"
       if (initialized) local_comm=MPI_Comm_f2c(*f_local_comm);
       else local_comm = MPI_COMM_NULL;
       #endif
-     
+      
 
       CXios::initClientSide(str, local_comm, return_comm);
 

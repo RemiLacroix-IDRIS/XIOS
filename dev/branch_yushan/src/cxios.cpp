@@ -21,6 +21,8 @@ namespace xios
   bool CXios::isClient ;
   bool CXios::isServer ;
   MPI_Comm CXios::globalComm ;
+  // #pragma omp threadprivate(CXios::globalComm)
+
   bool CXios::usingOasis ;
   bool CXios::usingServer = false;
   double CXios::bufferSizeFactor = 1.0;
@@ -34,7 +36,11 @@ namespace xios
   void CXios::initialize()
   {    
     set_new_handler(noMemory);
-    parseFile(rootFile);
+    //#pragma omp critical(_output)
+    #pragma omp master
+    {
+      parseFile(rootFile);  
+    }
     parseXiosConfig();
   }
 
@@ -44,6 +50,7 @@ namespace xios
   */
   void CXios::parseXiosConfig()
   {
+
     usingOasis=getin<bool>("using_oasis",false) ;
     usingServer=getin<bool>("using_server",false) ;
     info.setLevel(getin<int>("info_level",0)) ;
@@ -62,22 +69,24 @@ namespace xios
 
     bufferSizeFactor = getin<double>("buffer_size_factor", defaultBufferSizeFactor);
     minBufferSize = getin<int>("min_buffer_size", 1024 * sizeof(double));
-
+ 
     int num_ep;
-    if(isClient) 
+    if(isClient)  
     { 
-      num_ep = 1;
+      num_ep = omp_get_num_threads();
+      printf("Client %d: num_ep = %d\n", omp_get_thread_num(), num_ep);
     }
     
     if(isServer) 
     { 
-      num_ep = 1; 
+      num_ep = omp_get_num_threads();
+      printf("Server %d: num_ep = %d\n", omp_get_thread_num(), num_ep); 
     }
     
     MPI_Info info;
-    MPI_Comm *ep_comm;
-    if(omp_get_thread_num()==0)
+    #pragma omp master
     {
+      MPI_Comm *ep_comm;
       MPI_Comm_create_endpoints(MPI_COMM_WORLD, num_ep, info, ep_comm);  // servers should reach here too.
       passage = ep_comm;  
     }
@@ -85,6 +94,11 @@ namespace xios
     #pragma omp barrier
       
     globalComm = passage[omp_get_thread_num()];
+
+    int tmp_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &tmp_rank);
+    if(isClient) printf("client thread %d/%d, globalComm = %p\n", omp_get_thread_num(), tmp_rank, &passage[omp_get_thread_num()]);
+    if(isServer) printf("server thread %d/%d, globalComm = %p\n", omp_get_thread_num(), tmp_rank, &passage[omp_get_thread_num()]);
     
   }
 

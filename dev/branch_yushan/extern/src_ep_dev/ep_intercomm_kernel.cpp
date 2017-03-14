@@ -419,7 +419,6 @@ namespace ep_lib
           {
             *newintercomm =  iter->second[my_position];
             found = true;
-            tag_list.erase(iter);
             break;
           }
         }
@@ -427,17 +426,17 @@ namespace ep_lib
     }
 
     MPI_Barrier_local(local_comm);
-    // if(is_proc_master)
-    // {
-    //   for(std::list<std::pair < std::pair<int,int>, MPI_Comm* > >::iterator iter = tag_list.begin(); iter!=tag_list.end(); iter++)
-    //   {
-    //     if((*iter).first == make_pair(tag, min(leader_info[0], leader_info[1])))
-    //     {
-    //       tag_list.erase(iter);
-    //       break;
-    //     }
-    //   }
-    // }
+    if(is_proc_master)
+    {
+      for(std::list<std::pair < std::pair<int,int>, MPI_Comm* > >::iterator iter = tag_list.begin(); iter!=tag_list.end(); iter++)
+      {
+        if((*iter).first == make_pair(tag, min(leader_info[0], leader_info[1])))
+        {
+          tag_list.erase(iter);
+          break;
+        }
+      }
+    }
 
     int intercomm_ep_rank, intercomm_ep_rank_loc, intercomm_mpi_rank;
     int intercomm_ep_size, intercomm_num_ep, intercomm_mpi_size;
@@ -686,23 +685,26 @@ namespace ep_lib
           {
             *newintercomm =  iter->second[my_position];
             found = true;
-            tag_list.erase(iter);
+            // tag_list.erase(iter);
             break;
           }
         }
       }
     }
 
-    // if(leader_rank_in_peer[0] < leader_rank_in_peer[1])
-    // {
-    //   for(std::list<std::pair < std::pair<int,int>, MPI_Comm* > >::iterator iter = tag_list.begin(); iter!=tag_list.end(); iter++)
-    //     {
-    //       if((*iter).first == make_pair(tag_label[0], tag_label[1]))
-    //       {
-    //         tag_list.erase(iter);
-    //       }
-    //     }
-    // }
+    MPI_Barrier_local(local_comm);
+
+    if(leader_rank_in_peer[0] < leader_rank_in_peer[1])
+    {
+      for(std::list<std::pair < std::pair<int,int>, MPI_Comm* > >::iterator iter = tag_list.begin(); iter!=tag_list.end(); iter++)
+        {
+          if((*iter).first == make_pair(tag_label[0], tag_label[1]))
+          {
+            tag_list.erase(iter);
+            break;
+          }
+        }
+    }
 
 
 

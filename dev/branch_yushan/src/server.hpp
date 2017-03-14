@@ -28,9 +28,14 @@ namespace xios
         static void registerContext(void* buff,int count, int leaderRank=0);
 
         static MPI_Comm intraComm;
+        //#pragma omp threadprivate(intraComm)
+
         static list<MPI_Comm> interComm;
+        //#pragma omp threadprivate(interComm)
+
         static std::list<MPI_Comm> contextInterComms;
         static CEventScheduler* eventScheduler;
+        //#pragma omp threadprivate(eventScheduler)
         
         struct contextMessage
         {
@@ -39,10 +44,14 @@ namespace xios
         };
 
         static bool isRoot;
+        //#pragma omp threadprivate(isRoot)
 
         static map<string,CContext*> contextList;
         static bool finished;
+        //#pragma omp threadprivate(finished)
+
         static bool is_MPI_Initialized;
+        //#pragma omp threadprivate(is_MPI_Initialized)
 
       public:
         //! Get rank of the current process
@@ -64,8 +73,13 @@ namespace xios
 
       private:
         static int rank;
+        //#pragma omp threadprivate(rank)
+
         static StdOFStream m_infoStream;
+        //#pragma omp threadprivate(m_infoStream)
+
         static StdOFStream m_errorStream;
+        //#pragma omp threadprivate(m_errorStream)
 
         static void openStream(const StdString& fileName, const StdString& ext, std::filebuf* fb);
     };

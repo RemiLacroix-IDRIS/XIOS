@@ -2,6 +2,7 @@ PROGRAM test_client
 
   USE xios
   USE mod_wait
+  use omp_lib
   IMPLICIT NONE
   INCLUDE "mpif.h"
   INTEGER :: rank
@@ -31,7 +32,7 @@ PROGRAM test_client
   INTEGER :: ni,ibegin,iend,nj,jbegin,jend
   INTEGER :: i,j,l,ts,n
 
-!!! MPI Initialization
+!!! MPI Initialization   
 
   CALL MPI_INIT(ierr)
   CALL init_wait
@@ -43,7 +44,6 @@ PROGRAM test_client
   
   CALL MPI_COMM_RANK(comm,rank,ierr)
   CALL MPI_COMM_SIZE(comm,size,ierr)
-  
 
   DO j=1,nj_glo
     DO i=1,ni_glo

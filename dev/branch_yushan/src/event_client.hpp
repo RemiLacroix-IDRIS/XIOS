@@ -11,6 +11,7 @@ namespace xios
   {
     public:
       static const size_t headerSize;
+      //#pragma omp threadprivate(headerSize)
 
       CEventClient(int classId, int typeId);
 

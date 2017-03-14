@@ -18,6 +18,7 @@ namespace ep_lib
     #elif _openmpi
     fint = ::MPI_Comm_c2f(static_cast< ::MPI_Comm>(comm.mpi_comm));
     #endif
+    
     std::map<std::pair<int, int>, MPI_Comm > ::iterator it;
     
     it = fc_comm_map.find(std::make_pair(fint, omp_get_thread_num()));
@@ -49,28 +50,31 @@ namespace ep_lib
     }
     else
     {      
-      MPI_Comm return_comm;
-      if(omp_get_thread_num() == 0)
-      {
-        #ifdef _openmpi
-        ::MPI_Comm base_comm = ::MPI_Comm_f2c(comm);
-        #elif _intelmpi
-        ::MPI_Comm base_comm = (::MPI_Comm)(comm);
-        #endif
+      
+      #ifdef _openmpi
+      ::MPI_Comm base_comm = ::MPI_Comm_f2c(comm);
+      #elif _intelmpi
+      ::MPI_Comm base_comm = (::MPI_Comm)(comm);
+      #endif
 
-        if(base_comm != MPI_COMM_NULL_STD)
+      if(base_comm != MPI_COMM_NULL_STD)
+      {
+        if(omp_get_thread_num() == 0)
         {
           int num_ep = omp_get_num_threads();
           MPI_Comm *new_comm;
           MPI_Info info;
           MPI_Comm_create_endpoints(base_comm, num_ep, info, new_comm);
-          return_comm = new_comm[omp_get_thread_num()];
+          passage = new_comm;
         }
-        return MPI_COMM_NULL;
+        #pragma omp barrier
+
+        MPI_Comm return_comm = passage[omp_get_thread_num()];
+        return return_comm;
+        
       }
+      return MPI_COMM_NULL;
       
-      
-      return return_comm;
     }
   }
 
