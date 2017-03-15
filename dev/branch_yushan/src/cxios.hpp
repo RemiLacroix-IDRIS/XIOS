@@ -52,7 +52,7 @@ namespace xios
      #pragma omp threadprivate(globalComm)
 
      static bool printLogs2Files; //!< Printing out logs into files
-     //#pragma omp threadprivate(printLogs2Files)
+     #pragma omp threadprivate(printLogs2Files)
 
      static bool usingOasis ; //!< Using Oasis
      #pragma omp threadprivate(usingOasis)

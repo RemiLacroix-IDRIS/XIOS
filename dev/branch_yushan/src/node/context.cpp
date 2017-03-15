@@ -355,6 +355,7 @@ namespace xios {
    //! Terminate a context
    void CContext::finalize(void)
    {
+      
       if (!finalized)
       {
         finalized = true;

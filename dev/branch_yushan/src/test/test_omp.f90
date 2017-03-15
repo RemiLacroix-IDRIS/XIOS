@@ -78,11 +78,18 @@ PROGRAM test_omp
 
   print*, "xios init OK", rank, size
 
-  CALL xios_context_initialize("test",comm)
+!   CALL xios_context_initialize("test",comm)
 
-   print*, "xios_context init OK", rank, size  
+!   print*, "xios_context init OK", rank, size 
+
+  !CALL xios_context_finalize()
+
+  
+  !print*, "xios_context finalize OK", rank, size 
 
   !$omp end parallel
+
+
   
   CALL xios_context_initialize("test",comm)
 

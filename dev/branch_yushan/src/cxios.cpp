@@ -34,7 +34,7 @@ namespace xios
   void CXios::initialize()
   {    
     set_new_handler(noMemory);
-    #pragma omp master
+    #pragma omp critical
     {
       parseFile(rootFile);  
     }
