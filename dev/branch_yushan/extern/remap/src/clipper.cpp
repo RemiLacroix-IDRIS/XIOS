@@ -51,21 +51,16 @@
 namespace ClipperLib {
 
 static double const pi = 3.141592653589793238;
-#pragma omp threadprivate(pi)
 
 static double const two_pi = pi *2;
-#pragma omp threadprivate(two_pi)
 
 static double const def_arc_tolerance = 0.25;
-#pragma omp threadprivate(def_arc_tolerance)
 
 enum Direction { dRightToLeft, dLeftToRight };
 
 static int const Unassigned = -1;  //edge not currently 'owning' a solution
-#pragma omp threadprivate(Unassigned)
 
 static int const Skip = -2;        //edge that would otherwise close a path
-#pragma omp threadprivate(Skip)
 
 #define HORIZONTAL (-1.0E+40)
 #define TOLERANCE (1.0e-20)

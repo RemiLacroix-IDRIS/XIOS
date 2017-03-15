@@ -21,8 +21,6 @@ namespace xios
   bool CXios::isClient ;
   bool CXios::isServer ;
   MPI_Comm CXios::globalComm ;
-  // #pragma omp threadprivate(CXios::globalComm)
-
   bool CXios::usingOasis ;
   bool CXios::usingServer = false;
   double CXios::bufferSizeFactor = 1.0;
@@ -36,7 +34,6 @@ namespace xios
   void CXios::initialize()
   {    
     set_new_handler(noMemory);
-    //#pragma omp critical(_output)
     #pragma omp master
     {
       parseFile(rootFile);  
@@ -96,9 +93,9 @@ namespace xios
     globalComm = passage[omp_get_thread_num()];
 
     int tmp_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &tmp_rank);
-    if(isClient) printf("client thread %d/%d, globalComm = %p\n", omp_get_thread_num(), tmp_rank, &passage[omp_get_thread_num()]);
-    if(isServer) printf("server thread %d/%d, globalComm = %p\n", omp_get_thread_num(), tmp_rank, &passage[omp_get_thread_num()]);
+    MPI_Comm_rank(globalComm, &tmp_rank);
+    if(isClient) printf("client thread %d/%d\n", omp_get_thread_num(), tmp_rank);
+    if(isServer) printf("server thread %d/%d\n", omp_get_thread_num(), tmp_rank);
     
   }
 
@@ -114,14 +111,18 @@ namespace xios
     
     initialize() ;
 
-   
+
+
     CClient::initialize(codeId,localComm,returnComm) ;
+
+
     if (CClient::getRank()==0) globalRegistry = new CRegistry(returnComm) ;
 
     // If there are no server processes then we are in attached mode
     // and the clients are also servers
     isServer = !usingServer;
     
+    printf("CXios::initClientSide OK, printLogs2Files = %d\n", printLogs2Files);
     
     if (printLogs2Files)
     {

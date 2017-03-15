@@ -1,7 +1,8 @@
-PROGRAM test_client
+PROGRAM test_omp
 
   USE xios
   USE mod_wait
+  use omp_lib
   IMPLICIT NONE
   INCLUDE "mpif.h"
   INTEGER :: rank
@@ -29,22 +30,25 @@ PROGRAM test_client
   DOUBLE PRECISION :: field_A_glo(ni_glo,nj_glo,llm)
   DOUBLE PRECISION,ALLOCATABLE :: lon(:,:),lat(:,:),field_A(:,:,:), lonvalue(:,:) ;
   INTEGER :: ni,ibegin,iend,nj,jbegin,jend
-  INTEGER :: i,j,l,ts,n
+  INTEGER :: i,j,l,ts,n, provided
 
 !!! MPI Initialization   
 
-  CALL MPI_INIT(ierr)
+  CALL MPI_INIT_THREAD(3, provided, ierr)
   CALL init_wait
 
   CALL MPI_COMM_RANK(MPI_COMM_WORLD,rank,ierr)
   if(rank < 2) then
 
+  !$omp parallel default(private)
   
   CALL xios_initialize(id,return_comm=comm)
   
   CALL MPI_COMM_RANK(comm,rank,ierr)
   CALL MPI_COMM_SIZE(comm,size,ierr)
 
+  size = size*omp_get_num_threads()
+  rank = rank*omp_get_num_threads() + omp_get_thread_num()
 
   DO j=1,nj_glo
     DO i=1,ni_glo
@@ -71,6 +75,14 @@ PROGRAM test_client
   lon(:,:)=lon_glo(ibegin+1:iend+1,jbegin+1:jend+1)
   lat(:,:)=lat_glo(ibegin+1:iend+1,jbegin+1:jend+1)
   field_A(1:ni,1:nj,:)=field_A_glo(ibegin+1:iend+1,jbegin+1:jend+1,:)
+
+  print*, "xios init OK", rank, size
+
+  CALL xios_context_initialize("test",comm)
+
+   print*, "xios_context init OK", rank, size  
+
+  !$omp end parallel
   
   CALL xios_context_initialize("test",comm)
 
@@ -162,7 +174,7 @@ PROGRAM test_client
 
   CALL MPI_FINALIZE(ierr)
 
-END PROGRAM test_client
+END PROGRAM test_omp
 
 
 

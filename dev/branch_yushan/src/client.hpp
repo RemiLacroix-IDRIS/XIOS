@@ -3,9 +3,6 @@
 
 #include "xios_spl.hpp"
 #include "mpi.hpp"
-#ifdef _usingEP
-//#include "ep_declaration.hpp"
-#endif
 
 
 namespace xios

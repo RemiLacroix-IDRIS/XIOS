@@ -29,34 +29,47 @@ namespace xios
       MPI_Initialized(&initialized) ;
       if (initialized) is_MPI_Initialized=true ;
       else is_MPI_Initialized=false ;
+
+
       
 // don't use OASIS
       if (!CXios::usingOasis)
       {
 // localComm doesn't given
+
+        printf("check : localComm == MPI_COMM_NULL = %d\n", localComm == MPI_COMM_NULL);
+
         if (localComm == MPI_COMM_NULL)
         {
           if (!is_MPI_Initialized)
           {
             //MPI_Init(NULL, NULL);
             int return_level;
+            #ifdef _intelmpi
             MPI_Init_thread(NULL, NULL, 3, &return_level);
             assert(return_level == 3);
+            #elif _openmpi
+            MPI_Init_thread(NULL, NULL, 2, &return_level);
+            assert(return_level == 2);
+            #endif
           }
           CTimer::get("XIOS").resume() ;
           CTimer::get("XIOS init").resume() ;
           boost::hash<string> hashString ;
 
           unsigned long hashClient=hashString(codeId) ;
-          unsigned long hashServer; //=hashString(CXios::xiosCodeId) ;
-          hashServer=hashString("xios.x") ;
+          unsigned long hashServer=hashString(CXios::xiosCodeId) ;
+          //hashServer=hashString("xios.x") ;
           unsigned long* hashAll ;
           int size ;
           int myColor ;
           int i,c ;
 
-          MPI_Comm_size(CXios::globalComm,&size) ;
+          MPI_Comm_size(CXios::globalComm,&size);
           MPI_Comm_rank(CXios::globalComm,&rank);
+
+          printf("client init : codeId = %s, xiosCodeId = %s, rank = %d(%d), size = %d\n", codeId, CXios::xiosCodeId, rank, omp_get_thread_num(), size);
+          
 
           hashAll=new unsigned long[size] ;
 
@@ -197,7 +210,7 @@ namespace xios
               
 
         MPI_Intercomm_create(contextComm,0,CXios::globalComm,serverLeader,10+globalRank,&contextInterComm) ;
-        info(10)<<"Register new Context : "<<id<<endl ;
+        //info(10)<<"Register new Context : "<<id<<endl ;
                       
 
         MPI_Comm inter ;
