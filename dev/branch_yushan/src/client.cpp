@@ -37,8 +37,6 @@ namespace xios
       {
 // localComm doesn't given
 
-        printf("check : localComm == MPI_COMM_NULL = %d\n", localComm == MPI_COMM_NULL);
-
         if (localComm == MPI_COMM_NULL)
         {
           if (!is_MPI_Initialized)
@@ -68,7 +66,7 @@ namespace xios
           MPI_Comm_size(CXios::globalComm,&size);
           MPI_Comm_rank(CXios::globalComm,&rank);
 
-          printf("client init : codeId = %s, xiosCodeId = %s, rank = %d(%d), size = %d\n", codeId, CXios::xiosCodeId, rank, omp_get_thread_num(), size);
+          printf("client init : rank = %d, size = %d\n", rank, size);
           
 
           hashAll=new unsigned long[size] ;
@@ -106,7 +104,7 @@ namespace xios
 
           if (CXios::usingServer)
           {
-            int clientLeader=leaders[hashClient] ;
+            //int clientLeader=leaders[hashClient] ;
             serverLeader=leaders[hashServer] ;
 
             int intraCommSize, intraCommRank ;
@@ -115,10 +113,22 @@ namespace xios
             #pragma omp critical(_output)
             {
               info(50)<<"intercommCreate::client "<<rank<<" intraCommSize : "<<intraCommSize
-                 <<" intraCommRank :"<<intraCommRank<<"  serverLeader "<< serverLeader<<endl ;  
+                 <<" intraCommRank :"<<intraCommRank<<"  serverLeader "<< serverLeader
+                 <<" globalComm : "<< &(CXios::globalComm) << endl ;  
             }
             
             MPI_Intercomm_create(intraComm,0,CXios::globalComm,serverLeader,0,&interComm) ;
+
+            int interCommSize, interCommRank ;
+            MPI_Comm_size(interComm,&interCommSize) ;
+            MPI_Comm_rank(interComm,&interCommRank) ;
+
+            #pragma omp critical(_output)
+            {
+              info(50)<<" interCommRank :"<<interCommRank
+                 <<" interCommSize : "<< interCommSize << endl ;  
+            }
+
 
           }
           else
@@ -175,12 +185,19 @@ namespace xios
 
     void CClient::registerContext(const string& id,MPI_Comm contextComm)
     {
+      //info(50) << "Client "<<getRank() << " start registerContext using info output" << endl;
+      printf("Client %d start registerContext\n", getRank());
+      //printf("Client start registerContext\n");
+
       CContext::setCurrent(id) ;
-      CContext* context=CContext::create(id);
+      printf("Client %d CContext::setCurrent OK\n", getRank());
+      CContext* context = CContext::create(id);
+      printf("Client %d context=CContext::create(%s) OK\n", getRank(), id);
+      
       StdString idServer(id);
       idServer += "_server";
 
-      if (!CXios::isServer)
+      if (!CXios::isServer)  // server mode
       {      
         int size,rank,globalRank ;
         size_t message_size ;
@@ -210,21 +227,28 @@ namespace xios
               
 
         MPI_Intercomm_create(contextComm,0,CXios::globalComm,serverLeader,10+globalRank,&contextInterComm) ;
-        //info(10)<<"Register new Context : "<<id<<endl ;
+        
+        #pragma omp critical (_output)
+        info(10)<<"Register new Context : "<<id<<endl ;
                       
 
         MPI_Comm inter ;
         MPI_Intercomm_merge(contextInterComm,0,&inter) ;
         MPI_Barrier(inter) ;
+
+        #pragma omp critical (_output)
+        printf("Client %d : MPI_Intercomm_merge OK \n", getRank()) ;
         
         
         context->initClient(contextComm,contextInterComm) ;
+        #pragma omp critical (_output)
+        printf("Client %d : context->initClient(contextComm,contextInterComm) OK \n", getRank()) ;
         
 
         contextInterComms.push_back(contextInterComm);
         MPI_Comm_free(&inter);
       }
-      else
+      else  // attached mode
       {
         MPI_Comm contextInterComm ;
         MPI_Comm_dup(contextComm,&contextInterComm) ;

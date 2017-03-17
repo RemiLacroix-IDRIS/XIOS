@@ -24,10 +24,10 @@ namespace xios
         // #pragma omp threadprivate(contextInterComms)
 
         static int serverLeader;
-        #pragma omp threadprivate(serverLeader)
+        //#pragma omp threadprivate(serverLeader)
 
         static bool is_MPI_Initialized ;
-        #pragma omp threadprivate(is_MPI_Initialized)
+        //#pragma omp threadprivate(is_MPI_Initialized)
 
         //! Get rank of the current process
         static int getRank();
@@ -51,10 +51,10 @@ namespace xios
         #pragma omp threadprivate(rank)
 
         static StdOFStream m_infoStream;
-        #pragma omp threadprivate(m_infoStream) 
+        //#pragma omp threadprivate(m_infoStream) 
 
         static StdOFStream m_errorStream;
-        #pragma omp threadprivate(m_errorStream)
+        //#pragma omp threadprivate(m_errorStream)
 
         static void openStream(const StdString& fileName, const StdString& ext, std::filebuf* fb);
     };

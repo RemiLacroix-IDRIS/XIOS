@@ -21,6 +21,7 @@ namespace xios
   bool CXios::isClient ;
   bool CXios::isServer ;
   MPI_Comm CXios::globalComm ;
+  
   bool CXios::usingOasis ;
   bool CXios::usingServer = false;
   double CXios::bufferSizeFactor = 1.0;
@@ -71,13 +72,13 @@ namespace xios
     if(isClient)  
     { 
       num_ep = omp_get_num_threads();
-      printf("Client %d: num_ep = %d\n", omp_get_thread_num(), num_ep);
+      //printf("Client %d: num_ep = %d\n", omp_get_thread_num(), num_ep);
     }
     
     if(isServer) 
     { 
       num_ep = omp_get_num_threads();
-      printf("Server %d: num_ep = %d\n", omp_get_thread_num(), num_ep); 
+      //printf("Server %d: num_ep = %d\n", omp_get_thread_num(), num_ep); 
     }
     
     MPI_Info info;
@@ -89,13 +90,14 @@ namespace xios
     }
     
     #pragma omp barrier
-      
-    globalComm = passage[omp_get_thread_num()];
 
-    int tmp_rank;
-    MPI_Comm_rank(globalComm, &tmp_rank);
-    if(isClient) printf("client thread %d/%d\n", omp_get_thread_num(), tmp_rank);
-    if(isServer) printf("server thread %d/%d\n", omp_get_thread_num(), tmp_rank);
+      
+    CXios::globalComm = passage[omp_get_thread_num()];
+
+    // int tmp_rank;
+    // MPI_Comm_rank(CXios::globalComm, &tmp_rank);
+    // if(isClient) printf("client thread %d/%d, globalComm = %p\n", omp_get_thread_num(), tmp_rank, &(CXios::globalComm));
+    //if(isServer) printf("server thread %d/%d, globalComm = %p\n", omp_get_thread_num(), tmp_rank, &globalComm);
     
   }
 
@@ -111,10 +113,7 @@ namespace xios
     
     initialize() ;
 
-
-
     CClient::initialize(codeId,localComm,returnComm) ;
-
 
     if (CClient::getRank()==0) globalRegistry = new CRegistry(returnComm) ;
 

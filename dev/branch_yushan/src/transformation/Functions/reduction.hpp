@@ -58,7 +58,7 @@ protected:
   typedef CReductionAlgorithm* (*CreateOperationCallBack)();
   typedef std::map<EReductionType, CreateOperationCallBack> CallBackMap;
   static CallBackMap* reductionCreationCallBacks_;
-  #pragma omp threadprivate(reductionCreationCallBacks_)
+  //#pragma omp threadprivate(reductionCreationCallBacks_)
 
   static bool registerOperation(EReductionType reduceType, CreateOperationCallBack createFn);
   static bool unregisterOperation(EReductionType reduceType);
@@ -66,7 +66,7 @@ protected:
 protected:
   static bool initReductionOperation(std::map<StdString,EReductionType>& m);
   static bool _dummyInit;
-  #pragma omp threadprivate(_dummyInit)
+  //#pragma omp threadprivate(_dummyInit)
 };
 
 }

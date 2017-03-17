@@ -267,13 +267,13 @@ namespace xios
        MPI_Status status ;
        int flag = false ;
        static void* buffer ;
-       #pragma omp threadprivate(buffer)
+       //#pragma omp threadprivate(buffer)
 
        static MPI_Request request ;
-       #pragma omp threadprivate(request)
+       //#pragma omp threadprivate(request)
 
        static bool recept=false ;
-       #pragma omp threadprivate(recept)
+       //#pragma omp threadprivate(recept)
 
        int rank ;
        int count ; 
@@ -369,13 +369,13 @@ namespace xios
        MPI_Status status ;
        int flag ;
        static void* buffer ;
-       #pragma omp threadprivate(buffer)
+       //#pragma omp threadprivate(buffer)
 
        static MPI_Request request ;
-       #pragma omp threadprivate(request)
+       //#pragma omp threadprivate(request)
 
        static bool recept=false ;
-       #pragma omp threadprivate(recept)
+       //#pragma omp threadprivate(recept)
        
        int rank ;
        int count ;
@@ -431,7 +431,7 @@ namespace xios
        info(20) << "CServer : MPI_Intercomm_merge and MPI_Barrier " << contextId << endl;
        
 
-       CContext* context=CContext::create(contextId);
+       CContext* context = CContext::create(contextId);
        contextList[contextId]=context;
        context->initServer(intraComm,contextIntercomm);
        

@@ -239,6 +239,13 @@ namespace xios {
    {
      hasClient=true;
      client = new CContextClient(this,intraComm, interComm, cxtServer);
+
+     int tmp_rank;
+     MPI_Comm_rank(intraComm, &tmp_rank);
+     
+     #pragma omp critical (_output)
+     printf("Client %d : client = new CContextClient(this,intraComm, interComm, cxtServer) \n", tmp_rank) ;
+     
      registryIn=new CRegistry(intraComm);
      registryIn->setPath(getId()) ;
      if (client->clientRank==0) registryIn->fromFile("xios_registry.bin") ;
@@ -246,6 +253,8 @@ namespace xios {
 
      registryOut=new CRegistry(intraComm) ;
      registryOut->setPath(getId()) ;
+     #pragma omp critical (_output)
+     printf("Client %d : registryOut->setPath(getId()) \n", tmp_rank) ;
 
      ep_lib::MPI_Comm intraCommServer, interCommServer;
      if (cxtServer) // Attached mode
