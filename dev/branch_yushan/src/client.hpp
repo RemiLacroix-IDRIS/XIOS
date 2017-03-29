@@ -22,6 +22,7 @@ namespace xios
 
         static std::list<MPI_Comm> contextInterComms;
         // #pragma omp threadprivate(contextInterComms)
+        //std::list<MPI_Comm> contextInterComms;
 
         static int serverLeader;
         //#pragma omp threadprivate(serverLeader)

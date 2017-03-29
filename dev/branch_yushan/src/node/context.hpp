@@ -20,7 +20,7 @@ namespace xios {
    class CContextServer;
 
 
-   /// ////////////////////// Déclarations ////////////////////// ///
+   /// ////////////////////// Dclarations ////////////////////// ///
    class CContextGroup;
    class CContextAttributes;
    class CContext;
@@ -223,6 +223,7 @@ namespace xios {
          CContextClient* client;
          CRegistry* registryIn ;  //!< input registry which is read from file
          CRegistry* registryOut ; //!< output registry which will be wrote on file at the finalize
+         //#pragma omp threadprivate(registryIn, registryOut)
 
       private:
          bool isPostProcessed;

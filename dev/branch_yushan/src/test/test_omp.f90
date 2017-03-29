@@ -35,6 +35,8 @@ PROGRAM test_omp
 !!! MPI Initialization   
 
   CALL MPI_INIT_THREAD(3, provided, ierr)
+  print*, "provided = ", provided
+  
   CALL init_wait
 
   CALL MPI_COMM_RANK(MPI_COMM_WORLD,rank,ierr)
@@ -78,13 +80,20 @@ PROGRAM test_omp
 
   print*, "xios init OK", rank, size
 
+
    CALL xios_context_initialize("test",comm)
-
    print*, "xios_context init OK", rank, size 
+   
+    CALL xios_get_handle("test",ctx_hdl)
+    print*, "xios_get_handle OK", rank, size 
+   
+    CALL xios_set_current_context(ctx_hdl)
+    print*, "xios_set_current_context OK", rank, size 
+ 
+    CALL xios_get_calendar_type(calendar_type)
+    print*, "xios_get_calendar_type OK", rank, size 
 
-  !CALL xios_context_finalize()
-
-  
+  !CALL xios_context_finalize()  
   !print*, "xios_context finalize OK", rank, size 
 
 
@@ -174,12 +183,12 @@ PROGRAM test_omp
   CALL xios_finalize()
   print *, "Client : xios_finalize "
 
-   else
+    else
 
-   CALL xios_init_server
-   print *, "Server : xios_finalize "
+    CALL xios_init_server
+    print *, "Server : xios_finalize "
   
-   endif
+    endif
     
 
   CALL MPI_FINALIZE(ierr)

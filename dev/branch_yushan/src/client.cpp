@@ -192,7 +192,7 @@ namespace xios
       CContext::setCurrent(id) ;
       printf("Client %d CContext::setCurrent OK\n", getRank());
       CContext* context = CContext::create(id);
-      printf("Client %d context=CContext::create(%s) OK\n", getRank(), id);
+      printf("Client %d context=CContext::create(%s) OK, *context = %p\n", getRank(), id, &(*context));
       
       StdString idServer(id);
       idServer += "_server";
@@ -253,7 +253,7 @@ namespace xios
         MPI_Comm contextInterComm ;
         MPI_Comm_dup(contextComm,&contextInterComm) ;
         CContext* contextServer = CContext::create(idServer);
-
+        
         // Firstly, initialize context on client side
         context->initClient(contextComm,contextInterComm, contextServer);
 
