@@ -173,6 +173,22 @@ namespace ep_lib
       remote_rank_map = NULL;
     }
 
+    // ep_intercomm(ep_intercomm &ref)
+    // {
+    //   printf("calling copy Constructor of ep_intercomm\n");
+    //   ep_intercomm return_intercomm;
+
+    //   return_intercomm.mpi_inter_comm = ref.mpi_inter_comm;
+    //   return_intercomm.intercomm_rank_map = ref.intercomm_rank_map;
+    //   return_intercomm.local_rank_map = ref.local_rank_map;
+    //   return_intercomm.remote_rank_map = ref.remote_rank_map;
+    //   return_intercomm.size_rank_info[0] = ref.size_rank_info[0];
+    //   return_intercomm.size_rank_info[1] = ref.size_rank_info[1];
+    //   return_intercomm.size_rank_info[2] = ref.size_rank_info[2];
+    //   return_intercomm.local_comm = ref.local_comm;
+    //   return_intercomm.intercomm_tag = ref.intercomm_tag;
+    // }
+
     bool operator == (ep_intercomm right)
     {
       bool a = intercomm_rank_map == right.intercomm_rank_map;
@@ -194,6 +210,22 @@ namespace ep_lib
       bool f = intercomm_tag != right.intercomm_tag;
       return a||b||c||d||e||f;
     }
+
+    // ep_intercomm operator = (ep_intercomm ref)
+    // {
+    //   printf("calling = operator of ep_intercomm\n");
+    //   ep_intercomm return_intercomm;
+
+    //   return_intercomm.mpi_inter_comm = ref.mpi_inter_comm;
+    //   return_intercomm.intercomm_rank_map = ref.intercomm_rank_map;
+    //   return_intercomm.local_rank_map = ref.local_rank_map;
+    //   return_intercomm.remote_rank_map = ref.remote_rank_map;
+    //   return_intercomm.size_rank_info[0] = ref.size_rank_info[0];
+    //   return_intercomm.size_rank_info[1] = ref.size_rank_info[1];
+    //   return_intercomm.size_rank_info[2] = ref.size_rank_info[2];
+    //   return_intercomm.local_comm = ref.local_comm;
+    //   return_intercomm.intercomm_tag = ref.intercomm_tag;
+    // }
   };
 
 
@@ -237,6 +269,20 @@ namespace ep_lib
       bool c = intercomm != right.intercomm;
       return a||b||c;
     }
+
+    // ep_communicator operator = (ep_communicator ref)
+    // {
+    //   printf("calling = operator of ep_communicator\n");
+    //   ep_communicator return_ep;
+
+    //   return_ep.intercomm = ref.intercomm;
+    //   return_ep.comm_label = ref.comm_label;
+    //   return_ep.message_queue = ref.message_queue;
+    //   return_ep.comm_list = ref.comm_list;
+    //   return_ep.size_rank_info[0] = ref.size_rank_info[0];
+    //   return_ep.size_rank_info[1] = ref.size_rank_info[1];
+    //   return_ep.size_rank_info[2] = ref.size_rank_info[2];
+    // }
   };
 
 
@@ -339,6 +385,20 @@ namespace ep_lib
 
       return a||b||c||d;
     }
+
+    // MPI_Comm operator = (MPI_Comm ref)
+    // {
+    //   printf("calling = operator of MPI_Comm\n");
+    //   MPI_Comm return_comm;
+
+    //   return_comm.mpi_comm = ref.mpi_comm;
+    //   return_comm.is_ep = ref.is_ep;
+    //   return_comm.is_intercomm = ref.is_intercomm;
+    //   return_comm.my_buffer = ref.my_buffer;
+    //   return_comm.ep_barrier = ref.ep_barrier;
+    //   return_comm.rank_map = ref.rank_map;
+    //   return_comm.ep_comm_ptr = ref.ep_comm_ptr;
+    // }
   };
 
 

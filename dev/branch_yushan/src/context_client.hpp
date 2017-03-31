@@ -30,6 +30,7 @@ namespace xios
   {
     public:
       // Contructor
+      CContextClient();
       CContextClient(CContext* parent, ep_lib::MPI_Comm intraComm, ep_lib::MPI_Comm interComm, CContext* parentServer = 0);
 
       // Send event to server

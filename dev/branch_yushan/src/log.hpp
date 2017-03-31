@@ -25,7 +25,7 @@ namespace xios
       return *this;
     }
     void setLevel(int l) {level=l; }
-    int getLevel() {return level ;}
+    int  getLevel() {return level ;}
     bool isActive(void) { if (rdbuf()==NULL) return true ; else return false ;}
     bool isActive(int l) {if (l<=level) return true ; else return false ; }
 

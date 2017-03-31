@@ -238,29 +238,33 @@ namespace xios {
    void CContext::initClient(ep_lib::MPI_Comm intraComm, ep_lib::MPI_Comm interComm, CContext* cxtServer /*= 0*/)
    {
      hasClient=true;
-     client = new CContextClient(this,intraComm, interComm, cxtServer);
+     
+     #pragma omp critical
+     client = new CContextClient(this, intraComm, interComm, cxtServer);
+
 
      int tmp_rank;
      MPI_Comm_rank(intraComm, &tmp_rank);
      MPI_Barrier(intraComm);
      
-     
-     
+     #pragma omp critical
      registryIn=new CRegistry(intraComm);
+     
 
-     #pragma omp critical (_output)
-     printf("Client %d : registryIn=new CRegistry(intraComm), &registryIn = %p, registryIn = %p \n", tmp_rank, &registryIn, registryIn) ;
-
-     // registryIn=new CRegistry;
-     // registryIn->communicator = intraComm;
      registryIn->setPath(getId()) ;
+     
+     #pragma omp critical (_output)
+     printf("Client %d : registryIn->setPath(getId()=%s), clientRank = %d (%p) \n", tmp_rank, getId(), client->clientRank, &(client->clientRank)) ;
+     printf("Client %d : context.identifier = %d\n", tmp_rank, this->get_identifier());
+
      if (client->clientRank==0) registryIn->fromFile("xios_registry.bin") ;
      registryIn->bcastRegistry() ;
 
      registryOut=new CRegistry(intraComm) ;
      registryOut->setPath(getId()) ;
+     
      #pragma omp critical (_output)
-     printf("Client %d : registryOut->setPath(getId()) \n", tmp_rank) ;
+     printf("Client %d : registryOut->setPath(getId()=%s) \n", tmp_rank, getId()) ;
 
      ep_lib::MPI_Comm intraCommServer, interCommServer;
      if (cxtServer) // Attached mode
@@ -1191,49 +1195,28 @@ namespace xios {
   \return pointer to the new context or already-existed one with identity id
   */
    //bkp
-//   CContext* CContext::create(const StdString& id)
-//   {
-//     CContext::setCurrent(id);
-
-//     bool hasctxt = CContext::has(id);
-//     CContext* context = CObjectFactory::CreateObject<CContext>(id).get();
-//     getRoot();
-//     if (!hasctxt) CGroupFactory::AddChild(root, context->getShared());
-
-// #define DECLARE_NODE(Name_, name_) \
-//     C##Name_##Definition::create(C##Name_##Definition::GetDefName());
-// #define DECLARE_NODE_PAR(Name_, name_)
-// #include "node_type.conf"
-
-//     return (context);
-//   }
-
-
   CContext* CContext::create(const StdString& id)
   {
     CContext::setCurrent(id);
 
-
     bool hasctxt = CContext::has(id);
-    CContext* context[omp_get_num_threads()];
-    for(int i=0; i<omp_get_num_threads(); i++)
-    {
-
-     context[i] = CObjectFactory::CreateObject<CContext>(id).get();
-     getRoot();
-     if (!hasctxt) CGroupFactory::AddChild(root, context[i]->getShared());
+    CContext* context = CObjectFactory::CreateObject<CContext>(id).get();
+    getRoot();
+    if (!hasctxt) CGroupFactory::AddChild(root, context->getShared());
 
 #define DECLARE_NODE(Name_, name_) \
-     C##Name_##Definition::create(C##Name_##Definition::GetDefName());
+    C##Name_##Definition::create(C##Name_##Definition::GetDefName());
 #define DECLARE_NODE_PAR(Name_, name_)
 #include "node_type.conf"
-    }
-    int tmp_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &tmp_rank);
-    printf("CContext::create : num_threads = %d, my_id = %d, return add = %p\n", omp_get_num_threads(), tmp_rank, &(context[omp_get_thread_num()]));
-    
-    return (context[omp_get_thread_num()]);
+
+    return (context);
   }
+
+  int CContext::get_identifier()
+  {
+    return this->identifier;
+  }
+
 
      //! Server side: Receive a message to do some post processing
   void CContext::recvRegistry(CEventServer& event)

@@ -103,6 +103,7 @@ namespace xios
                 std::vector<boost::shared_ptr<DerivedType> > > AllVectObj;
 
          static xios_map< StdString, long int > GenId ;
+         //#pragma omp threadprivate(AllMapObj, AllVectObj, GenId)
 
    }; // class CObjectTemplate
 } // namespace xios

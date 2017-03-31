@@ -27,11 +27,15 @@ namespace xios
 
 /** Constructor, the communicator is used for bcast or gather operation between MPI processes */
      
-      //CRegistry(const ep_lib::MPI_Comm& comm=MPI_COMM_WORLD) : communicator(comm) {}
-      CRegistry(const ep_lib::MPI_Comm& comm=MPI_COMM_WORLD)
-      {
-        communicator = comm;
-      }
+      CRegistry(const ep_lib::MPI_Comm& comm=MPI_COMM_WORLD) : communicator(comm) {}
+      // CRegistry(const ep_lib::MPI_Comm& comm=MPI_COMM_WORLD)
+      // {
+      //   communicator = comm;
+
+      //   int tmp_rank;
+      //   MPI_Comm_rank(comm, &tmp_rank);
+      //   printf("rank %d (%d): constructor on address %p, ref_comm = %p\n", tmp_rank, omp_get_thread_num(), &communicator, &comm);
+      // }
       
      
       

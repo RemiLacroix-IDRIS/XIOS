@@ -13,11 +13,13 @@
 
 namespace xios
 {
+    CContextClient::CContextClient() {}
+    
     /*!
     \param [in] parent Pointer to context on client side
     \param [in] intraComm_ communicator of group client
     \param [in] interComm_ communicator of group server
-    \cxtSer [in] cxtSer Pointer to context of server side. (It is only used on case of attached mode)
+    \param [in] cxtSer Pointer to context of server side. (It is only used on case of attached mode)
     */
     CContextClient::CContextClient(CContext* parent, ep_lib::MPI_Comm intraComm_, ep_lib::MPI_Comm interComm_, CContext* cxtSer)
      : mapBufferSize_(), parentServer(cxtSer), maxBufferedEvents(4)
@@ -27,11 +29,12 @@ namespace xios
       interComm = interComm_;
       MPI_Comm_rank(intraComm, &clientRank);
       MPI_Comm_size(intraComm, &clientSize);
-
+      
       int flag;
       MPI_Comm_test_inter(interComm, &flag);
       if (flag) MPI_Comm_remote_size(interComm, &serverSize);
       else  MPI_Comm_size(interComm, &serverSize);
+
 
       if (clientSize < serverSize)
       {
@@ -49,6 +52,8 @@ namespace xios
 
         for (int i = 0; i < serverByClient; i++)
           ranksServerLeader.push_back(rankStart + i);
+
+        
       }
       else
       {
@@ -66,6 +71,8 @@ namespace xios
           if (rank % clientByServer == 0)
             ranksServerLeader.push_back(remain + rank / clientByServer);
         }
+
+        printf("clientRank = %d (%p)\n", clientRank, &clientRank);
       }
 
       timeLine = 0;

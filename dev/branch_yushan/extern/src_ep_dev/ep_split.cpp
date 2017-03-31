@@ -166,7 +166,7 @@ namespace ep_lib
       if(color == all_color[j])
       {
         *newcomm = comm.ep_comm_ptr->comm_list->mem_bridge[new_ep_rank_loc];
-//        newcomm = &(comm.ep_comm_ptr->comm_list->mem_bridge[new_ep_rank_loc]);
+ //       newcomm = &(comm.ep_comm_ptr->comm_list->mem_bridge[new_ep_rank_loc]);
         (*newcomm).ep_comm_ptr->comm_label = color;
       }
     }

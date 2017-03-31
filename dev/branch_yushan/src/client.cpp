@@ -43,13 +43,8 @@ namespace xios
           {
             //MPI_Init(NULL, NULL);
             int return_level;
-            #ifdef _intelmpi
             MPI_Init_thread(NULL, NULL, 3, &return_level);
             assert(return_level == 3);
-            #elif _openmpi
-            MPI_Init_thread(NULL, NULL, 2, &return_level);
-            assert(return_level == 2);
-            #endif
           }
           CTimer::get("XIOS").resume() ;
           CTimer::get("XIOS init").resume() ;
@@ -57,7 +52,6 @@ namespace xios
 
           unsigned long hashClient=hashString(codeId) ;
           unsigned long hashServer=hashString(CXios::xiosCodeId) ;
-          //hashServer=hashString("xios.x") ;
           unsigned long* hashAll ;
           int size ;
           int myColor ;
@@ -65,9 +59,7 @@ namespace xios
 
           MPI_Comm_size(CXios::globalComm,&size);
           MPI_Comm_rank(CXios::globalComm,&rank);
-
-          printf("client init : rank = %d, size = %d\n", rank, size);
-          
+       
 
           hashAll=new unsigned long[size] ;
 
@@ -118,17 +110,6 @@ namespace xios
             }
             
             MPI_Intercomm_create(intraComm,0,CXios::globalComm,serverLeader,0,&interComm) ;
-
-            int interCommSize, interCommRank ;
-            MPI_Comm_size(interComm,&interCommSize) ;
-            MPI_Comm_rank(interComm,&interCommRank) ;
-
-            #pragma omp critical(_output)
-            {
-              info(50)<<" interCommRank :"<<interCommRank
-                 <<" interCommSize : "<< interCommSize << endl ;  
-            }
-
 
           }
           else
@@ -185,14 +166,15 @@ namespace xios
 
     void CClient::registerContext(const string& id,MPI_Comm contextComm)
     {
+      //#pragma omp critical(_output)
       //info(50) << "Client "<<getRank() << " start registerContext using info output" << endl;
-      printf("Client %d start registerContext\n", getRank());
-      //printf("Client start registerContext\n");
 
       CContext::setCurrent(id) ;
-      printf("Client %d CContext::setCurrent OK\n", getRank());
       CContext* context = CContext::create(id);
-      printf("Client %d context=CContext::create(%s) OK, *context = %p\n", getRank(), id, &(*context));
+      
+      #pragma omp critical (_output)
+      printf("Client::registerContext context add = %p\n", &(*context));
+      
       
       StdString idServer(id);
       idServer += "_server";
@@ -200,8 +182,8 @@ namespace xios
       if (!CXios::isServer)  // server mode
       {      
         int size,rank,globalRank ;
-        size_t message_size ;
-        int leaderRank ;
+        //size_t message_size ;
+        //int leaderRank ;
         MPI_Comm contextInterComm ;
 
         
@@ -237,10 +219,10 @@ namespace xios
         MPI_Barrier(inter) ;
 
         #pragma omp critical (_output)
-        printf("Client %d : MPI_Intercomm_merge OK \n", getRank()) ;
-        
+        printf("Client %d context=CContext::create(%s) OK, context.identifier = %d\n", getRank(), id, context->get_identifier());
         
         context->initClient(contextComm,contextInterComm) ;
+        
         #pragma omp critical (_output)
         printf("Client %d : context->initClient(contextComm,contextInterComm) OK \n", getRank()) ;
         
@@ -298,14 +280,17 @@ namespace xios
         else  MPI_Finalize(); 
       }
       
-      info(20) << "Client side context is finalized"<<endl ;
-      report(0) <<" Performance report : total time spent for XIOS : "<< CTimer::get("XIOS").getCumulatedTime()<<" s"<<endl ;
-      report(0)<< " Performance report : time spent for waiting free buffer : "<< CTimer::get("Blocking time").getCumulatedTime()<<" s"<<endl ;
-      report(0)<< " Performance report : Ratio : "<< CTimer::get("Blocking time").getCumulatedTime()/CTimer::get("XIOS").getCumulatedTime()*100.<<" %"<<endl ;
-      report(0)<< " Performance report : This ratio must be close to zero. Otherwise it may be usefull to increase buffer size or numbers of server"<<endl ;
-//      report(0)<< " Memory report : Current buffer_size : "<<CXios::bufferSize<<endl ;
-      report(0)<< " Memory report : Minimum buffer size required : " << CClientBuffer::maxRequestSize << " bytes" << endl ;
-      report(0)<< " Memory report : increasing it by a factor will increase performance, depending of the volume of data wrote in file at each time step of the file"<<endl ;
+      
+        //info(20) << "Client "<<rank<<" : Client side context is finalized "<< endl ;
+//         report(0) <<"     Performance report : total time spent for XIOS : "<< CTimer::get("XIOS").getCumulatedTime()<<" s"<<endl ;
+//         report(0)<< "     Performance report : time spent for waiting free buffer : "<< CTimer::get("Blocking time").getCumulatedTime()<<" s"<<endl ;
+//         report(0)<< "     Performance report : Ratio : "<< CTimer::get("Blocking time").getCumulatedTime()/CTimer::get("XIOS").getCumulatedTime()*100.<<" %"<<endl ;
+//         report(0)<< "     Performance report : This ratio must be close to zero. Otherwise it may be usefull to increase buffer size or numbers of server"<<endl ;
+// //      report(0)<< "     Memory report : Current buffer_size : "<<CXios::bufferSize<<endl ;
+//         report(0)<< "     Memory report : Minimum buffer size required : " << CClientBuffer::maxRequestSize << " bytes" << endl ;
+//         report(0)<< "     Memory report : increasing it by a factor will increase performance, depending of the volume of data wrote in file at each time step of the file"<<endl ;
+      
+
    }
 
    int CClient::getRank()
@@ -334,7 +319,7 @@ namespace xios
       }
 
       fileNameClient << fileName << "_" << std::setfill('0') << std::setw(numDigit) << getRank() << ext;
-      printf("getrank() = %d, file name = %s\n", getRank(), fileNameClient.str().c_str());
+      //printf("getrank() = %d, file name = %s\n", getRank(), fileNameClient.str().c_str());
       
         fb->open(fileNameClient.str().c_str(), std::ios::out);
         if (!fb->is_open())

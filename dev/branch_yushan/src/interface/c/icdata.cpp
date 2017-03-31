@@ -128,8 +128,9 @@ extern "C"
      CTimer::get("XIOS").resume();
      CTimer::get("XIOS context finalize").resume();
      
-     printf("Check : calling cxios_context_finalize\n");
+     
      CContext* context = CContext::getCurrent();
+     printf("Check : CContext::getCurrent() = %p\n", CContext::getCurrent());
      context->finalize();
           
      CTimer::get("XIOS context finalize").suspend();

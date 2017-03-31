@@ -221,9 +221,11 @@ namespace xios {
 
          // Concrete contex client
          CContextClient* client;
+
+
          CRegistry* registryIn ;  //!< input registry which is read from file
          CRegistry* registryOut ; //!< output registry which will be wrote on file at the finalize
-         //#pragma omp threadprivate(registryIn, registryOut)
+         
 
       private:
          bool isPostProcessed;
@@ -232,7 +234,10 @@ namespace xios {
          CGarbageCollector garbageCollector;
          std::list<ep_lib::MPI_Comm> comms; //!< Communicators allocated internally
 
+         int identifier;
+
       public: // Some function maybe removed in the near future
+         int get_identifier();
         // virtual void toBinary  (StdOStream & os) const;
         // virtual void fromBinary(StdIStream & is);
    }; // class CContext
