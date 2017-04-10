@@ -5,6 +5,9 @@
 #include <utility>
 #include "ep_declaration.hpp"
 
+#ifdef _openmpi
+//#undef MPI_Fint
+#endif
 
 namespace ep_lib
 {

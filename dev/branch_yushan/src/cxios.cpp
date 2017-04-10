@@ -21,24 +21,24 @@ namespace xios
 
   bool CXios::isClient ;
   bool CXios::isServer ;
-  #pragma omp threadprivate(CXios::isServer, CXios::isClient)
+  //#pragma omp threadprivate(CXios::isServer, CXios::isClient)
 
   MPI_Comm CXios::globalComm ;
-  #pragma omp threadprivate(CXios::globalComm)
+  //#pragma omp threadprivate(CXios::globalComm)
   
   bool CXios::usingOasis ;
   bool CXios::usingServer = false;
-  #pragma omp threadprivate(CXios::usingOasis, CXios::usingServer)
+ // #pragma omp threadprivate(CXios::usingOasis, CXios::usingServer)
 
   double CXios::bufferSizeFactor = 1.0;
   const double CXios::defaultBufferSizeFactor = 1.0;
   StdSize CXios::minBufferSize = 1024 * sizeof(double);
-  #pragma omp threadprivate(CXios::bufferSizeFactor, CXios::defaultBufferSizeFactor, CXios::minBufferSize)
+  //#pragma omp threadprivate(CXios::bufferSizeFactor, CXios::defaultBufferSizeFactor, CXios::minBufferSize)
 
   bool CXios::printLogs2Files;
   bool CXios::isOptPerformance = true;
   CRegistry* CXios::globalRegistry = 0;
-  #pragma omp threadprivate(CXios::printLogs2Files, CXios::isOptPerformance)
+  //#pragma omp threadprivate(CXios::printLogs2Files, CXios::isOptPerformance)
 
 
   //! Parse configuration file and create some objects from it

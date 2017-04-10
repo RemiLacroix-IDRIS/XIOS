@@ -20,8 +20,8 @@ namespace xios
         static MPI_Comm interComm;
         #pragma omp threadprivate(interComm)
 
-        static std::list<MPI_Comm> contextInterComms;
-        //std::list<MPI_Comm> contextInterComms;
+        //static std::list<MPI_Comm> contextInterComms;
+        std::list<MPI_Comm> contextInterComms;
         static std::list<MPI_Comm> * contextInterComms_ptr;
         #pragma omp threadprivate(contextInterComms_ptr)
 

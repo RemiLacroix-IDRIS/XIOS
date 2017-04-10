@@ -96,6 +96,7 @@ namespace xios
       private :
 
          /// Propriétés statiques ///
+         // bkp
          static xios_map<StdString,
                 xios_map<StdString,
                 boost::shared_ptr<DerivedType> > > AllMapObj;
@@ -103,7 +104,17 @@ namespace xios
                 std::vector<boost::shared_ptr<DerivedType> > > AllVectObj;
 
          static xios_map< StdString, long int > GenId ;
-         //#pragma omp threadprivate(AllMapObj, AllVectObj, GenId)
+
+         // xios_map<StdString, xios_map<StdString, boost::shared_ptr<DerivedType> > > AllMapObj;
+         // xios_map<StdString, std::vector<boost::shared_ptr<DerivedType> > > AllVectObj;
+         // xios_map< StdString, long int > GenId ;
+
+         // static xios_map<StdString, xios_map<StdString, boost::shared_ptr<DerivedType> > > *AllMapObj_ptr;
+         // static xios_map<StdString, std::vector<boost::shared_ptr<DerivedType> > > *AllVectObj_ptr;
+         // static xios_map< StdString, long int > *GenId_ptr ;
+
+         // #pragma omp threadprivate(AllMapObj_ptr, AllVectObj_ptr, GenId_ptr)
+
 
    }; // class CObjectTemplate
 } // namespace xios

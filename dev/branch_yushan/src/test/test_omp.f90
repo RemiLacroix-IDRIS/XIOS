@@ -83,172 +83,105 @@ PROGRAM test_omp
 
     print*, "xios init OK", rank, size
 
-      CALL xios_context_initialize("test",comm)
-      print*, "xios_context init OK", rank, size 
+    CALL xios_context_initialize("test",comm)
 
-!      CALL xios_context_finalize()
-!      print*, "xios_context finalize OK", rank, size
+    print*, "xios_context_initialize OK", rank, size
+
+    CALL xios_context_finalize()
+    print*, "xios_context_finalize OK", rank, size
+
+     !$omp master
+     call MPI_Barrier(comm)
+     CALL MPI_COMM_FREE(comm, ierr)
+     !$omp end master
+
+     !$omp barrier
+
+     print*, "MPI_COMM_FREE OK", rank, size
 
     CALL xios_finalize()
     print*, "xios finalize OK", rank, size
 
 
-    
-    !$omp barrier
-    !call MPI_Barrier(MPI_COMM_WORLD)
-    !$omp barrier
-
-    call MPI_Abort()
-
-    
-   
-    CALL xios_get_handle("test",ctx_hdl)
-    print*, "xios_get_handle OK", rank, size 
-   
-    CALL xios_set_current_context(ctx_hdl)
-    print*, "xios_set_current_context OK", rank, size 
- 
-    CALL xios_get_calendar_type(calendar_type)
-    print*, "xios_get_calendar_type OK", rank, size 
-    
-    
-    CALL xios_set_axis_attr("axis_A",n_glo=llm ,value=lval) ;
-    CALL xios_set_domain_attr("domain_A",ni_glo=ni_glo, nj_glo=nj_glo, ibegin=ibegin, ni=ni,jbegin=jbegin,nj=nj,type='curvilinear')
-    CALL xios_set_domain_attr("domain_A",data_dim=2, data_ibegin=-1, data_ni=ni+2, data_jbegin=-2, data_nj=nj+4)
-    CALL xios_set_domain_attr("domain_A",lonvalue_2D=lon,latvalue_2D=lat)
-    CALL xios_set_fieldgroup_attr("field_definition",enabled=.TRUE.)
-
-    CALL xios_get_handle("field_definition",fieldgroup_hdl)
-    CALL xios_add_child(fieldgroup_hdl,field_hdl,"field_B")
-    CALL xios_set_attr(field_hdl,field_ref="field_A",name="field_B")
-
-    CALL xios_get_handle("output",file_hdl)
-    CALL xios_add_child(file_hdl,field_hdl)
-    CALL xios_set_attr(field_hdl,field_ref="field_A_zoom",name="field_C")
-  
-    dtime%second = 3600
-    CALL xios_set_timestep(dtime)
-    print*, "xios_set_timestep OK", rank, size 
-
-    CALL xios_get_time_origin(date)
-    
-    PRINT *, "--> year length = ", xios_get_year_length_in_seconds(date%year)
-    PRINT *, "--> day length = ", xios_get_day_length_in_seconds()
-    CALL xios_date_convert_to_string(date, date_str)
-    PRINT *, "time_origin = ", date_str
-    PRINT *, "xios_date_get_second_of_year(time_origin) = ", xios_date_get_second_of_year(date)
-    PRINT *, "xios_date_get_day_of_year(time_origin) = ", xios_date_get_day_of_year(date)
-    PRINT *, "xios_date_get_fraction_of_year(time_origin) = ", xios_date_get_fraction_of_year(date)
-    PRINT *, "xios_date_get_second_of_day(time_origin) = ", xios_date_get_second_of_day(date)
-    PRINT *, "xios_date_get_fraction_of_day(time_origin) = ", xios_date_get_fraction_of_day(date)
-    dtime%timestep = 1
-    dtime = 0.5 * dtime
-    CALL xios_duration_convert_to_string(dtime, dtime_str)
-    PRINT *, "duration = ", dtime_str
-    date = date + 3 * (dtime + dtime)
-    CALL xios_date_convert_to_string(date, date_str)
-    PRINT *, "date = time_origin + 3 * (duration + duration) = ", date_str
-    PRINT *, "xios_date_convert_to_seconds(date) = ", xios_date_convert_to_seconds(date)
-    PRINT *, "xios_date_convert_to_seconds(date - 2.5h) = ", xios_date_convert_to_seconds(date - 2.5 * xios_hour)
-
-    ni=0 ; lonvalue(:,:)=0;
-    CALL xios_get_domain_attr("domain_A",ni=ni,lonvalue_2D=lonvalue)
-    print *,"ni",ni
-
-    CALL xios_is_defined_field_attr("field_A",enabled=ok)
-    PRINT *,"field_A : attribute enabled is defined ? ",ok
-
-
-!   CALL xios_close_context_definition()
-  
-!   print*, "xios_close_context_definition OK", rank, size 
-
-
-
   !$omp end parallel
 
-  call MPI_Abort(ierr)
 
   
-  CALL xios_context_initialize("test",comm)
+!   CALL xios_context_initialize("test",comm)
 
-  CALL xios_get_handle("test",ctx_hdl)
-  CALL xios_set_current_context(ctx_hdl)
+!   CALL xios_get_handle("test",ctx_hdl)
+!   CALL xios_set_current_context(ctx_hdl)
   
   
-  CALL xios_get_calendar_type(calendar_type)
+!   CALL xios_get_calendar_type(calendar_type)
 
-  CALL xios_set_axis_attr("axis_A",n_glo=llm ,value=lval) ;
-  CALL xios_set_domain_attr("domain_A",ni_glo=ni_glo, nj_glo=nj_glo, ibegin=ibegin, ni=ni,jbegin=jbegin,nj=nj,type='curvilinear')
-  CALL xios_set_domain_attr("domain_A",data_dim=2, data_ibegin=-1, data_ni=ni+2, data_jbegin=-2, data_nj=nj+4)
-  CALL xios_set_domain_attr("domain_A",lonvalue_2D=lon,latvalue_2D=lat)
-  CALL xios_set_fieldgroup_attr("field_definition",enabled=.TRUE.)
+!   CALL xios_set_axis_attr("axis_A",n_glo=llm ,value=lval) ;
+!   CALL xios_set_domain_attr("domain_A",ni_glo=ni_glo, nj_glo=nj_glo, ibegin=ibegin, ni=ni,jbegin=jbegin,nj=nj,type='curvilinear')
+!   CALL xios_set_domain_attr("domain_A",data_dim=2, data_ibegin=-1, data_ni=ni+2, data_jbegin=-2, data_nj=nj+4)
+!   CALL xios_set_domain_attr("domain_A",lonvalue_2D=lon,latvalue_2D=lat)
+!   CALL xios_set_fieldgroup_attr("field_definition",enabled=.TRUE.)
 
-  CALL xios_get_handle("field_definition",fieldgroup_hdl)
-  CALL xios_add_child(fieldgroup_hdl,field_hdl,"field_B")
-  CALL xios_set_attr(field_hdl,field_ref="field_A",name="field_B")
+!   CALL xios_get_handle("field_definition",fieldgroup_hdl)
+!   CALL xios_add_child(fieldgroup_hdl,field_hdl,"field_B")
+!   CALL xios_set_attr(field_hdl,field_ref="field_A",name="field_B")
 
-  CALL xios_get_handle("output",file_hdl)
-  CALL xios_add_child(file_hdl,field_hdl)
-  CALL xios_set_attr(field_hdl,field_ref="field_A_zoom",name="field_C")
+!   CALL xios_get_handle("output",file_hdl)
+!   CALL xios_add_child(file_hdl,field_hdl)
+!   CALL xios_set_attr(field_hdl,field_ref="field_A_zoom",name="field_C")
   
-  dtime%second = 3600
-  CALL xios_set_timestep(dtime)
+!   dtime%second = 3600
+!   CALL xios_set_timestep(dtime)
 
-  ! The calendar is created as soon as the calendar type is defined. This way
-  ! calendar operations can be used before the context definition is closed
-  CALL xios_get_time_origin(date)
-  PRINT *, "--> year length = ", xios_get_year_length_in_seconds(date%year)
-  PRINT *, "--> day length = ", xios_get_day_length_in_seconds()
-  CALL xios_date_convert_to_string(date, date_str)
-  PRINT *, "time_origin = ", date_str
-  PRINT *, "xios_date_get_second_of_year(time_origin) = ", xios_date_get_second_of_year(date)
-  PRINT *, "xios_date_get_day_of_year(time_origin) = ", xios_date_get_day_of_year(date)
-  PRINT *, "xios_date_get_fraction_of_year(time_origin) = ", xios_date_get_fraction_of_year(date)
-  PRINT *, "xios_date_get_second_of_day(time_origin) = ", xios_date_get_second_of_day(date)
-  PRINT *, "xios_date_get_fraction_of_day(time_origin) = ", xios_date_get_fraction_of_day(date)
-  dtime%timestep = 1
-  dtime = 0.5 * dtime
-  CALL xios_duration_convert_to_string(dtime, dtime_str)
-  PRINT *, "duration = ", dtime_str
-  date = date + 3 * (dtime + dtime)
-  CALL xios_date_convert_to_string(date, date_str)
-  PRINT *, "date = time_origin + 3 * (duration + duration) = ", date_str
-  PRINT *, "xios_date_convert_to_seconds(date) = ", xios_date_convert_to_seconds(date)
-  PRINT *, "xios_date_convert_to_seconds(date - 2.5h) = ", xios_date_convert_to_seconds(date - 2.5 * xios_hour)
+!   ! The calendar is created as soon as the calendar type is defined. This way
+!   ! calendar operations can be used before the context definition is closed
+!   CALL xios_get_time_origin(date)
+!   PRINT *, "--> year length = ", xios_get_year_length_in_seconds(date%year)
+!   PRINT *, "--> day length = ", xios_get_day_length_in_seconds()
+!   CALL xios_date_convert_to_string(date, date_str)
+!   PRINT *, "time_origin = ", date_str
+!   PRINT *, "xios_date_get_second_of_year(time_origin) = ", xios_date_get_second_of_year(date)
+!   PRINT *, "xios_date_get_day_of_year(time_origin) = ", xios_date_get_day_of_year(date)
+!   PRINT *, "xios_date_get_fraction_of_year(time_origin) = ", xios_date_get_fraction_of_year(date)
+!   PRINT *, "xios_date_get_second_of_day(time_origin) = ", xios_date_get_second_of_day(date)
+!   PRINT *, "xios_date_get_fraction_of_day(time_origin) = ", xios_date_get_fraction_of_day(date)
+!   dtime%timestep = 1
+!   dtime = 0.5 * dtime
+!   CALL xios_duration_convert_to_string(dtime, dtime_str)
+!   PRINT *, "duration = ", dtime_str
+!   date = date + 3 * (dtime + dtime)
+!   CALL xios_date_convert_to_string(date, date_str)
+!   PRINT *, "date = time_origin + 3 * (duration + duration) = ", date_str
+!   PRINT *, "xios_date_convert_to_seconds(date) = ", xios_date_convert_to_seconds(date)
+!   PRINT *, "xios_date_convert_to_seconds(date - 2.5h) = ", xios_date_convert_to_seconds(date - 2.5 * xios_hour)
 
-  ni=0 ; lonvalue(:,:)=0;
-  CALL xios_get_domain_attr("domain_A",ni=ni,lonvalue_2D=lonvalue)
-  print *,"ni",ni
-  !print *,"lonvalue",lonvalue;
+!   ni=0 ; lonvalue(:,:)=0;
+!   CALL xios_get_domain_attr("domain_A",ni=ni,lonvalue_2D=lonvalue)
+!   print *,"ni",ni
+!   !print *,"lonvalue",lonvalue;
 
-  CALL xios_is_defined_field_attr("field_A",enabled=ok)
-  PRINT *,"field_A : attribute enabled is defined ? ",ok
+!   CALL xios_is_defined_field_attr("field_A",enabled=ok)
+!   PRINT *,"field_A : attribute enabled is defined ? ",ok
   
-  CALL xios_close_context_definition()
-  print*, "xios_close_context_definition OK"  
+!   CALL xios_close_context_definition()
+!   print*, "xios_close_context_definition OK"  
 
-  PRINT*,"field field_A is active ? ",xios_field_is_active("field_A")
+!   PRINT*,"field field_A is active ? ",xios_field_is_active("field_A")
 
 
-  call MPI_Barrier(comm, ierr)
+!   call MPI_Barrier(comm, ierr)
 
-  !DO ts=1,24*10
-  DO ts=1,6
-    CALL xios_update_calendar(ts)
-    CALL xios_send_field("field_A",field_A)
-    CALL wait_us(5000)
-  ENDDO
+!   !DO ts=1,24*10
+!   DO ts=1,6
+!     CALL xios_update_calendar(ts)
+!     CALL xios_send_field("field_A",field_A)
+!     CALL wait_us(5000)
+!   ENDDO
   
 
-  CALL xios_context_finalize()
+!   CALL xios_context_finalize()
 
-  DEALLOCATE(lon, lat, field_A, lonvalue)
+!   DEALLOCATE(lon, lat, field_A, lonvalue)
 
-  CALL MPI_COMM_FREE(comm, ierr)
-
-  CALL xios_finalize()
-  print *, "Client : xios_finalize "
 
     else
 

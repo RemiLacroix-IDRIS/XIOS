@@ -2,7 +2,6 @@
 #include "exception.hpp"
 #include "buffer_server.hpp"
 
-
 namespace xios
 {
 

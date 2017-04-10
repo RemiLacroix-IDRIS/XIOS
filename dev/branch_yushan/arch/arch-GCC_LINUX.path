@@ -2,8 +2,8 @@ NETCDF_INCDIR="-I $NETCDF_INC_DIR -I $HOME/lib/netcdf_f/include"
 NETCDF_LIBDIR="-L $NETCDF_LIB_DIR -L $HOME/lib/netcdf_f/lib"
 NETCDF_LIB=" -lnetcdf"
 
-MPI_INCDIR=""
-MPI_LIBDIR=""
+MPI_INCDIR="-I /usr/local/include"
+MPI_LIBDIR="-L /usr/local/lib"
 MPI_LIB=""
 
 HDF5_INCDIR="-I $HDF5_INC_DIR"
