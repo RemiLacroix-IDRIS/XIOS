@@ -44,7 +44,7 @@ namespace xios {
    { /* Ne rien faire de plus */ }
 
    //std::map<StdString, ETranformationType> CAxis::transformationMapList_ = std::map<StdString, ETranformationType>();
-   std::map<StdString, ETranformationType> *CAxis::transformationMapList_ptr = new std::map<StdString, ETranformationType>;
+   std::map<StdString, ETranformationType> *CAxis::transformationMapList_ptr = 0;
    bool CAxis::dummyTransformationMapList_ = CAxis::initializeTransformationMap(*CAxis::transformationMapList_ptr);
    bool CAxis::initializeTransformationMap(std::map<StdString, ETranformationType>& m)
    {
@@ -1004,7 +1004,9 @@ namespace xios {
         { nodeId = node.getAttributes()["id"]; }
 
         nodeElementName = node.getElementName();
-        std::map<StdString, ETranformationType>::const_iterator ite = transformationMapList_ptr->end(), it;
+        if(transformationMapList_ptr == NULL) transformationMapList_ptr = new std::map<StdString, ETranformationType>;
+
+        std::map<StdString, ETranformationType>::const_iterator ite = (*transformationMapList_ptr).end(), it;
         it = transformationMapList_ptr->find(nodeElementName);
         if (ite != it)
         {

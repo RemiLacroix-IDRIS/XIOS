@@ -8,7 +8,7 @@ namespace xios
 
    void CGroupFactory::SetCurrentContextId(const StdString & context)
    { 
-      CGroupFactory::CurrContext = context;
+      //CGroupFactory::CurrContext = context;
       *CGroupFactory::CurrContext_ptr = context;
    }
 
