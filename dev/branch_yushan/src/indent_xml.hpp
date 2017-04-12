@@ -21,13 +21,13 @@ namespace xios
 
          /// Propriétés  statiques ///
          static unsigned int Indent;
-         //#pragma omp threadprivate(Indent)
+         #pragma omp threadprivate(Indent)
 
          static StdString    Increm;
-         //#pragma omp threadprivate(Increm)
+         #pragma omp threadprivate(Increm)
 
          static bool         WithLine;
-         //#pragma omp threadprivate(WithLine)
+         #pragma omp threadprivate(WithLine)
 
    }; // class CIndent
 

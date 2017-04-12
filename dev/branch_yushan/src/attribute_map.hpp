@@ -68,7 +68,7 @@ namespace xios
 
             /// Propriété statique ///
             static CAttributeMap * Current;
-            //#pragma omp threadprivate (Current)
+            #pragma omp threadprivate (Current)
 
       };  // class CAttributeMap
 

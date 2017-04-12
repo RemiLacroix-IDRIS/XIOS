@@ -65,7 +65,7 @@ namespace xios
       #pragma omp threadprivate(printLogs2Files, usingOasis, usingServer, bufferSizeFactor, minBufferSize, isOptPerformance)
       
       static CRegistry* globalRegistry ; //!< global registry which is wrote by the root process of the servers
-
+    
       
       
     public:

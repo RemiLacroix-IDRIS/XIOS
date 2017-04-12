@@ -102,7 +102,8 @@ namespace xios
 
       //! The allocated engines
       static std::map<CGridTransformation*, boost::shared_ptr<CSpatialTransformFilterEngine> > engines;
-      // #pragma omp threadprivate(engines)
+      static std::map<CGridTransformation*, boost::shared_ptr<CSpatialTransformFilterEngine> > *engines_ptr;
+      #pragma omp threadprivate(engines_ptr)
       
   }; // class CSpatialTransformFilterEngine
 } // namespace xios

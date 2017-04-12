@@ -14,7 +14,7 @@ namespace xios
    StdOStream & CIndent::NIndent(StdOStream& out)
    {
       static unsigned int LineNB = 1;
-      //#pragma omp threadprivate(LineNB)
+      #pragma omp threadprivate(LineNB)
       
       if (CIndent::WithLine) out << LineNB++ << ". ";
       for(unsigned int i = 0; i < CIndent::Indent; out << CIndent::Increm , i++){}

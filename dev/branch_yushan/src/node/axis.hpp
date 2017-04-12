@@ -165,11 +165,12 @@ namespace xios {
 
        private:
          static bool initializeTransformationMap(std::map<StdString, ETranformationType>& m);
-         static std::map<StdString, ETranformationType> transformationMapList_;
-         // #pragma omp threadprivate(transformationMapList_)
+         //static std::map<StdString, ETranformationType> transformationMapList_;
+         static std::map<StdString, ETranformationType> *transformationMapList_ptr;
+         #pragma omp threadprivate(transformationMapList_ptr)
 
          static bool dummyTransformationMapList_;
-         //#pragma omp threadprivate(dummyTransformationMapList_)
+         #pragma omp threadprivate(dummyTransformationMapList_)
 
          DECLARE_REF_FUNC(Axis,axis)
    }; // class CAxis
