@@ -87,13 +87,27 @@ PROGRAM test_omp
 
     print*, "xios_context_initialize OK", rank, size
 
+!     CALL xios_get_handle("test",ctx_hdl)
+!     CALL xios_set_current_context(ctx_hdl)
+  
+  
+!     CALL xios_get_calendar_type(calendar_type)
+!     print*, "xios_get_calendar_type OK", rank, size
+
+!     CALL xios_set_axis_attr("axis_A",n_glo=llm ,value=lval) ;
+!     CALL xios_set_domain_attr("domain_A",ni_glo=ni_glo, nj_glo=nj_glo, ibegin=ibegin, ni=ni,jbegin=jbegin,nj=nj,type='curvilinear')
+!     CALL xios_set_domain_attr("domain_A",data_dim=2, data_ibegin=-1, data_ni=ni+2, data_jbegin=-2, data_nj=nj+4)
+!     CALL xios_set_domain_attr("domain_A",lonvalue_2D=lon,latvalue_2D=lat)
+!     CALL xios_set_fieldgroup_attr("field_definition",enabled=.TRUE.)
+!     print*, "test block OK", rank, size
+
     CALL xios_context_finalize()
     print*, "xios_context_finalize OK", rank, size
 
-     !$omp master
-     call MPI_Barrier(comm)
-     CALL MPI_COMM_FREE(comm, ierr)
-     !$omp end master
+    !$omp master
+    call MPI_Barrier(comm)
+    CALL MPI_COMM_FREE(comm, ierr)
+    !$omp end master
 
      !$omp barrier
 

@@ -59,7 +59,7 @@ namespace xios
 
          /// Propriétés statiques ///
          static StdString CurrContext;
-         //#pragma omp threadprivate(CurrContext)
+         #pragma omp threadprivate(CurrContext)
 
    }; // class CObjectFactory
 } // namespace xios

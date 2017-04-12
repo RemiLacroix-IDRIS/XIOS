@@ -16,7 +16,7 @@ namespace xios
 
     MPI_Comm CClient::intraComm ;
     MPI_Comm CClient::interComm ;
-    std::list<MPI_Comm> *CClient::contextInterComms_ptr;
+    std::list<MPI_Comm> *CClient::contextInterComms_ptr = 0;
     int CClient::serverLeader ;
     bool CClient::is_MPI_Initialized ;
     int CClient::rank = INVALID_RANK;
@@ -176,7 +176,7 @@ namespace xios
       MPI_Comm_rank(contextComm,&tmp_rank) ;
       
       #pragma omp critical (_output)
-      printf("Client %d : Client::registerContext context add = %p\n", tmp_rank, &(*context));
+      printf("Client %d : client.cpp Client::registerContext context add = %p\n", tmp_rank, &(*context));
       
       
       StdString idServer(id);
@@ -221,16 +221,16 @@ namespace xios
         MPI_Intercomm_merge(contextInterComm,0,&inter) ;
         MPI_Barrier(inter) ;
 
-        #pragma omp critical (_output)
-        printf("Client %d context=CContext::create(%s) OK, context.identifier = %d\n", getRank(), id, context->get_identifier());
         
         context->initClient(contextComm,contextInterComm) ;
         
         #pragma omp critical (_output)
         printf("Client %d : context->initClient(contextComm,contextInterComm) OK \n", getRank()) ;
         
-
+        //contextInterComms->push_back(contextInterComm);
+        if(contextInterComms_ptr == NULL) contextInterComms_ptr = new std::list<MPI_Comm>;
         contextInterComms_ptr->push_back(contextInterComm);
+        
         MPI_Comm_free(&inter);
       }
       else  // attached mode
@@ -247,8 +247,10 @@ namespace xios
 
         // Finally, we should return current context to context client
         CContext::setCurrent(id);
-
+        
+        if(contextInterComms_ptr == NULL) contextInterComms_ptr = new std::list<MPI_Comm>;
         contextInterComms_ptr->push_back(contextInterComm);
+        //contextInterComms->push_back(contextInterComm);
       }
     }
 

@@ -23,14 +23,14 @@ namespace xios
    template <class T>
       xios_map<StdString,
       xios_map<StdString,
-      boost::shared_ptr<T> > > CObjectTemplate<T>::AllMapObj;
+      boost::shared_ptr<T> > > *CObjectTemplate<T>::AllMapObj = 0;
 
    template <class T>
       xios_map<StdString,
-      std::vector<boost::shared_ptr<T> > > CObjectTemplate<T>::AllVectObj;
+      std::vector<boost::shared_ptr<T> > > *CObjectTemplate<T>::AllVectObj = 0;
 
    template <class T>
-      xios_map<StdString,long int> CObjectTemplate<T>::GenId;
+      xios_map<StdString,long int> *CObjectTemplate<T>::GenId = 0;
 
    template <class T>
       CObjectTemplate<T>::CObjectTemplate(void)
@@ -65,7 +65,7 @@ namespace xios
       std::vector<boost::shared_ptr<T> > &
          CObjectTemplate<T>::GetAllVectobject(const StdString & contextId)
    {
-      return (CObjectTemplate<T>::AllVectObj[contextId]);
+      return (CObjectTemplate<T>::AllVectObj->at(contextId));
    }
 
    //---------------------------------------------------------------

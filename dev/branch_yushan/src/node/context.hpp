@@ -207,8 +207,10 @@ namespace xios {
          std::vector<CField*> fieldsWithReadAccess;
 
          // Context root
-         static shared_ptr<CContextGroup> root;
-         // #pragma omp threadprivate(root)
+         //static shared_ptr<CContextGroup> root;
+
+         static shared_ptr<CContextGroup> *root_ptr;
+         #pragma omp threadprivate(root_ptr)
 
          // Determine context on client or not
          bool hasClient;
@@ -234,10 +236,7 @@ namespace xios {
          CGarbageCollector garbageCollector;
          std::list<ep_lib::MPI_Comm> comms; //!< Communicators allocated internally
 
-         int identifier;
-
       public: // Some function maybe removed in the near future
-         int get_identifier();
         // virtual void toBinary  (StdOStream & os) const;
         // virtual void fromBinary(StdIStream & is);
    }; // class CContext

@@ -17,7 +17,8 @@
 
 namespace xios {
 
-  shared_ptr<CContextGroup> CContext::root;
+  //shared_ptr<CContextGroup> CContext::root;
+  shared_ptr<CContextGroup> * CContext::root_ptr = 0;
 
    /// ////////////////////// Dfinitions ////////////////////// ///
 
@@ -53,8 +54,14 @@ namespace xios {
    */
    CContextGroup* CContext::getRoot(void)
    {
-      if (root.get()==NULL) root=shared_ptr<CContextGroup>(new CContextGroup(xml::CXMLNode::GetRootName()));
-      return root.get();
+      //if (root.get()==NULL) root=shared_ptr<CContextGroup>(new CContextGroup(xml::CXMLNode::GetRootName()));
+      //return root.get();
+
+      //static shared_ptr<CContextGroup> *root_ptr;
+      if(root_ptr == 0) //root_ptr = new shared_ptr<CContextGroup>;
+      // if (root_ptr->get()==NULL) 
+      root_ptr = new shared_ptr<CContextGroup>(new CContextGroup(xml::CXMLNode::GetRootName()));
+      return root_ptr->get();
    }
 
    //----------------------------------------------------------------
@@ -242,10 +249,12 @@ namespace xios {
      #pragma omp critical
      client = new CContextClient(this, intraComm, interComm, cxtServer);
 
-
      int tmp_rank;
      MPI_Comm_rank(intraComm, &tmp_rank);
      MPI_Barrier(intraComm);
+
+     #pragma omp critical (_output)
+     printf("Client %d : context.cpp client = new CContextClient, client add = %p, clientRank = %d\n", tmp_rank, &(*client), client->clientRank) ;
      
      #pragma omp critical
      registryIn=new CRegistry(intraComm);
@@ -254,8 +263,7 @@ namespace xios {
      registryIn->setPath(getId()) ;
      
      #pragma omp critical (_output)
-     printf("Client %d : registryIn->setPath(getId()=%s), clientRank = %d (%p) \n", tmp_rank, getId(), client->clientRank, &(client->clientRank)) ;
-     printf("Client %d : context.identifier = %d\n", tmp_rank, this->get_identifier());
+     printf("Client %d : context.cpp registryIn->setPath, client add = %p, clientRank = %d\n", tmp_rank, &(*client), client->clientRank) ;
 
      if (client->clientRank==0) registryIn->fromFile("xios_registry.bin") ;
      registryIn->bcastRegistry() ;
@@ -263,8 +271,6 @@ namespace xios {
      registryOut=new CRegistry(intraComm) ;
      registryOut->setPath(getId()) ;
      
-     #pragma omp critical (_output)
-     printf("Client %d : registryOut->setPath(getId()=%s) \n", tmp_rank, getId()) ;
 
      ep_lib::MPI_Comm intraCommServer, interCommServer;
      if (cxtServer) // Attached mode
@@ -1202,7 +1208,8 @@ namespace xios {
     bool hasctxt = CContext::has(id);
     CContext* context = CObjectFactory::CreateObject<CContext>(id).get();
     getRoot();
-    if (!hasctxt) CGroupFactory::AddChild(root, context->getShared());
+    //if (!hasctxt) CGroupFactory::AddChild(root, context->getShared());
+    if (!hasctxt) CGroupFactory::AddChild(*root_ptr, context->getShared());
 
 #define DECLARE_NODE(Name_, name_) \
     C##Name_##Definition::create(C##Name_##Definition::GetDefName());
@@ -1212,10 +1219,6 @@ namespace xios {
     return (context);
   }
 
-  int CContext::get_identifier()
-  {
-    return this->identifier;
-  }
 
 
      //! Server side: Receive a message to do some post processing

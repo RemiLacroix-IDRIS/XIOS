@@ -484,6 +484,9 @@ namespace ep_lib
   static std::list<std::pair<std::pair<int, int>, MPI_Comm * > > tag_list;
 
   static std::map<std::pair<int, int>, MPI_Comm >  fc_comm_map;
+
+  static std::map<std::pair<int, int>, MPI_Comm >  *fc_comm_map_ptr;
+  #pragma omp threadprivate(fc_comm_map_ptr)
             //    <MPI_Fint,thread_num>   EP_Comm
 
 }
