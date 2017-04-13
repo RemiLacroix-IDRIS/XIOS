@@ -43,9 +43,8 @@ namespace xios {
    CAxis::~CAxis(void)
    { /* Ne rien faire de plus */ }
 
-   //std::map<StdString, ETranformationType> CAxis::transformationMapList_ = std::map<StdString, ETranformationType>();
-   std::map<StdString, ETranformationType> *CAxis::transformationMapList_ptr = 0;
-   bool CAxis::dummyTransformationMapList_ = CAxis::initializeTransformationMap(*CAxis::transformationMapList_ptr);
+   std::map<StdString, ETranformationType> CAxis::transformationMapList_ = std::map<StdString, ETranformationType>();
+   bool CAxis::dummyTransformationMapList_ = CAxis::initializeTransformationMap(CAxis::transformationMapList_);
    bool CAxis::initializeTransformationMap(std::map<StdString, ETranformationType>& m)
    {
      m["zoom_axis"] = TRANS_ZOOM_AXIS;
@@ -1004,10 +1003,8 @@ namespace xios {
         { nodeId = node.getAttributes()["id"]; }
 
         nodeElementName = node.getElementName();
-        if(transformationMapList_ptr == NULL) transformationMapList_ptr = new std::map<StdString, ETranformationType>;
-
-        std::map<StdString, ETranformationType>::const_iterator ite = (*transformationMapList_ptr).end(), it;
-        it = transformationMapList_ptr->find(nodeElementName);
+        std::map<StdString, ETranformationType>::const_iterator ite = transformationMapList_.end(), it;
+        it = transformationMapList_.find(nodeElementName);
         if (ite != it)
         {
           transformationMap_.push_back(std::make_pair(it->second, CTransformation<CAxis>::createTransformation(it->second,

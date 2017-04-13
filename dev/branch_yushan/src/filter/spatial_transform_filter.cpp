@@ -63,21 +63,19 @@ namespace xios
             "Impossible to construct a spatial transform filter engine without a valid grid transformation.");
   }
 
-  std::map<CGridTransformation*, boost::shared_ptr<CSpatialTransformFilterEngine> > *CSpatialTransformFilterEngine::engines_ptr = 0;
+  std::map<CGridTransformation*, boost::shared_ptr<CSpatialTransformFilterEngine> > CSpatialTransformFilterEngine::engines;
 
   CSpatialTransformFilterEngine* CSpatialTransformFilterEngine::get(CGridTransformation* gridTransformation)
   {
     if (!gridTransformation)
       ERROR("CSpatialTransformFilterEngine& CSpatialTransformFilterEngine::get(CGridTransformation* gridTransformation)",
             "Impossible to get the requested engine, the grid transformation is invalid.");
-    
-    if(engines_ptr == NULL) engines_ptr = new std::map<CGridTransformation*, boost::shared_ptr<CSpatialTransformFilterEngine> >;
 
-    std::map<CGridTransformation*, boost::shared_ptr<CSpatialTransformFilterEngine> >::iterator it = engines_ptr->find(gridTransformation);
-    if (it == engines_ptr->end())
+    std::map<CGridTransformation*, boost::shared_ptr<CSpatialTransformFilterEngine> >::iterator it = engines.find(gridTransformation);
+    if (it == engines.end())
     {
       boost::shared_ptr<CSpatialTransformFilterEngine> engine(new CSpatialTransformFilterEngine(gridTransformation));
-      it = engines_ptr->insert(std::make_pair(gridTransformation, engine)).first;
+      it = engines.insert(std::make_pair(gridTransformation, engine)).first;
     }
 
     return it->second.get();

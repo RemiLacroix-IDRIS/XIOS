@@ -64,8 +64,8 @@ namespace xios {
      return domain;
    }
 
-   std::map<StdString, ETranformationType> * CDomain::transformationMapList_ptr = new std::map<StdString, ETranformationType>;
-   bool CDomain::_dummyTransformationMapList = CDomain::initializeTransformationMap(*CDomain::transformationMapList_ptr);
+   std::map<StdString, ETranformationType> CDomain::transformationMapList_ = std::map<StdString, ETranformationType>();
+   bool CDomain::_dummyTransformationMapList = CDomain::initializeTransformationMap(CDomain::transformationMapList_);
 
    bool CDomain::initializeTransformationMap(std::map<StdString, ETranformationType>& m)
    {
@@ -2188,8 +2188,8 @@ namespace xios {
         { nodeId = node.getAttributes()["id"]; }
 
         nodeElementName = node.getElementName();
-        std::map<StdString, ETranformationType>::const_iterator ite = transformationMapList_ptr->end(), it;
-        it = transformationMapList_ptr->find(nodeElementName);
+        std::map<StdString, ETranformationType>::const_iterator ite = transformationMapList_.end(), it;
+        it = transformationMapList_.find(nodeElementName);
         if (ite != it)
         {
           transformationMap_.push_back(std::make_pair(it->second, CTransformation<CDomain>::createTransformation(it->second,

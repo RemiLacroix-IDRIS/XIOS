@@ -4,7 +4,6 @@ namespace xios
 {
    /// ////////////////////// Définitions ////////////////////// ///
    StdString *CGroupFactory::CurrContext_ptr = new StdString;
-   StdString *CGroupFactory::CurrContext_ptr = new StdString;
 
    void CGroupFactory::SetCurrentContextId(const StdString & context)
    {  

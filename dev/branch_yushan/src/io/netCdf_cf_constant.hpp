@@ -27,6 +27,8 @@ struct CCFConvention
   static const std::set<StdString> XIOS_CF_Latitude_units;
   static const std::set<StdString> XIOS_CF_Longitude_units;
 
+  // #pragma omp threadprivate(XIOS_CF_Latitude_units, XIOS_CF_Longitude_units)
+
 private:
   CCFConvention();
 };
