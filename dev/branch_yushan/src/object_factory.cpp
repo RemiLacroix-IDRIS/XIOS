@@ -4,19 +4,17 @@ namespace xios
 {
    /// ////////////////////// Définitions ////////////////////// ///
 
-   //StdString CObjectFactory::CurrContext("");
-	 StdString *CObjectFactory::CurrContext_ptr = new StdString;
+   StdString *CObjectFactory::CurrContext_ptr = new StdString;
 
    void CObjectFactory::SetCurrentContextId(const StdString & context)
-   { 
-   	 //CObjectFactory::CurrContext = context; 
-   	 *CObjectFactory::CurrContext_ptr = context; 
+   {
+     if(CObjectFactory::CurrContext_ptr == NULL ) CObjectFactory::CurrContext_ptr = new StdString;
+     CObjectFactory::CurrContext_ptr->assign(context); 
    }
 
    StdString & CObjectFactory::GetCurrentContextId(void)
    { 
-   	 //return (CObjectFactory::CurrContext); 
-   	 return (*CObjectFactory::CurrContext_ptr); 
+     return (*CObjectFactory::CurrContext_ptr); 
    }
 
 } // namespace xios

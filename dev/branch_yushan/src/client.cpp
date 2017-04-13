@@ -213,8 +213,8 @@ namespace xios
 
         MPI_Intercomm_create(contextComm,0,CXios::globalComm,serverLeader,10+globalRank,&contextInterComm) ;
         
-        #pragma omp critical (_output)
-        info(10)<<"Register new Context : "<<id<<endl ;
+        //#pragma omp critical (_output)
+        //info(10)<<"Register new Context : "<<id<<endl ;
                       
 
         MPI_Comm inter ;
