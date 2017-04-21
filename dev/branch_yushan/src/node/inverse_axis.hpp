@@ -58,7 +58,7 @@ namespace xios {
       static bool registerTrans();
       static CTransformation<CAxis>* create(const StdString& id, xml::CXMLNode* node);
       static bool _dummyRegistered;
-      //#pragma omp threadprivate(_dummyRegistered)
+      #pragma omp threadprivate(_dummyRegistered)
 
   }; // class CInverseAxis
 

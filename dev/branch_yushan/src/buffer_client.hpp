@@ -15,7 +15,7 @@ namespace xios
   {
     public:
       static size_t maxRequestSize;
-      //#pragma omp threadprivate(maxRequestSize)
+      #pragma omp threadprivate(maxRequestSize)
 
       CClientBuffer(MPI_Comm intercomm, int serverRank, StdSize bufferSize, StdSize maxBufferedEvents);
       ~CClientBuffer();

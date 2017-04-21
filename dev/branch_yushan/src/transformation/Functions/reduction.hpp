@@ -22,7 +22,9 @@ namespace xios {
 class CReductionAlgorithm
 {
 public:
-  static std::map<StdString,EReductionType> ReductionOperations;
+  //static std::map<StdString,EReductionType> ReductionOperations;
+  static std::map<StdString,EReductionType> *ReductionOperations_ptr;
+  #pragma omp threadprivate(ReductionOperations_ptr)
 
 public:
   CReductionAlgorithm() {}
@@ -58,15 +60,16 @@ protected:
   typedef CReductionAlgorithm* (*CreateOperationCallBack)();
   typedef std::map<EReductionType, CreateOperationCallBack> CallBackMap;
   static CallBackMap* reductionCreationCallBacks_;
-  //#pragma omp threadprivate(reductionCreationCallBacks_)
+  #pragma omp threadprivate(reductionCreationCallBacks_)
 
   static bool registerOperation(EReductionType reduceType, CreateOperationCallBack createFn);
   static bool unregisterOperation(EReductionType reduceType);
 
 protected:
-  static bool initReductionOperation(std::map<StdString,EReductionType>& m);
+  //static bool initReductionOperation(std::map<StdString,EReductionType>& m);
+  static bool initReductionOperation(std::map<StdString,EReductionType>* m);
   static bool _dummyInit;
-  //#pragma omp threadprivate(_dummyInit)
+  #pragma omp threadprivate(_dummyInit)
 };
 
 }

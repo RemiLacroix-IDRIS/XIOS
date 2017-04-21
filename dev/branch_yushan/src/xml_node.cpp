@@ -7,6 +7,7 @@ namespace xios
       /// ////////////////////// Définitions ////////////////////// ///
 
       StdString CXMLNode::RootName("simulation");
+      // StdString CXMLNode::RootName = "simulation";
 
       CXMLNode::CXMLNode(rapidxml::xml_node<char> * const root)
          : node(root)

@@ -48,7 +48,7 @@ CScalarAlgorithmExtractAxis::CScalarAlgorithmExtractAxis(CScalar* scalarDestinat
   algo->checkValid(scalarDestination, axisSource);
   StdString op = "extract";
   pos_ = algo->position;
-  reduction_ = CReductionAlgorithm::createOperation(CReductionAlgorithm::ReductionOperations[op]);
+  reduction_ = CReductionAlgorithm::createOperation((*CReductionAlgorithm::ReductionOperations_ptr)[op]);
 }
 
 void CScalarAlgorithmExtractAxis::apply(const std::vector<std::pair<int,double> >& localIndex,
