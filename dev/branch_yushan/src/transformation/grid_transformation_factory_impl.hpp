@@ -61,7 +61,7 @@ public:
   static bool registerTransformation(ETranformationType transType, CreateTransformationCallBack createFn);
   static bool unregisterTransformation(ETranformationType transType);
   static bool initializeTransformation_;
-  //#pragma omp threadprivate(initializeTransformation_)
+  #pragma omp threadprivate(initializeTransformation_)
 };
 
 template<typename T>
@@ -86,7 +86,7 @@ CGenericAlgorithmTransformation* CGridTransformationFactory<T>::createTransforma
   {
      ERROR("CGridTransformationFactory::createTransformation(ETranformationType transType)",
            << "Transformation type " << transType
-           << "doesn't exist. Please define.");
+           << " doesn't exist. Please define.");
   }
   return (it->second)(gridDst, gridSrc, transformation, elementPositionInGrid,
                       elementPositionInGridSrc2ScalarPosition,

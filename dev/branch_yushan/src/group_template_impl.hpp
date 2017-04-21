@@ -347,6 +347,7 @@ namespace xios
    template <class U, class V, class W>
    U* CGroupTemplate<U, V, W>::createChild(const string& id) 
   {
+    printf("U* CGroupTemplate<U, V, W>::createChild(const string& id) %p\n", this->getShared());
     return CGroupFactory::CreateChild<V>(this->getShared(), id).get() ;
   }
 

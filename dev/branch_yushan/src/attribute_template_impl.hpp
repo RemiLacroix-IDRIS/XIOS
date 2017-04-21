@@ -38,7 +38,11 @@ namespace xios
                               xios_map<StdString, CAttribute*> & umap)
          : CAttribute(id)
       {
-         umap.insert(umap.end(), std::make_pair(id, this));
+         xios_map<StdString, CAttribute*>::iterator it;
+         printf("umap size = %lu, add = %p\n", umap.size(), &umap);
+         it = umap.find(id);
+         if(it == umap.end())
+           umap.insert(umap.end(), std::make_pair(id, this));
       }
 
       template <class T>

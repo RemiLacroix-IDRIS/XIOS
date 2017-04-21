@@ -121,6 +121,8 @@ namespace xios
    {
       if(U::AllVectObj == NULL) U::AllVectObj = new xios_map<StdString, std::vector<boost::shared_ptr<U> > >;
       if(U::AllMapObj  == NULL) U::AllMapObj  = new xios_map<StdString, xios_map<StdString, boost::shared_ptr<U> > >;
+
+      printf("so far so good : %d %d %d\n", CurrContext_ptr->empty(), CObjectFactory::HasObject<U>(id), id.empty());
       
       if (CurrContext_ptr->empty())
          ERROR("CObjectFactory::CreateObject(const StdString& id)",
@@ -133,9 +135,11 @@ namespace xios
       else
       {
          boost::shared_ptr<U> value(new U(id.empty() ? CObjectFactory::GenUId<U>() : id));
-
+         printf("in CreateObject, value OK\n");  
          (* U::AllVectObj)[*CObjectFactory::CurrContext_ptr].insert((*U::AllVectObj)[*CObjectFactory::CurrContext_ptr].end(), value);
+         printf("AllVectObj insert OK\n");
          (* U::AllMapObj) [*CObjectFactory::CurrContext_ptr].insert(std::make_pair(value->getId(), value));
+         printf("AllMapObj insert OK\n");
 
          return value;
       }

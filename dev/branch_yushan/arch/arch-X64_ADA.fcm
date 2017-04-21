@@ -2,9 +2,9 @@
 ###################                Projet XIOS               ###################
 ################################################################################
 
-%CCOMPILER      mpiicc
-%FCOMPILER      mpiifort 
-%LINKER         mpiifort  -nofor-main
+%CCOMPILER      mpiicc -qopenmp -D_usingEP -D_intelmpi
+%FCOMPILER      mpiifort -qopenmp -D_usingEP -D_intelmpi
+%LINKER         mpiifort  -nofor-main -qopenmp -D_usingEP -D_intelmpi
 
 %BASE_CFLAGS    -diag-disable 1125 -diag-disable 279
 %PROD_CFLAGS    -O3 -D BOOST_DISABLE_ASSERTS
