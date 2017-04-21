@@ -175,8 +175,8 @@ namespace xios
       int tmp_rank;
       MPI_Comm_rank(contextComm,&tmp_rank) ;
       
-      #pragma omp critical (_output)
-      printf("Client %d : client.cpp Client::registerContext context add = %p\n", tmp_rank, &(*context));
+      // #pragma omp critical (_output)
+      // printf("Client %d : client.cpp Client::registerContext context add = %p\n", tmp_rank, &(*context));
       
       
       StdString idServer(id);
@@ -224,8 +224,8 @@ namespace xios
         
         context->initClient(contextComm,contextInterComm) ;
         
-        #pragma omp critical (_output)
-        printf("Client %d : context->initClient(contextComm,contextInterComm) OK \n", getRank()) ;
+        // #pragma omp critical (_output)
+        // printf("Client %d : context->initClient(contextComm,contextInterComm) OK \n", getRank()) ;
         
         //contextInterComms->push_back(contextInterComm);
         if(contextInterComms_ptr == NULL) contextInterComms_ptr = new std::list<MPI_Comm>;

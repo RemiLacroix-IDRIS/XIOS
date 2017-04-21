@@ -39,7 +39,7 @@ namespace xios
          : CAttribute(id)
       {
          xios_map<StdString, CAttribute*>::iterator it;
-         printf("umap size = %lu, add = %p\n", umap.size(), &umap);
+         //printf("umap size = %lu, add = %p\n", umap.size(), &umap);
          it = umap.find(id);
          if(it == umap.end())
            umap.insert(umap.end(), std::make_pair(id, this));

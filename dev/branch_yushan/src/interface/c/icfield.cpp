@@ -38,7 +38,7 @@ extern "C"
       if (!cstr2string(_id, _id_len, id)) return;
       CTimer::get("XIOS").resume() ;
       *_ret = CField::get(id);
-      printf("cxios_field_handle_create\n");
+      //printf("cxios_field_handle_create\n");
       CTimer::get("XIOS").suspend() ;
    }
    
@@ -48,7 +48,7 @@ extern "C"
       if (!cstr2string(_id, _id_len, id)) return;
       CTimer::get("XIOS").resume() ;
       *_ret = CFieldGroup::get(id);
-      printf("cxios_fieldgroup_handle_create\n");
+      //printf("cxios_fieldgroup_handle_create\n");
       CTimer::get("XIOS").suspend() ;
    }
 

@@ -69,15 +69,15 @@ namespace xios
    {
       CObjectFactory::SetCurrentContextId
       (CGroupFactory::GetCurrentContextId());
-      printf("SetCurrentContextId OK %d , %d, %s\n", id.size(), CGroupFactory::HasChild(group, id), id);
+      //printf("SetCurrentContextId OK %d , %d, %s\n", id.size(), CGroupFactory::HasChild(group, id), id);
       if (id.size() == 0)
       {
          boost::shared_ptr<typename U::RelChild> value = CObjectFactory::CreateObject<typename U::RelChild>();
-         printf("boost::shared_ptr<typename U::RelChild> value OK\n");
+         //printf("boost::shared_ptr<typename U::RelChild> value OK\n");
          group->childList.insert(group->childList.end(), value.get());
-         printf("group->childList.insert OK\n");
+         //printf("group->childList.insert OK\n");
          group->childMap.insert(std::make_pair(value->getId(), value.get()));
-         printf("group->childMap.insert OK\n");
+         //printf("group->childMap.insert OK\n");
          return (value);
       }
       else if (CGroupFactory::HasChild(group, id))
@@ -88,11 +88,11 @@ namespace xios
       else
       {
          boost::shared_ptr<typename U::RelChild> value = CObjectFactory::CreateObject<typename U::RelChild>(id);
-         printf("shared_ptr OK\n");
+         //printf("shared_ptr OK\n");
          group->childList.insert(group->childList.end(), value.get());
-         printf("childList.insert OK\n");
+         //printf("childList.insert OK\n");
          group->childMap.insert(std::make_pair(id, value.get()));
-         printf("childMap.insert OK\n");
+         //printf("childMap.insert OK\n");
          return (value);
       }
    }

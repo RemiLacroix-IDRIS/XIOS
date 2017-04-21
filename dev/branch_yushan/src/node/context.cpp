@@ -253,8 +253,8 @@ namespace xios {
      MPI_Comm_rank(intraComm, &tmp_rank);
      MPI_Barrier(intraComm);
 
-     #pragma omp critical (_output)
-     printf("Client %d : context.cpp client = new CContextClient, client add = %p, clientRank = %d\n", tmp_rank, &(*client), client->clientRank) ;
+     // #pragma omp critical (_output)
+     // printf("Client %d : context.cpp client = new CContextClient, client add = %p, clientRank = %d\n", tmp_rank, &(*client), client->clientRank) ;
      
      #pragma omp critical
      registryIn=new CRegistry(intraComm);
@@ -262,8 +262,8 @@ namespace xios {
 
      registryIn->setPath(getId()) ;
      
-     #pragma omp critical (_output)
-     printf("Client %d : context.cpp registryIn->setPath, client add = %p, clientRank = %d\n", tmp_rank, &(*client), client->clientRank) ;
+     // #pragma omp critical (_output)
+     // printf("Client %d : context.cpp registryIn->setPath, client add = %p, clientRank = %d\n", tmp_rank, &(*client), client->clientRank) ;
 
      if (client->clientRank==0) registryIn->fromFile("xios_registry.bin") ;
      registryIn->bcastRegistry() ;

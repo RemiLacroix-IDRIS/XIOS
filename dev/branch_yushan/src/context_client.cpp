@@ -72,7 +72,7 @@ namespace xios
             ranksServerLeader.push_back(remain + rank / clientByServer);
         }
 
-        printf("clientRank = %d (%p)\n", clientRank, &clientRank);
+        // printf("clientRank = %d (%p)\n", clientRank, &clientRank);
       }
 
       timeLine = 0;
