@@ -33,6 +33,10 @@ namespace xios {
   std::map <StdString, CMesh> CMesh::meshList = std::map <StdString, CMesh>();
   std::map <StdString, vector<int> > CMesh::domainList = std::map <StdString, vector<int> >();
 
+  std::map <StdString, CMesh> *CMesh::meshList_ptr = 0;
+  std::map <StdString, vector<int> > *CMesh::domainList_ptr = 0;
+
+
 ///---------------------------------------------------------------
 /*!
  * \fn bool CMesh::getMesh (StdString meshName)
@@ -40,6 +44,8 @@ namespace xios {
  * \param [in] meshName  The name of a mesh ("name" attribute of a domain).
  * \param [in] nvertex Number of verteces (1 for nodes, 2 for edges, 3 and up for faces).
  */
+
+/* bkp
   CMesh* CMesh::getMesh (StdString meshName, int nvertex)
   {
     CMesh::domainList[meshName].push_back(nvertex);
@@ -63,6 +69,36 @@ namespace xios {
       CMesh newMesh;
       CMesh::meshList.insert( make_pair(meshName, newMesh) );
       return &meshList[meshName];
+    }
+  }
+*/
+
+  CMesh* CMesh::getMesh (StdString meshName, int nvertex)
+  {
+    if(CMesh::domainList_ptr == NULL) CMesh::domainList_ptr = new std::map <StdString, vector<int> >();
+    if(CMesh::meshList_ptr == NULL)   CMesh::meshList_ptr   = new std::map <StdString, CMesh>();
+
+    (*CMesh::domainList_ptr)[meshName].push_back(nvertex);
+
+    if ( (*CMesh::meshList_ptr).begin() != (*CMesh::meshList_ptr).end() )
+    {
+      for (std::map<StdString, CMesh>::iterator it=(*CMesh::meshList_ptr).begin(); it!=(*CMesh::meshList_ptr).end(); ++it)
+      {
+        if (it->first == meshName)
+          return &((*CMesh::meshList_ptr)[meshName]);
+        else
+        {
+          CMesh newMesh;
+          (*CMesh::meshList_ptr).insert( make_pair(meshName, newMesh) );
+          return &((*CMesh::meshList_ptr)[meshName]);
+        }
+      }
+    }
+    else
+    {
+      CMesh newMesh;
+      (*CMesh::meshList_ptr).insert( make_pair(meshName, newMesh) );
+      return &((*CMesh::meshList_ptr)[meshName]);
     }
   }
 

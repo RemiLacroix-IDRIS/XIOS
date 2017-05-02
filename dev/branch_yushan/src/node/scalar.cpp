@@ -26,13 +26,24 @@ namespace xios {
    CScalar::~CScalar(void)
    { /* Ne rien faire de plus */ }
 
-   std::map<StdString, ETranformationType> CScalar::transformationMapList_ = std::map<StdString, ETranformationType>();
-   bool CScalar::dummyTransformationMapList_ = CScalar::initializeTransformationMap(CScalar::transformationMapList_);
+   //std::map<StdString, ETranformationType> CScalar::transformationMapList_ = std::map<StdString, ETranformationType>();
+   //bool CScalar::dummyTransformationMapList_ = CScalar::initializeTransformationMap(CScalar::transformationMapList_);
+
+   std::map<StdString, ETranformationType> *CScalar::transformationMapList_ptr = 0;
+   
    bool CScalar::initializeTransformationMap(std::map<StdString, ETranformationType>& m)
    {
      m["reduce_axis"]   = TRANS_REDUCE_AXIS_TO_SCALAR;
      m["extract_axis"]  = TRANS_EXTRACT_AXIS_TO_SCALAR;
      m["reduce_domain"] = TRANS_REDUCE_DOMAIN_TO_SCALAR;
+   }
+
+   bool CScalar::initializeTransformationMap()
+   {
+     CScalar::transformationMapList_ptr = new std::map<StdString, ETranformationType>();
+     (*CScalar::transformationMapList_ptr)["reduce_axis"]   = TRANS_REDUCE_AXIS_TO_SCALAR;
+     (*CScalar::transformationMapList_ptr)["extract_axis"]  = TRANS_EXTRACT_AXIS_TO_SCALAR;
+     (*CScalar::transformationMapList_ptr)["reduce_domain"] = TRANS_REDUCE_DOMAIN_TO_SCALAR;
    }
 
    StdString CScalar::GetName(void)   { return (StdString("scalar")); }
@@ -146,8 +157,9 @@ namespace xios {
         { nodeId = node.getAttributes()["id"]; }
 
         nodeElementName = node.getElementName();
-        std::map<StdString, ETranformationType>::const_iterator ite = transformationMapList_.end(), it;
-        it = transformationMapList_.find(nodeElementName);
+        if(CScalar::transformationMapList_ptr == 0) initializeTransformationMap();
+        std::map<StdString, ETranformationType>::const_iterator ite = (*CScalar::transformationMapList_ptr).end(), it;
+        it = (*CScalar::transformationMapList_ptr).find(nodeElementName);
         if (ite != it)
         {
           transformationMap_.push_back(std::make_pair(it->second, CTransformation<CScalar>::createTransformation(it->second,

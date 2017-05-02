@@ -43,12 +43,11 @@ namespace xios {
    CAxis::~CAxis(void)
    { /* Ne rien faire de plus */ }
 
-   std::map<StdString, ETranformationType> CAxis::transformationMapList_ = std::map<StdString, ETranformationType>();
-   
-   std::map<StdString, ETranformationType> *CAxis::transformationMapList_ptr = new std::map<StdString, ETranformationType>();
-   
-   bool CAxis::dummyTransformationMapList_ = CAxis::initializeTransformationMap(CAxis::transformationMapList_);
-   //bool CAxis::dummyTransformationMapList_ = CAxis::initializeTransformationMap(*CAxis::transformationMapList_ptr);
+   //std::map<StdString, ETranformationType> CAxis::transformationMapList_ = std::map<StdString, ETranformationType>();
+   //bool CAxis::dummyTransformationMapList_ = CAxis::initializeTransformationMap(CAxis::transformationMapList_);
+
+   std::map<StdString, ETranformationType> *CAxis::transformationMapList_ptr = 0; //new std::map<StdString, ETranformationType>();  
+   //bool CAxis::dummyTransformationMapList_ = CAxis::initializeTransformationMap(CAxis::transformationMapList_ptr);
 
    bool CAxis::initializeTransformationMap(std::map<StdString, ETranformationType>& m)
    {
@@ -57,13 +56,19 @@ namespace xios {
      m["inverse_axis"] = TRANS_INVERSE_AXIS;
      m["reduce_domain"] = TRANS_REDUCE_DOMAIN_TO_AXIS;
      m["extract_domain"] = TRANS_EXTRACT_DOMAIN_TO_AXIS;
-     
-     // m.insert(m.end(), make_pair("zoom_axis", TRANS_ZOOM_AXIS)); printf("zoom_axis insert\n");
-     // m.insert(m.end(), make_pair("interpolate_axis", TRANS_INTERPOLATE_AXIS)); printf("interpolate_axis insert\n");
-     // m.insert(m.end(), make_pair("inverse_axis", TRANS_INVERSE_AXIS)); printf("inverse_axis insert\n");
-     // m.insert(m.end(), make_pair("reduce_domain", TRANS_REDUCE_DOMAIN_TO_AXIS)); printf("reduce_domain insert\n");
-     // m.insert(m.end(), make_pair("extract_domain", TRANS_EXTRACT_DOMAIN_TO_AXIS)); printf("extract_domain insert\n");
    }
+
+
+   bool CAxis::initializeTransformationMap()
+   {
+     if(CAxis::transformationMapList_ptr == 0) CAxis::transformationMapList_ptr = new std::map<StdString, ETranformationType>();
+     (*CAxis::transformationMapList_ptr)["zoom_axis"]        = TRANS_ZOOM_AXIS;
+     (*CAxis::transformationMapList_ptr)["interpolate_axis"] = TRANS_INTERPOLATE_AXIS;
+     (*CAxis::transformationMapList_ptr)["inverse_axis"]     = TRANS_INVERSE_AXIS;
+     (*CAxis::transformationMapList_ptr)["reduce_domain"]    = TRANS_REDUCE_DOMAIN_TO_AXIS;
+     (*CAxis::transformationMapList_ptr)["extract_domain"]   = TRANS_EXTRACT_DOMAIN_TO_AXIS;
+   }
+
 
    ///---------------------------------------------------------------
 
@@ -1014,8 +1019,12 @@ namespace xios {
         { nodeId = node.getAttributes()["id"]; }
 
         nodeElementName = node.getElementName();
-        std::map<StdString, ETranformationType>::const_iterator ite = transformationMapList_.end(), it;
-        it = transformationMapList_.find(nodeElementName);
+
+        if(transformationMapList_ptr == 0) initializeTransformationMap();
+        //transformationMapList_ptr = new std::map<StdString, ETranformationType>();
+
+        std::map<StdString, ETranformationType>::const_iterator ite = (*CAxis::transformationMapList_ptr).end(), it;
+        it = (*CAxis::transformationMapList_ptr).find(nodeElementName);
         if (ite != it)
         {
           transformationMap_.push_back(std::make_pair(it->second, CTransformation<CAxis>::createTransformation(it->second,
@@ -1037,3 +1046,4 @@ namespace xios {
    ///---------------------------------------------------------------
 
 } // namespace xios
+

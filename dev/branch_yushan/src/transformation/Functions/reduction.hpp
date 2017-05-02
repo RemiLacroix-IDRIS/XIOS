@@ -66,8 +66,8 @@ protected:
   static bool unregisterOperation(EReductionType reduceType);
 
 protected:
-  //static bool initReductionOperation(std::map<StdString,EReductionType>& m);
-  static bool initReductionOperation(std::map<StdString,EReductionType>* m);
+  static bool initReductionOperation(std::map<StdString,EReductionType>& m);
+  static bool initReductionOperation();
   static bool _dummyInit;
   #pragma omp threadprivate(_dummyInit)
 };

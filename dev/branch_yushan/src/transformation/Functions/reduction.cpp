@@ -11,53 +11,54 @@ CReductionAlgorithm::CallBackMap* CReductionAlgorithm::reductionCreationCallBack
 //std::map<StdString,EReductionType> CReductionAlgorithm::ReductionOperations = std::map<StdString,EReductionType>();
 std::map<StdString,EReductionType> *CReductionAlgorithm::ReductionOperations_ptr = 0; 
 
-// bool CReductionAlgorithm::initReductionOperation(std::map<StdString,EReductionType>& m)
-// {
-//   // So so stupid way to intialize operation but it works ...
-//   m["sum"] = TRANS_REDUCE_SUM;
-//   CSumReductionAlgorithm::registerTrans();
-
-//   m["min"] = TRANS_REDUCE_MIN;
-//   CMinReductionAlgorithm::registerTrans();
-
-//   m["max"] = TRANS_REDUCE_MAX;
-//   CMaxReductionAlgorithm::registerTrans();
-
-//   m["extract"] = TRANS_REDUCE_EXTRACT;
-//   CExtractReductionAlgorithm::registerTrans();
-
-//   m["average"] = TRANS_REDUCE_AVERAGE;
-//   CAverageReductionAlgorithm::registerTrans();
-// }
-
-bool CReductionAlgorithm::initReductionOperation(std::map<StdString,EReductionType>* m)
+bool CReductionAlgorithm::initReductionOperation(std::map<StdString,EReductionType>& m)
 {
-  if(m==NULL) m=new std::map<StdString,EReductionType>();
   // So so stupid way to intialize operation but it works ...
-  (*m)["sum"] = TRANS_REDUCE_SUM;
+  m["sum"] = TRANS_REDUCE_SUM;
   CSumReductionAlgorithm::registerTrans();
 
-  (*m)["min"] = TRANS_REDUCE_MIN;
+  m["min"] = TRANS_REDUCE_MIN;
   CMinReductionAlgorithm::registerTrans();
 
-  (*m)["max"] = TRANS_REDUCE_MAX;
+  m["max"] = TRANS_REDUCE_MAX;
   CMaxReductionAlgorithm::registerTrans();
 
-  (*m)["extract"] = TRANS_REDUCE_EXTRACT;
+  m["extract"] = TRANS_REDUCE_EXTRACT;
   CExtractReductionAlgorithm::registerTrans();
 
-  (*m)["average"] = TRANS_REDUCE_AVERAGE;
+  m["average"] = TRANS_REDUCE_AVERAGE;
+  CAverageReductionAlgorithm::registerTrans();
+}
+
+
+bool CReductionAlgorithm::initReductionOperation()
+{
+  if(CReductionAlgorithm::ReductionOperations_ptr == NULL) CReductionAlgorithm::ReductionOperations_ptr = new std::map<StdString,EReductionType>();
+  // So so stupid way to intialize operation but it works ...
+  (*CReductionAlgorithm::ReductionOperations_ptr)["sum"] = TRANS_REDUCE_SUM;
+  CSumReductionAlgorithm::registerTrans();
+
+  (*CReductionAlgorithm::ReductionOperations_ptr)["min"] = TRANS_REDUCE_MIN;
+  CMinReductionAlgorithm::registerTrans();
+
+  (*CReductionAlgorithm::ReductionOperations_ptr)["max"] = TRANS_REDUCE_MAX;
+  CMaxReductionAlgorithm::registerTrans();
+
+  (*CReductionAlgorithm::ReductionOperations_ptr)["extract"] = TRANS_REDUCE_EXTRACT;
+  CExtractReductionAlgorithm::registerTrans();
+
+  (*CReductionAlgorithm::ReductionOperations_ptr)["average"] = TRANS_REDUCE_AVERAGE;
   CAverageReductionAlgorithm::registerTrans();
 }
 
 //bool CReductionAlgorithm::_dummyInit = CReductionAlgorithm::initReductionOperation(CReductionAlgorithm::ReductionOperations);
-bool CReductionAlgorithm::_dummyInit = CReductionAlgorithm::initReductionOperation(CReductionAlgorithm::ReductionOperations_ptr);
+bool CReductionAlgorithm::_dummyInit = CReductionAlgorithm::initReductionOperation();
 
 CReductionAlgorithm* CReductionAlgorithm::createOperation(EReductionType reduceType)
 {
   int reduceTypeInt = reduceType;
-  if (0 == reductionCreationCallBacks_)
-    reductionCreationCallBacks_ = new CallBackMap();
+  //if (0 == reductionCreationCallBacks_)
+  //  reductionCreationCallBacks_ = new CallBackMap();
 
   CallBackMap::const_iterator it = (*reductionCreationCallBacks_).find(reduceType);
   if ((*reductionCreationCallBacks_).end() == it)

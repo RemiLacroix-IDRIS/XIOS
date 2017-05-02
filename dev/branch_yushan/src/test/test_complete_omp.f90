@@ -1,7 +1,8 @@
-PROGRAM test_complete
+PROGRAM test_complete_omp
 
   USE xios
   USE mod_wait
+  use omp_lib
   IMPLICIT NONE
   INCLUDE "mpif.h"
   INTEGER :: rank, size
@@ -45,12 +46,17 @@ PROGRAM test_complete
   CALL MPI_COMM_SIZE(MPI_COMM_WORLD,size,ierr)
   if(rank < size-1) then
 
+  !$omp parallel default(private)
+
 !!! XIOS Initialization (get the local communicator)
 
   CALL xios_initialize(id,return_comm=comm)
 
   CALL MPI_COMM_RANK(comm,rank,ierr)
   CALL MPI_COMM_SIZE(comm,size_loc,ierr)
+
+  size_loc = size*omp_get_num_threads()
+  rank = rank*omp_get_num_threads() + omp_get_thread_num()
 
 
 !###########################################################################
@@ -98,6 +104,7 @@ PROGRAM test_complete
                             time_origin=xios_date(1999, 01, 01, 15, 00, 00))
 
   CALL xios_set_axis_attr("axis_atm",n_glo=llm ,value=lval) ;
+
 
   CALL xios_set_domain_attr("domain_atm",ni_glo=ni_glo, nj_glo=nj_glo, ibegin=ibegin, ni=ni,jbegin=jbegin,nj=nj, type='curvilinear')
   CALL xios_set_domain_attr("domain_atm",data_dim=2, data_ibegin=-1, data_ni=ni+2, data_jbegin=-2, data_nj=nj+4)
@@ -181,7 +188,6 @@ PROGRAM test_complete
     field_A_srf(1:nb_pt,:)=RESHAPE(field_A_glo(ibegin+1:iend+1:2,jbegin+1:jend+1,:),(/ nb_pt,llm /))
 
   CALL xios_context_initialize("surface",comm)
-
 
   CALL xios_get_handle("surface",ctx_hdl)
   CALL xios_set_current_context(ctx_hdl)
@@ -305,7 +311,15 @@ PROGRAM test_complete
 
      print *, "Client : xios_finalize "
 
+    !$omp master
     CALL MPI_COMM_FREE(comm, ierr)
+    !$omp end master
+
+    !$omp barrier
+
+    print*, "MPI_COMM_FREE OK", rank, size_loc
+
+  !$omp end parallel
 
   else
 
@@ -317,7 +331,7 @@ PROGRAM test_complete
 
     CALL MPI_FINALIZE(ierr)
 
-  END PROGRAM test_complete
+  END PROGRAM test_complete_omp
 
 
 

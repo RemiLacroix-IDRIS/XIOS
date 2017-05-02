@@ -86,9 +86,13 @@ namespace xios
 
        private:
            static bool initializeTransformationMap(std::map<StdString, ETranformationType>& m);
-           static std::map<StdString, ETranformationType> transformationMapList_;
-           static bool dummyTransformationMapList_;
-           //#pragma omp threadprivate(dummyTransformationMapList_)
+           static bool initializeTransformationMap();
+           
+           //static std::map<StdString, ETranformationType> transformationMapList_;
+           //static bool dummyTransformationMapList_;
+
+           static std::map<StdString, ETranformationType> *transformationMapList_ptr;
+           #pragma omp threadprivate(transformationMapList_ptr)
 
 
             DECLARE_REF_FUNC(Scalar,scalar)

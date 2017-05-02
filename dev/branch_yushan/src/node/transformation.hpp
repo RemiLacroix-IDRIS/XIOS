@@ -50,6 +50,7 @@ namespace xios {
   CTransformation<T>* CTransformation<T>::createTransformation(ETranformationType transType, const StdString& id, xml::CXMLNode* node)
   {
     int transTypeInt = transType;
+
     typename CallBackMap::const_iterator it = (*transformationCreationCallBacks_).find(transType);
     if ((*transformationCreationCallBacks_).end() == it)
     {

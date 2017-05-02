@@ -43,7 +43,8 @@ PROGRAM test_omp
     CALL init_wait
 
     CALL MPI_COMM_RANK(MPI_COMM_WORLD,rank,ierr)
-    if(rank < 2) then
+    CALL MPI_COMM_SIZE(MPI_COMM_WORLD,size,ierr)
+    if(rank < size-1) then
 
     !$omp parallel default(private)
   
@@ -99,15 +100,15 @@ PROGRAM test_omp
     CALL xios_set_domain_attr("domain_A",data_dim=2, data_ibegin=-1, data_ni=ni+2, data_jbegin=-2, data_nj=nj+4)
     CALL xios_set_domain_attr("domain_A",lonvalue_2D=lon,latvalue_2D=lat)
     CALL xios_set_fieldgroup_attr("field_definition",enabled=.TRUE.)
-!     print*, "test block OK", rank, size
+     print*, "test block OK", rank, size
 
-!   CALL xios_get_handle("field_definition",fieldgroup_hdl)
-!   CALL xios_add_child(fieldgroup_hdl,field_hdl,"field_B")
-!   CALL xios_set_attr(field_hdl,field_ref="field_A",name="field_B")
+    CALL xios_get_handle("field_definition",fieldgroup_hdl)
+    CALL xios_add_child(fieldgroup_hdl,field_hdl,"field_B")
+    CALL xios_set_attr(field_hdl,field_ref="field_A",name="field_B")
 
-!   CALL xios_get_handle("output",file_hdl)
-!   CALL xios_add_child(file_hdl,field_hdl)
-!   CALL xios_set_attr(field_hdl,field_ref="field_A",name="field_C")
+    CALL xios_get_handle("output",file_hdl)
+    CALL xios_add_child(file_hdl,field_hdl)
+    CALL xios_set_attr(field_hdl,field_ref="field_A_zoom",name="field_C")
 
     dtime%second = 3600
     CALL xios_set_timestep(dtime)
@@ -157,6 +158,10 @@ PROGRAM test_omp
     CALL xios_context_finalize()
     print*, "xios_context_finalize OK", rank, size
 
+    CALL xios_finalize()
+    print*, "xios finalize OK", rank, size
+
+    DEALLOCATE(lon, lat, field_A, lonvalue)
     !$omp master 
     !call MPI_Barrier(comm)
     CALL MPI_COMM_FREE(comm, ierr)
@@ -166,10 +171,6 @@ PROGRAM test_omp
 
      print*, "MPI_COMM_FREE OK", rank, size
 
-    CALL xios_finalize()
-    print*, "xios finalize OK", rank, size
-
-    DEALLOCATE(lon, lat, field_A, lonvalue)
 
 
   !$omp end parallel

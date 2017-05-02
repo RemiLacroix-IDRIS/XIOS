@@ -130,7 +130,7 @@ extern "C"
      
      
      CContext* context = CContext::getCurrent();
-     printf("Check : CContext::getCurrent() = %p\n", CContext::getCurrent());
+     //printf("Check : CContext::getCurrent() = %p\n", CContext::getCurrent());
      context->finalize();
           
      CTimer::get("XIOS context finalize").suspend();
