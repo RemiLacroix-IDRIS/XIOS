@@ -49,8 +49,7 @@ namespace ep_lib
         }
       }
       #elif _intelmpi
-      //::MPI_Improbe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpi_comm, &flag, &message, &status); 
-      ::MPI_Improbe(-2, -1, mpi_comm, &flag, &message, &status); 
+      ::MPI_Improbe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpi_comm, &flag, &message, &status); 
       #endif
 
       if(flag)
@@ -128,8 +127,7 @@ namespace ep_lib
         }
       }
       #elif _intelmpi
-      //::MPI_Improbe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpi_comm, &flag, &message, &status);       
-      ::MPI_Improbe(-2, -1, mpi_comm, &flag, &message, &status);       
+      ::MPI_Improbe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpi_comm, &flag, &message, &status);       
       #endif
 
       if(flag)
@@ -184,7 +182,7 @@ namespace ep_lib
         }
       }
       #elif _intelmpi
-      ::MPI_Improbe(-2, -1, mpi_comm, &flag, &message, &status);       
+      ::MPI_Improbe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpi_comm, &flag, &message, &status);       
       #endif
 
       if(flag)

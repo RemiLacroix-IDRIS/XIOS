@@ -154,7 +154,11 @@ destRanks.push_back(i);
 //cout << mpiRank <<  "DEB : " << recvCntDeb << "    nbSource " << nbSource << " nbTarget : " << nbTarget << endl;
 	for (int i = 0; i < nbSource; i++)
 	{
+		#ifdef _usingEP
+		MPI_Irecv(&sourceRank[i], 1, MPI_INT, -1, 0, communicator, &request[indexRequest]);
+		#else
 		MPI_Irecv(&sourceRank[i], 1, MPI_INT, MPI_ANY_SOURCE, 0, communicator, &request[indexRequest]);
+		#endif
 		indexRequest++;
 	}
 	MPI_Barrier(communicator);
@@ -174,7 +178,11 @@ destRanks.push_back(i);
 	indexRequest = 0;
 	for (int i = 0; i < nbSource; i++)
 	{
+		#ifdef _usingEP
+		MPI_Irecv(&sourceRank[i], 1, MPI_INT, -1, 0, communicator, &request[indexRequest]);
+		#else
 		MPI_Irecv(&sourceRank[i], 1, MPI_INT, MPI_ANY_SOURCE, 0, communicator, &request[indexRequest]);
+		#endif
 		indexRequest++;
 	}
 

@@ -280,7 +280,11 @@ namespace xios
        if (recept==false)
        {      
          traceOff() ;
+         #ifdef _usingEP
+         MPI_Iprobe(-1,1,CXios::globalComm, &flag, &status) ;
+         #else
          MPI_Iprobe(MPI_ANY_SOURCE,1,CXios::globalComm, &flag, &status) ;
+         #endif
          traceOn() ;
          
          if (flag==true)

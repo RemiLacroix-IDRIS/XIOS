@@ -132,11 +132,19 @@ namespace xios
     received=true ;
     while(received)
     {
+      #ifdef _usingEP
+      MPI_Iprobe(-1,1,communicator,&received, &status) ;
+      #else
       MPI_Iprobe(MPI_ANY_SOURCE,1,communicator,&received, &status) ;
+      #endif
       if (received)
       {
         recvRequest=new SPendingRequest ;
+        #ifdef _usingEP
+        MPI_Irecv(recvRequest->buffer, 3, MPI_UNSIGNED_LONG, -1, 1, communicator, &(recvRequest->request)) ;
+        #else
         MPI_Irecv(recvRequest->buffer, 3, MPI_UNSIGNED_LONG, MPI_ANY_SOURCE, 1, communicator, &(recvRequest->request)) ;
+        #endif
         pendingRecvParentRequest.push(recvRequest) ;
       }
     }
@@ -174,11 +182,19 @@ namespace xios
     // check for posted requests and make the corresponding receive
     while(received)
     {
+      #ifdef _usingEP
+      MPI_Iprobe(-1,0,communicator,&received, &status) ;
+      #else
       MPI_Iprobe(MPI_ANY_SOURCE,0,communicator,&received, &status) ;
+      #endif
       if (received)
       {
         recvRequest=new SPendingRequest ;
+        #ifdef _usingEP
+        MPI_Irecv(recvRequest->buffer, 3, MPI_UNSIGNED_LONG, -1, 0, communicator, &recvRequest->request) ;
+        #else
         MPI_Irecv(recvRequest->buffer, 3, MPI_UNSIGNED_LONG, MPI_ANY_SOURCE, 0, communicator, &recvRequest->request) ;
+        #endif
         pendingRecvChildRequest.push_back(recvRequest) ;
       }
     }

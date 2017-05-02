@@ -24,7 +24,7 @@ namespace ep_lib {
     {
       ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm >(comm.mpi_comm);
       ::MPI_Status mpi_status;
-      ::MPI_Recv(buf, count, static_cast< ::MPI_Datatype >(datatype), src, tag, mpi_comm, &mpi_status);
+      ::MPI_Recv(buf, count, static_cast< ::MPI_Datatype >(datatype), src<0? MPI_ANY_SOURCE : src, tag<0? MPI_ANY_TAG: tag, mpi_comm, &mpi_status);
 
       status->ep_src = src;
       status->ep_tag = tag;
@@ -56,7 +56,7 @@ namespace ep_lib {
 		{
 		  ::MPI_Request mpi_request;
 		  ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm > (comm.mpi_comm);
-		  ::MPI_Irecv(buf, count, static_cast< ::MPI_Datatype> (datatype), src, tag, mpi_comm, &mpi_request);
+		  ::MPI_Irecv(buf, count, static_cast< ::MPI_Datatype> (datatype), src<0? MPI_ANY_SOURCE : src, tag<0? MPI_ANY_TAG: tag, mpi_comm, &mpi_request);
 
 		  request->mpi_request = mpi_request;
       request->ep_src = src;

@@ -40,7 +40,7 @@ typedef struct
 
 namespace ep_lib
 {
-  #define MPI_UNDEFINED -32766
+  //#define EP_UNDEFINED -32766
 
   class ep_communicator;
   class ep_intercomm;

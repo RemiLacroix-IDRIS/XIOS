@@ -15,7 +15,7 @@ namespace ep_lib
     {
       ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm >(comm.mpi_comm);
       ::MPI_Status *mpi_status = static_cast< ::MPI_Status* >(status->mpi_status);
-      ::MPI_Iprobe(src, tag, mpi_comm, flag, mpi_status);
+      ::MPI_Iprobe(src<0? MPI_ANY_SOURCE : src, tag<0? MPI_ANY_TAG: tag, mpi_comm, flag, mpi_status);
 
       status->mpi_status = mpi_status;
       status->ep_src = src;
@@ -80,14 +80,14 @@ namespace ep_lib
     	#ifdef _openmpi
       #pragma omp critical (_mpi_call)
       {
-        ::MPI_Iprobe(src, tag, mpi_comm, flag, &mpi_status);
+        ::MPI_Iprobe(src<0? MPI_ANY_SOURCE : src, tag<0? MPI_ANY_TAG: tag, mpi_comm, flag, &mpi_status);
         if(*flag)
         {
-          ::MPI_Mprobe(src, tag, mpi_comm, &mpi_message, &mpi_status);
+          ::MPI_Mprobe(src<0? MPI_ANY_SOURCE : src, tag<0? MPI_ANY_TAG: tag, mpi_comm, &mpi_message, &mpi_status);
         }
       }
       #elif _intelmpi
-    	::MPI_Improbe(src, tag, mpi_comm, flag, &mpi_message, &mpi_status);
+    	::MPI_Improbe(src<0? MPI_ANY_SOURCE : src, tag<0? MPI_ANY_TAG: tag, mpi_comm, flag, &mpi_message, &mpi_status);
       #endif
     	
       status->mpi_status = new ::MPI_Status(mpi_status);
