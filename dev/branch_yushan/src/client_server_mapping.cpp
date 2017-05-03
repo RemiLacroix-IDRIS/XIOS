@@ -68,14 +68,6 @@ std::map<int,int> CClientServerMapping::computeConnectedClients(int nbServer, in
   int recvSize=displ[nbClient-1]+recvCount[nbClient-1] ;
   int* recvBuff=new int[recvSize] ;
   
-  printf("nbConnectedServer = %d\n", nbConnectedServer);
-  
-  printf("displ = %d, %d, %d, %d, %d, %d, %d, %d\n", 
-              displ[0], displ[1], displ[2], displ[3], displ[4], displ[5], displ[6], displ[7]);
-  printf("recvCount = %d, %d, %d, %d, %d, %d, %d, %d\n", 
-              recvCount[0], recvCount[1], recvCount[2], recvCount[3], recvCount[4], recvCount[5], recvCount[6], recvCount[7]);
-  printf("receSize = %d\n", recvSize);
-  
 
   MPI_Allgatherv(sendBuff,nbConnectedServer,MPI_INT,recvBuff,recvCount,displ,MPI_INT,clientIntraComm) ;
   for(int n=0;n<recvSize;n++) 
