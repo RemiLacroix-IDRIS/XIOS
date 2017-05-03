@@ -389,6 +389,7 @@ namespace xios {
         while (!server->hasFinished())
         {
           server->eventLoop();
+          //printf("server->hasFinished() = %d\n", server->hasFinished());
         }
 
         if (hasServer)

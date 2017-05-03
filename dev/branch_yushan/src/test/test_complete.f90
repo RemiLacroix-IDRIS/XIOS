@@ -235,8 +235,8 @@ PROGRAM test_complete
 !!! Boucle temporelle
 !####################################################################################
 
-    DO ts=1,24*10
-    !DO ts=1,24
+    !DO ts=1,24*10
+    DO ts=1,24
 
       CALL xios_get_handle("atmosphere",ctx_hdl)
       CALL xios_set_current_context(ctx_hdl)

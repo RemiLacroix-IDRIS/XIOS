@@ -88,7 +88,7 @@ namespace ep_lib
           #pragma omp flush
           #pragma omp critical (read_from_buffer)
           {
-            copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j+displs[k]);
+            copy(buffer, buffer+min(BUFFER_SIZE, recvcounts[k]-j), recv_buf+j+displs[k]);
           }
         }
 
@@ -132,7 +132,7 @@ namespace ep_lib
           #pragma omp flush
           #pragma omp critical (read_from_buffer)
           {
-            copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j+displs[k]);
+            copy(buffer, buffer+min(BUFFER_SIZE, recvcounts[k]-j), recv_buf+j+displs[k]);
           }
         }
 
@@ -176,7 +176,7 @@ namespace ep_lib
           #pragma omp flush
           #pragma omp critical (read_from_buffer)
           {
-            copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j+displs[k]);
+            copy(buffer, buffer+min(BUFFER_SIZE, recvcounts[k]-j), recv_buf+j+displs[k]);
           }
         }
 
@@ -220,7 +220,7 @@ namespace ep_lib
           #pragma omp flush
           #pragma omp critical (read_from_buffer)
           {
-            copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j+displs[k]);
+            copy(buffer, buffer+min(BUFFER_SIZE, recvcounts[k]-j), recv_buf+j+displs[k]);
           }
         }
 
@@ -264,7 +264,7 @@ namespace ep_lib
           #pragma omp flush
           #pragma omp critical (read_from_buffer)
           {
-            copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j+displs[k]);
+            copy(buffer, buffer+min(BUFFER_SIZE, recvcounts[k]-j), recv_buf+j+displs[k]);
           }
         }
 
@@ -308,7 +308,7 @@ namespace ep_lib
           #pragma omp flush
           #pragma omp critical (read_from_buffer)
           {
-            copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j+displs[k]);
+            copy(buffer, buffer+min(BUFFER_SIZE, recvcounts[k]-j), recv_buf+j+displs[k]);
           }
         }
 
@@ -484,7 +484,7 @@ namespace ep_lib
     mpi_size = comm.ep_comm_ptr->size_rank_info[2].second;
     
 
-    assert(accumulate(recvcounts, recvcounts+ep_size-1, 0) == displs[ep_size-1]); // Only for contunuous gather.
+    assert(accumulate(recvcounts, recvcounts+ep_size-1, 0) == displs[ep_size-1]); // Only for continuous gather.
 
 
     ::MPI_Aint datasize, lb;
@@ -497,6 +497,7 @@ namespace ep_lib
     {
       int buffer_size = accumulate(recvcounts+ep_rank, recvcounts+ep_rank+num_ep, 0);
       local_gather_recvbuf = new void*[datasize*buffer_size];
+      printf("buffersize = %d\n", buffer_size);
     }
 
     // local gather to master
