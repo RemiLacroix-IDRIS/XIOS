@@ -25,7 +25,7 @@
 
 namespace xios{
 
-   /// ////////////////////// Définitions ////////////////////// ///
+   /// ////////////////////// Dfinitions ////////////////////// ///
 
    CField::CField(void)
       : CObjectTemplate<CField>(), CFieldAttributes()

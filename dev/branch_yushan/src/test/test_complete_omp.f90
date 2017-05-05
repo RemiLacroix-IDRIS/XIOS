@@ -44,7 +44,7 @@ PROGRAM test_complete_omp
 
   CALL MPI_COMM_RANK(MPI_COMM_WORLD,rank,ierr)
   CALL MPI_COMM_SIZE(MPI_COMM_WORLD,size,ierr)
-  if(rank < size-1) then
+  if(rank < size-2) then
 
   !$omp parallel default(private)
 

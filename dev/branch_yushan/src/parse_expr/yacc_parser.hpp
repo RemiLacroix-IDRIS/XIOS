@@ -1,19 +1,21 @@
-/* A Bison parser, made by GNU Bison 3.0.2.  */
 
-/* Bison interface for Yacc-like parsers in C
+/* A Bison parser, made by GNU Bison 2.4.1.  */
 
-   Copyright (C) 1984, 1989-1990, 2000-2013 Free Software Foundation, Inc.
-
+/* Skeleton interface for Bison's Yacc-like parsers in C
+   
+      Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
+   
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
-
+   
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-
+   
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
@@ -26,66 +28,61 @@
    special exception, which will cause the skeleton and the resulting
    Bison output files to be licensed under the GNU General Public
    License without this special exception.
-
+   
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-#ifndef YY_YY_YACC_PARSER_HPP_INCLUDED
-# define YY_YY_YACC_PARSER_HPP_INCLUDED
-/* Debug traces.  */
-#ifndef YYDEBUG
-# define YYDEBUG 0
-#endif
-#if YYDEBUG
-extern int yydebug;
-#endif
 
-/* Token type.  */
+/* Tokens.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
-  enum yytokentype
-  {
-    NUMBER = 258,
-    VAR = 259,
-    ID = 260,
-    AVERAGE = 261,
-    PLUS = 262,
-    MINUS = 263,
-    TIMES = 264,
-    DIVIDE = 265,
-    POWER = 266,
-    EQ = 267,
-    LT = 268,
-    GT = 269,
-    LE = 270,
-    GE = 271,
-    LEFT_PARENTHESIS = 272,
-    RIGHT_PARENTHESIS = 273,
-    END = 274,
-    NEG = 275
-  };
+   /* Put the tokens into the symbol table, so that GDB and other debuggers
+      know about them.  */
+   enum yytokentype {
+     NUMBER = 258,
+     VAR = 259,
+     ID = 260,
+     AVERAGE = 261,
+     PLUS = 262,
+     MINUS = 263,
+     TIMES = 264,
+     DIVIDE = 265,
+     POWER = 266,
+     EQ = 267,
+     LT = 268,
+     GT = 269,
+     LE = 270,
+     GE = 271,
+     LEFT_PARENTHESIS = 272,
+     RIGHT_PARENTHESIS = 273,
+     END = 274,
+     NEG = 275
+   };
 #endif
 
-/* Value type.  */
+
+
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef union YYSTYPE YYSTYPE;
-union YYSTYPE
+typedef union YYSTYPE
 {
-#line 35 "yacc_parser.yacc" /* yacc.c:1909  */
+
+/* Line 1676 of yacc.c  */
+#line 40 "yacc_parser.yacc"
 
   std::string* str;                /* symbol table index */
   xios::IScalarExprNode* scalarNode;
   xios::IFilterExprNode* filterNode;
 
-#line 81 "yacc_parser.hpp" /* yacc.c:1909  */
-};
+
+
+/* Line 1676 of yacc.c  */
+#line 80 "yacc_parser.hpp"
+} YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
+# define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 #endif
 
-
 extern YYSTYPE yylval;
 
-int yyparse (void);
 
-#endif /* !YY_YY_YACC_PARSER_HPP_INCLUDED  */
