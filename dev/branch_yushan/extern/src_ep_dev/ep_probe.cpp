@@ -73,11 +73,11 @@ namespace ep_lib
     {
       Debug("calling MPI_Improbe MPI\n");
 
-    	::MPI_Comm mpi_comm = static_cast< ::MPI_Comm>(comm.mpi_comm);
-    	::MPI_Status mpi_status;
+      ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm>(comm.mpi_comm);
+      ::MPI_Status mpi_status;
       ::MPI_Message mpi_message;
 
-    	#ifdef _openmpi
+      #ifdef _openmpi
       #pragma omp critical (_mpi_call)
       {
         ::MPI_Iprobe(src<0? MPI_ANY_SOURCE : src, tag<0? MPI_ANY_TAG: tag, mpi_comm, flag, &mpi_status);
@@ -97,7 +97,7 @@ namespace ep_lib
       message->mpi_message = mpi_message;
       message->ep_src = src;
       message->ep_tag = tag;
-    	return 0;
+      return 0;
     }
 
     

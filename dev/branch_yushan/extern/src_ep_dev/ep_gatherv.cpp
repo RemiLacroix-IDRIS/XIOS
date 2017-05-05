@@ -497,7 +497,6 @@ namespace ep_lib
     {
       int buffer_size = accumulate(recvcounts+ep_rank, recvcounts+ep_rank+num_ep, 0);
       local_gather_recvbuf = new void*[datasize*buffer_size];
-      printf("buffersize = %d\n", buffer_size);
     }
 
     // local gather to master

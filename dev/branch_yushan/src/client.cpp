@@ -176,7 +176,7 @@ namespace xios
       MPI_Comm_rank(contextComm,&tmp_rank) ;
       
       // #pragma omp critical (_output)
-      // printf("Client %d : client.cpp Client::registerContext context add = %p\n", tmp_rank, &(*context));
+      //printf("Client %d : client.cpp Client::registerContext %s context add = %p\n", tmp_rank, id, &(*context));
       
       
       StdString idServer(id);

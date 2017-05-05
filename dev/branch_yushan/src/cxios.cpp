@@ -156,7 +156,7 @@ namespace xios
      CClient::finalize() ;
      if (CClient::getRank()==0)
      {
-       info(80)<<"Write data base Registry"<<endl<<globalRegistry->toString()<<endl ;
+       //info(80)<<"Write data base Registry"<<endl<<globalRegistry->toString()<<endl ;
        globalRegistry->toFile("xios_registry.bin") ;
        delete globalRegistry ;
      }
