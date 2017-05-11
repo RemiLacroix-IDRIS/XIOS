@@ -58,6 +58,8 @@ namespace xios
         static StdOFStream m_errorStream;
         #pragma omp threadprivate(m_errorStream)
 
+        static StdOFStream array_infoStream[10];
+
         static void openStream(const StdString& fileName, const StdString& ext, std::filebuf* fb);
     };
 }

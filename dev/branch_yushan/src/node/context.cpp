@@ -246,24 +246,18 @@ namespace xios {
    {
      hasClient=true;
      
-     #pragma omp critical
+
      client = new CContextClient(this, intraComm, interComm, cxtServer);
 
      int tmp_rank;
      MPI_Comm_rank(intraComm, &tmp_rank);
      MPI_Barrier(intraComm);
-
-     // #pragma omp critical (_output)
-     // printf("Client %d : context.cpp client = new CContextClient, client add = %p, clientRank = %d\n", tmp_rank, &(*client), client->clientRank) ;
      
-     #pragma omp critical
+
      registryIn=new CRegistry(intraComm);
-     
-
+    
      registryIn->setPath(getId()) ;
-     
-     // #pragma omp critical (_output)
-     // printf("Client %d : context.cpp registryIn->setPath, client add = %p, clientRank = %d\n", tmp_rank, &(*client), client->clientRank) ;
+   
 
      if (client->clientRank==0) registryIn->fromFile("xios_registry.bin") ;
      registryIn->bcastRegistry() ;
@@ -824,7 +818,6 @@ namespace xios {
      int myRank;
      MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
 
-     //printf("myRank = %d, in postProcessing, isPostProcessed = %d\n", myRank, isPostProcessed);
      if (isPostProcessed) return;
 
       // Make sure the calendar was correctly created
@@ -833,43 +826,43 @@ namespace xios {
       else if (calendar->getTimeStep() == NoneDu)
         ERROR("CContext::postProcessing()", << "A timestep must be defined for the context \"" << getId() << "!\"")
       // Calendar first update to set the current date equals to the start date
-      calendar->update(0);  //printf("myRank = %d, calendar->update(0) OK\n", myRank);
+      calendar->update(0); 
 
       // Find all inheritance in xml structure
-      this->solveAllInheritance();  //printf("myRank = %d, this->solveAllInheritance OK\n", myRank);
+      this->solveAllInheritance();  
 
       // Check if some axis, domains or grids are eligible to for compressed indexed output.
       // Warning: This must be done after solving the inheritance and before the rest of post-processing
-      checkAxisDomainsGridsEligibilityForCompressedOutput();  //printf("myRank = %d, checkAxisDomainsGridsEligibilityForCompressedOutput OK\n", myRank);
+      checkAxisDomainsGridsEligibilityForCompressedOutput(); 
 
       // Check if some automatic time series should be generated
       // Warning: This must be done after solving the inheritance and before the rest of post-processing
-      prepareTimeseries();  //printf("myRank = %d, prepareTimeseries OK\n", myRank);
+      prepareTimeseries(); 
 
       //Initialisation du vecteur 'enabledFiles' contenant la liste des fichiers  sortir.
-      this->findEnabledFiles();  //printf("myRank = %d, this->findEnabledFiles OK\n", myRank);
-      this->findEnabledReadModeFiles();  //printf("myRank = %d, this->findEnabledReadModeFiles OK\n", myRank);
+      this->findEnabledFiles(); 
+      this->findEnabledReadModeFiles();
 
       // Find all enabled fields of each file
-      this->findAllEnabledFields();  //printf("myRank = %d, this->findAllEnabledFields OK\n", myRank);
-      this->findAllEnabledFieldsInReadModeFiles();  //printf("myRank = %d, this->findAllEnabledFieldsInReadModeFiles OK\n", myRank);
+      this->findAllEnabledFields();  
+      this->findAllEnabledFieldsInReadModeFiles();
 
      if (hasClient && !hasServer)
      {
       // Try to read attributes of fields in file then fill in corresponding grid (or domain, axis)
-      this->readAttributesOfEnabledFieldsInReadModeFiles();  //printf("myRank = %d, this->readAttributesOfEnabledFieldsInReadModeFiles OK\n", myRank);
+      this->readAttributesOfEnabledFieldsInReadModeFiles(); 
      }
 
       // Only search and rebuild all reference objects of enable fields, don't transform
-      this->solveOnlyRefOfEnabledFields(false);  //printf("myRank = %d, this->solveOnlyRefOfEnabledFields(false) OK\n", myRank);
+      this->solveOnlyRefOfEnabledFields(false);  
 
       // Search and rebuild all reference object of enabled fields
-      this->solveAllRefOfEnabledFields(false);  //printf("myRank = %d, this->solveAllRefOfEnabledFields(false) OK\n", myRank);
+      this->solveAllRefOfEnabledFields(false);  
 
       // Find all fields with read access from the public API
-      findFieldsWithReadAccess();  //printf("myRank = %d, findFieldsWithReadAccess OK\n", myRank);
+      findFieldsWithReadAccess(); 
       // and solve the all reference for them
-      solveAllRefOfFieldsWithReadAccess();  //printf("myRank = %d, solveAllRefOfFieldsWithReadAccess OK\n", myRank);
+      solveAllRefOfFieldsWithReadAccess();  
 
       isPostProcessed = true;
    }
@@ -1158,9 +1151,7 @@ namespace xios {
    //! Update calendar in each time step
    void CContext::updateCalendar(int step)
    {
-      //info(50) << "updateCalendar : before : " << calendar->getCurrentDate() << endl;
       calendar->update(step);
-      //info(50) << "updateCalendar : after : " << calendar->getCurrentDate() << endl;
 
       if (hasClient)
       {

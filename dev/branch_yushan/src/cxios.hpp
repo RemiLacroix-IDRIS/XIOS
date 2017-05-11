@@ -4,10 +4,7 @@
 #include "xios_spl.hpp"
 #include "mpi.hpp"
 #include "registry.hpp"
-#ifdef _usingEP
-//#include "ep_declaration.hpp"
-#endif
-
+#include "log.hpp"
 
 namespace xios
 {

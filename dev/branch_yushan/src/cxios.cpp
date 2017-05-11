@@ -13,38 +13,43 @@
 
 namespace xios
 {
+
+  extern int test_omp_rank;
+  #pragma omp threadprivate(test_omp_rank)
+
   const string CXios::rootFile="./iodef.xml" ;
   const string CXios::xiosCodeId="xios.x" ;
   const string CXios::clientFile="./xios_client";
   const string CXios::serverFile="./xios_server";
-  //#pragma omp threadprivate(CXios::rootFile, CXios::xiosCodeId, CXios::clientFile, CXios::serverFile)
+
 
   bool CXios::isClient ;
   bool CXios::isServer ;
-  //#pragma omp threadprivate(CXios::isServer, CXios::isClient)
+
 
   MPI_Comm CXios::globalComm ;
-  //#pragma omp threadprivate(CXios::globalComm)
+
   
   bool CXios::usingOasis ;
   bool CXios::usingServer = false;
- // #pragma omp threadprivate(CXios::usingOasis, CXios::usingServer)
+
 
   double CXios::bufferSizeFactor = 1.0;
   const double CXios::defaultBufferSizeFactor = 1.0;
   StdSize CXios::minBufferSize = 1024 * sizeof(double);
-  //#pragma omp threadprivate(CXios::bufferSizeFactor, CXios::defaultBufferSizeFactor, CXios::minBufferSize)
+
 
   bool CXios::printLogs2Files;
   bool CXios::isOptPerformance = true;
   CRegistry* CXios::globalRegistry = 0;
-  //#pragma omp threadprivate(CXios::printLogs2Files, CXios::isOptPerformance)
+
 
 
   //! Parse configuration file and create some objects from it
   void CXios::initialize()
   {    
     set_new_handler(noMemory);
+    
     
     #pragma omp critical
     {
@@ -79,18 +84,17 @@ namespace xios
 
     bufferSizeFactor = getin<double>("buffer_size_factor", defaultBufferSizeFactor);
     minBufferSize = getin<int>("min_buffer_size", 1024 * sizeof(double));
+
  
     int num_ep;
     if(isClient)  
     { 
       num_ep = omp_get_num_threads();
-      //printf("Client %d: num_ep = %d\n", omp_get_thread_num(), num_ep);
     }
     
     if(isServer) 
     { 
       num_ep = omp_get_num_threads();
-      //printf("Server %d: num_ep = %d\n", omp_get_thread_num(), num_ep); 
     }
     
     MPI_Info info;
@@ -108,10 +112,9 @@ namespace xios
 
     int tmp_rank;
     MPI_Comm_rank(CXios::globalComm, &tmp_rank);
-    if(isClient) printf("client thread %d/%d, globalComm = %p, passage = %p\n", 
-                         omp_get_thread_num(), tmp_rank, 
-                         &(CXios::globalComm), passage);
-    //if(isServer) printf("server thread %d/%d, globalComm = %p\n", omp_get_thread_num(), tmp_rank, &globalComm);
+
+    
+    test_omp_rank = tmp_rank;
     
   }
 
@@ -135,12 +138,11 @@ namespace xios
     // and the clients are also servers
     isServer = !usingServer;
     
-    //printf("CXios::initClientSide OK, printLogs2Files = %d\n", printLogs2Files);
-    
     if (printLogs2Files)
     {
+      #pragma omp critical
       CClient::openInfoStream(clientFile);
-      //CClient::openErrorStream(clientFile);
+      CClient::openErrorStream(clientFile);
     }
     else
     {
@@ -156,11 +158,13 @@ namespace xios
      CClient::finalize() ;
      if (CClient::getRank()==0)
      {
-       //info(80)<<"Write data base Registry"<<endl<<globalRegistry->toString()<<endl ;
+       #pragma omp critical (_output)
+       info(80)<<"Write data base Registry"<<endl<<globalRegistry->toString()<<endl ;
        globalRegistry->toFile("xios_registry.bin") ;
        delete globalRegistry ;
      }
      CClient::closeInfoStream();
+
   
 
 #ifdef XIOS_MEMTRACK
@@ -188,7 +192,7 @@ namespace xios
     parseList.insert("xios");
 
     xml::CXMLParser::ParseFile(rootFile, parseList);
-
+    
     parseXiosConfig();
   }
 

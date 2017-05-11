@@ -33,7 +33,7 @@ namespace xios {
     protected:
       typedef CTransformation<T>* (*CreateTransformationCallBack)(const StdString&, xml::CXMLNode*);
       typedef std::map<ETranformationType, CreateTransformationCallBack> CallBackMap;
-      static CallBackMap* transformationCreationCallBacks_;
+      static CallBackMap* transformationCreationCallBacks_;  
       //#pragma omp threadprivate(transformationCreationCallBacks_)
 
       static bool registerTransformation(ETranformationType transType, CreateTransformationCallBack createFn);
@@ -44,7 +44,7 @@ namespace xios {
   }; // class CTransformation
 
   template<typename T>
-  typename CTransformation<T>::CallBackMap* CTransformation<T>::transformationCreationCallBacks_ = 0; //CTransformation<T>::CallBackMap();
+  typename CTransformation<T>::CallBackMap* CTransformation<T>::transformationCreationCallBacks_ = 0;//CTransformation<T>::CallBackMap();
 
   template<typename T>
   CTransformation<T>* CTransformation<T>::createTransformation(ETranformationType transType, const StdString& id, xml::CXMLNode* node)

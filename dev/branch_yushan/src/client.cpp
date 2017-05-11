@@ -10,9 +10,13 @@
 #include "mpi.hpp"
 #include "timer.hpp"
 #include "buffer_client.hpp"
+#include "log.hpp"
+
 
 namespace xios
 {
+    extern int test_omp_rank;
+    #pragma omp threadprivate(test_omp_rank)
 
     MPI_Comm CClient::intraComm ;
     MPI_Comm CClient::interComm ;
@@ -22,6 +26,8 @@ namespace xios
     int CClient::rank = INVALID_RANK;
     StdOFStream CClient::m_infoStream;
     StdOFStream CClient::m_errorStream;
+
+    StdOFStream CClient::array_infoStream[10];
 
     void CClient::initialize(const string& codeId, MPI_Comm& localComm, MPI_Comm& returnComm)
     {
@@ -102,12 +108,15 @@ namespace xios
             int intraCommSize, intraCommRank ;
             MPI_Comm_size(intraComm,&intraCommSize) ;
             MPI_Comm_rank(intraComm,&intraCommRank) ;
+            
             #pragma omp critical(_output)
             {
-              info(50)<<"intercommCreate::client "<<rank<<" intraCommSize : "<<intraCommSize
+              info(10)<<"intercommCreate::client "<<test_omp_rank<< " "<< &test_omp_rank <<" intraCommSize : "<<intraCommSize
                  <<" intraCommRank :"<<intraCommRank<<"  serverLeader "<< serverLeader
                  <<" globalComm : "<< &(CXios::globalComm) << endl ;  
             }
+
+            
             
             MPI_Intercomm_create(intraComm,0,CXios::globalComm,serverLeader,0,&interComm) ;
 
@@ -161,23 +170,19 @@ namespace xios
 
       MPI_Comm_dup(intraComm,&returnComm) ;
 
+      
+
     }
 
 
     void CClient::registerContext(const string& id,MPI_Comm contextComm)
     {
-      //#pragma omp critical(_output)
-      //info(50) << "Client "<<getRank() << " start registerContext using info output" << endl;
 
       CContext::setCurrent(id) ;
       CContext* context = CContext::create(id);
 
       int tmp_rank;
       MPI_Comm_rank(contextComm,&tmp_rank) ;
-      
-      // #pragma omp critical (_output)
-      //printf("Client %d : client.cpp Client::registerContext %s context add = %p\n", tmp_rank, id, &(*context));
-      
       
       StdString idServer(id);
       idServer += "_server";
@@ -213,9 +218,9 @@ namespace xios
 
         MPI_Intercomm_create(contextComm,0,CXios::globalComm,serverLeader,10+globalRank,&contextInterComm) ;
         
-        //#pragma omp critical (_output)
-        //info(10)<<"Register new Context : "<<id<<endl ;
-                      
+        #pragma omp critical(_output)
+        info(10)<<" RANK "<< tmp_rank<<" Register new Context : "<<id<<endl ;
+
 
         MPI_Comm inter ;
         MPI_Intercomm_merge(contextInterComm,0,&inter) ;
@@ -223,11 +228,8 @@ namespace xios
 
         
         context->initClient(contextComm,contextInterComm) ;
+
         
-        // #pragma omp critical (_output)
-        // printf("Client %d : context->initClient(contextComm,contextInterComm) OK \n", getRank()) ;
-        
-        //contextInterComms->push_back(contextInterComm);
         if(contextInterComms_ptr == NULL) contextInterComms_ptr = new std::list<MPI_Comm>;
         contextInterComms_ptr->push_back(contextInterComm);
         
@@ -250,7 +252,7 @@ namespace xios
         
         if(contextInterComms_ptr == NULL) contextInterComms_ptr = new std::list<MPI_Comm>;
         contextInterComms_ptr->push_back(contextInterComm);
-        //contextInterComms->push_back(contextInterComm);
+
       }
     }
 
@@ -285,17 +287,20 @@ namespace xios
         else  MPI_Finalize(); 
       }
       
-      
-        //info(20) << "Client "<<rank<<" : Client side context is finalized "<< endl ;
-//         report(0) <<"     Performance report : total time spent for XIOS : "<< CTimer::get("XIOS").getCumulatedTime()<<" s"<<endl ;
-//         report(0)<< "     Performance report : time spent for waiting free buffer : "<< CTimer::get("Blocking time").getCumulatedTime()<<" s"<<endl ;
-//         report(0)<< "     Performance report : Ratio : "<< CTimer::get("Blocking time").getCumulatedTime()/CTimer::get("XIOS").getCumulatedTime()*100.<<" %"<<endl ;
-//         report(0)<< "     Performance report : This ratio must be close to zero. Otherwise it may be usefull to increase buffer size or numbers of server"<<endl ;
-// //      report(0)<< "     Memory report : Current buffer_size : "<<CXios::bufferSize<<endl ;
-//         report(0)<< "     Memory report : Minimum buffer size required : " << CClientBuffer::maxRequestSize << " bytes" << endl ;
-//         report(0)<< "     Memory report : increasing it by a factor will increase performance, depending of the volume of data wrote in file at each time step of the file"<<endl ;
-      
+      #pragma omp critical (_output)
+      info(20) << "Client "<<rank<<" : Client side context is finalized "<< endl ;
 
+  /*    #pragma omp critical (_output)
+      {
+         report(0) <<"     Performance report : total time spent for XIOS : "<< CTimer::get("XIOS").getCumulatedTime()<<" s"<<endl ;
+         report(0)<< "     Performance report : time spent for waiting free buffer : "<< CTimer::get("Blocking time").getCumulatedTime()<<" s"<<endl ;
+         report(0)<< "     Performance report : Ratio : "<< CTimer::get("Blocking time").getCumulatedTime()/CTimer::get("XIOS").getCumulatedTime()*100.<<" %"<<endl ;
+         report(0)<< "     Performance report : This ratio must be close to zero. Otherwise it may be usefull to increase buffer size or numbers of server"<<endl ;
+         report(0)<< "     Memory report : Current buffer_size : "<<CXios::bufferSize<<endl ;
+         report(0)<< "     Memory report : Minimum buffer size required : " << CClientBuffer::maxRequestSize << " bytes" << endl ;
+         report(0)<< "     Memory report : increasing it by a factor will increase performance, depending of the volume of data wrote in file at each time step of the file"<<endl ;
+       }      
+*/
    }
 
    int CClient::getRank()
@@ -324,12 +329,11 @@ namespace xios
       }
 
       fileNameClient << fileName << "_" << std::setfill('0') << std::setw(numDigit) << getRank() << ext;
-      //printf("getrank() = %d, file name = %s\n", getRank(), fileNameClient.str().c_str());
       
-        fb->open(fileNameClient.str().c_str(), std::ios::out);
-        if (!fb->is_open())
-          ERROR("void CClient::openStream(const StdString& fileName, const StdString& ext, std::filebuf* fb)",
-              << std::endl << "Can not open <" << fileNameClient << "> file to write the client log(s).");  
+      fb->open(fileNameClient.str().c_str(), std::ios::out);
+      if (!fb->is_open())
+        ERROR("void CClient::openStream(const StdString& fileName, const StdString& ext, std::filebuf* fb)",
+            << std::endl << "Can not open <" << fileNameClient << "> file to write the client log(s).");  
       
       
     }
@@ -342,11 +346,15 @@ namespace xios
     */
     void CClient::openInfoStream(const StdString& fileName)
     {
-      std::filebuf* fb = m_infoStream.rdbuf();
-      openStream(fileName, ".out", fb);
+      //std::filebuf* fb = m_infoStream.rdbuf();
 
-      info.write2File(fb);
-      report.write2File(fb);
+      info_FB[omp_get_thread_num()] = array_infoStream[omp_get_thread_num()].rdbuf();
+          
+      openStream(fileName, ".out", info_FB[omp_get_thread_num()]);
+
+      info.write2File(info_FB[omp_get_thread_num()]);
+      report.write2File(info_FB[omp_get_thread_num()]);
+      
     }
 
     //! Write the info logs to standard output

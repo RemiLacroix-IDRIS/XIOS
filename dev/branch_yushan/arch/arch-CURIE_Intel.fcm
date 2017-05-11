@@ -2,7 +2,7 @@
 ###################                Projet XIOS               ###################
 ################################################################################
 
-%CCOMPILER      mpicc -openmp -D_intelmpi -D_usingEP 
+%CCOMPILER      mpicc -openmp -D_intelmpi -D_usingEP  
 %FCOMPILER      mpif90 -openmp
 %LINKER         mpif90 -openmp -Wl,-rpath -Wl,$HOME/lib/netcdf_f_intel/lib
 
