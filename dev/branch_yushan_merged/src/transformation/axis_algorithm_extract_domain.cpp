@@ -61,7 +61,7 @@ CAxisAlgorithmExtractDomain::CAxisAlgorithmExtractDomain(CAxis* axisDestination,
   }
 
   pos_ = algo->position;
-  reduction_ = CReductionAlgorithm::createOperation(CReductionAlgorithm::ReductionOperations[op]);
+  reduction_ = CReductionAlgorithm::createOperation((*CReductionAlgorithm::ReductionOperations_ptr)[op]);
 }
 
 void CAxisAlgorithmExtractDomain::apply(const std::vector<std::pair<int,double> >& localIndex,

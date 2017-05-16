@@ -141,8 +141,10 @@ void CBasicTree::newRoot(int level)  // newroot <- root
 	root->level = level;
 	root->parent = 0;
 	root->leafCount = 0;
-// initialize root node on the sphere
-  root->centre.x=1 ; root->centre.y=0 ; root->centre.z=0 ; 
+        // initialize root node on the sphere
+        root->centre.x=1 ; 
+        root->centre.y=0 ; 
+        root->centre.z=0 ; 
 	root->radius = 0.;
 	root->reinserted = false;
 	root->updateCount = 0;

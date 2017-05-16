@@ -7,6 +7,10 @@
 #include "mpi.hpp"
 #include "event_scheduler.hpp"
 
+#ifdef _usingEP
+#include "ep_declaration.hpp"
+#endif
+
 namespace xios
 {
     class CServer

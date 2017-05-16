@@ -21,7 +21,7 @@ namespace xios
   */
 
   CDHTAutoIndexing::CDHTAutoIndexing(const CArray<size_t,1>& hashValue,
-                                     const MPI_Comm& clientIntraComm)
+                                     const ep_lib::MPI_Comm& clientIntraComm)
     : CClientClientDHTTemplate<size_t>(clientIntraComm)
   {
 
@@ -57,7 +57,7 @@ namespace xios
    * \param [in] clientIntraComm
   */
   CDHTAutoIndexing::CDHTAutoIndexing(Index2VectorInfoTypeMap& hashInitMap,
-                                     const MPI_Comm& clientIntraComm)
+                                     const ep_lib::MPI_Comm& clientIntraComm)
     : CClientClientDHTTemplate<size_t>(clientIntraComm)
   {
 

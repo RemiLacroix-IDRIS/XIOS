@@ -24,6 +24,7 @@ namespace xios
     buffer[0] = new char[bufferSize]; // transform it with MPI_ALLOC_MEM later
     buffer[1] = new char[bufferSize];
     retBuffer = new CBufferOut(buffer[current], bufferSize);
+    #pragma omp critical (_output)
     info(10) << "CClientBuffer: allocated 2 x " << bufferSize << " bytes for server " << serverRank << " with a maximum of " << maxBufferedEvents << " buffered events" << endl;
   }
 

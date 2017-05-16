@@ -53,6 +53,7 @@ namespace xios
 
       ///--------------------------------------------------------------
 
+
       CMessage& operator<<(CMessage& msg,CAttribute& type)
       {
         msg.push(type) ;

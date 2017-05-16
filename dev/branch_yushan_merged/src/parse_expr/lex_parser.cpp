@@ -346,6 +346,7 @@ int yylineno = 1;
 
 extern char *yytext;
 #define yytext_ptr yytext
+
 static yyconst flex_int16_t yy_nxt[][128] =
     {
     {

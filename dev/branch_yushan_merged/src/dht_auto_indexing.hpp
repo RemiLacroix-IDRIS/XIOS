@@ -11,6 +11,9 @@
 #define __XIOS_DHT_AUTO_INDEXING_HPP__
 
 #include "client_client_dht_template.hpp"
+#ifdef _usingEP
+#include "ep_declaration.hpp"
+#endif
 
 namespace xios
 {
@@ -24,10 +27,10 @@ class CDHTAutoIndexing: public CClientClientDHTTemplate<size_t>
   public:
 
     CDHTAutoIndexing(const CArray<size_t,1>& hashValue,
-                     const MPI_Comm& clientIntraComm);
+                     const ep_lib::MPI_Comm& clientIntraComm);
 
     CDHTAutoIndexing(Index2VectorInfoTypeMap& hashInitMap,
-                     const MPI_Comm& clientIntraComm);
+                     const ep_lib::MPI_Comm& clientIntraComm);
 
     size_t getNbIndexesGlobal() const;
     size_t getIndexStart() const;

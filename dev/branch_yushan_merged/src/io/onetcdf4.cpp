@@ -2,7 +2,6 @@
 
 #include "onetcdf4.hpp"
 #include "group_template.hpp"
-#include "mpi.hpp"
 #include "netcdf.hpp"
 #include "netCdfInterface.hpp"
 #include "netCdfException.hpp"
@@ -11,9 +10,8 @@ namespace xios
 {
       /// ////////////////////// Définitions ////////////////////// ///
 
-      CONetCDF4::CONetCDF4(const StdString& filename, bool append, bool useClassicFormat,
-							bool useCFConvention,
-                           const MPI_Comm* comm, bool multifile, const StdString& timeCounterName)
+      CONetCDF4::CONetCDF4(const StdString& filename, bool append, bool useClassicFormat, bool useCFConvention, 
+                           const ep_lib::MPI_Comm* comm, bool multifile, const StdString& timeCounterName)
         : path()
         , wmpi(false)
         , useClassicFormat(useClassicFormat)
@@ -31,7 +29,7 @@ namespace xios
       ///--------------------------------------------------------------
 
       void CONetCDF4::initialize(const StdString& filename, bool append, bool useClassicFormat, bool useCFConvention, 
-                                 const MPI_Comm* comm, bool multifile, const StdString& timeCounterName)
+                                 const ep_lib::MPI_Comm* comm, bool multifile, const StdString& timeCounterName)
       {
          this->useClassicFormat = useClassicFormat;
          this->useCFConvention = useCFConvention;
@@ -55,7 +53,7 @@ namespace xios
          if (!append || !std::ifstream(filename.c_str()))
          {
             if (wmpi)
-               CNetCdfInterface::createPar(filename, mode, *comm, MPI_INFO_NULL, this->ncidp);
+               CNetCdfInterface::createPar(filename, mode, static_cast<MPI_Comm>(comm->mpi_comm), MPI_INFO_NULL_STD, this->ncidp);           
             else
                CNetCdfInterface::create(filename, mode, this->ncidp);
 
@@ -65,7 +63,7 @@ namespace xios
          {
             mode |= NC_WRITE;
             if (wmpi)
-               CNetCdfInterface::openPar(filename, mode, *comm, MPI_INFO_NULL, this->ncidp);
+               CNetCdfInterface::openPar(filename, mode, static_cast<MPI_Comm>(comm->mpi_comm), MPI_INFO_NULL_STD, this->ncidp);
             else
                CNetCdfInterface::open(filename, mode, this->ncidp);
 
@@ -534,8 +532,9 @@ namespace xios
                                  const std::vector<StdSize>& sstart,
                                  const std::vector<StdSize>& scount, const int* data)
       {
-          CNetCdfInterface::putVaraType(grpid, varid, &sstart[0], &scount[0], data);
+         CNetCdfInterface::putVaraType(grpid, varid, &sstart[0], &scount[0], data);
       }
+
       //---------------------------------------------------------------
 
       template <>
@@ -543,7 +542,7 @@ namespace xios
                                  const std::vector<StdSize>& sstart,
                                  const std::vector<StdSize>& scount, const float* data)
       {
-          CNetCdfInterface::putVaraType(grpid, varid, &sstart[0], &scount[0], data);
+         CNetCdfInterface::putVaraType(grpid, varid, &sstart[0], &scount[0], data);
       }
 
       //---------------------------------------------------------------

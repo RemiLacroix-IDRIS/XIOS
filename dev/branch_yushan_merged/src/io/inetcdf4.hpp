@@ -6,7 +6,7 @@
 #include "exception.hpp"
 #include "array_new.hpp"
 
-#include "mpi.hpp"
+#include "mpi_std.hpp"
 #include "netcdf.hpp"
 
 #ifndef UNLIMITED_DIM

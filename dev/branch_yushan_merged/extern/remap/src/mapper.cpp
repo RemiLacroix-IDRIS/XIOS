@@ -367,7 +367,7 @@ int Mapper::remap(Elt *elements, int nbElements, int order, bool renormalize, bo
 			double fk = recvValue[rank][n1];
 			double srcArea = recvArea[rank][n1];
 			double w = (*it)->area;
-      if (quantity) w/=srcArea ;
+                        if (quantity) w/=srcArea ;
 
 			/* first order: src value times weight (weight = supermesh area), later divide by target area */
 			int kk = (order == 2) ? n1 * (NMAX + 1) : n1;

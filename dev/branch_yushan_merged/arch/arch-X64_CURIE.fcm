@@ -2,8 +2,8 @@
 ###################                Projet XIOS               ###################
 ################################################################################
 
-%CCOMPILER      mpicc
-%FCOMPILER      mpif90
+%CCOMPILER      mpicc -openmp -D_openmpi -D_usingEP
+%FCOMPILER      mpif90 -openmp -D_openmpi -D_usingEP
 %LINKER         mpif90  -nofor-main
 
 %BASE_CFLAGS    -diag-disable 1125 -diag-disable 279

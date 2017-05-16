@@ -67,6 +67,7 @@ namespace MemTrack
     {
         private:    // static member variables
             static BlockHeader *ourFirstNode;
+            #pragma omp threadprivate(ourFirstNode)
     
         private:    // member variables
             BlockHeader *myPrevNode;

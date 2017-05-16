@@ -7,6 +7,7 @@
 namespace xios
 {
   std::map<std::string,CTimer> CTimer::allTimer;
+  std::map<std::string,CTimer> *CTimer::allTimer_ptr = 0;
   
   CTimer::CTimer(const std::string& name_) : name(name_) 
   { 
@@ -51,9 +52,17 @@ namespace xios
   
   CTimer& CTimer::get(const std::string name)
   {
-    std::map<std::string,CTimer>::iterator it = allTimer.find(name);
-    if (it == allTimer.end())
-      it = allTimer.insert(std::make_pair(name, CTimer(name))).first;
+    // bkp
+    // std::map<std::string,CTimer>::iterator it = allTimer.find(name);
+    // if (it == allTimer.end())
+    //   it = allTimer.insert(std::make_pair(name, CTimer(name))).first;
+    // return it->second;
+
+    if(allTimer_ptr == NULL) allTimer_ptr = new std::map<std::string,CTimer>;
+
+    std::map<std::string,CTimer>::iterator it = (*allTimer_ptr).find(name);
+    if (it == (*allTimer_ptr).end())
+      it = (*allTimer_ptr).insert(std::make_pair(name, CTimer(name))).first;
     return it->second;
   }
 }

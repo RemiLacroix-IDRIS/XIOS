@@ -578,8 +578,8 @@ namespace xios {
       bool isCollective = par_access.isEmpty() || par_access == par_access_attr::collective;
 
       if (isOpen) data_out->closeFile();
-      if (time_counter_name.isEmpty()) data_in = shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), fileComm, multifile, isCollective));
-      else data_in = shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), fileComm, multifile, isCollective, time_counter_name));
+      if (time_counter_name.isEmpty()) data_in = shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), static_cast<MPI_Comm>(fileComm.mpi_comm), multifile, isCollective));
+      else data_in = shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), static_cast<MPI_Comm>(fileComm.mpi_comm), multifile, isCollective, time_counter_name));
       isOpen = true;
     }
   }

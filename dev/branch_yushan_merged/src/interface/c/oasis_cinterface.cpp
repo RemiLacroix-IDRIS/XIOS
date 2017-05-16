@@ -1,6 +1,6 @@
 #include "oasis_cinterface.hpp"
 #include <string>
-#include "mpi.hpp"
+//#include "mpi_std.hpp"
 
 namespace xios
 { 
@@ -25,7 +25,11 @@ namespace xios
     MPI_Fint f_comm ;
     
     fxios_oasis_get_localcomm(&f_comm) ;
+    #ifdef _usingEP
+    comm=EP_Comm_f2c(f_comm.mpi_fint) ;
+    #else
     comm=MPI_Comm_f2c(f_comm) ;
+    #endif
   }
  
   void oasis_get_intracomm(MPI_Comm& comm_client_server,const std::string& server_id)
@@ -33,7 +37,11 @@ namespace xios
     MPI_Fint f_comm ;
     
     fxios_oasis_get_intracomm(&f_comm,server_id.data(),server_id.size()) ;
+    #ifdef _usingEP
+    comm_client_server=EP_Comm_f2c(f_comm.mpi_fint) ;
+    #else
     comm_client_server=MPI_Comm_f2c(f_comm) ;
+    #endif
   }
  
   void oasis_get_intercomm(MPI_Comm& comm_client_server,const std::string& server_id)
@@ -41,6 +49,10 @@ namespace xios
     MPI_Fint f_comm ;
     
     fxios_oasis_get_intercomm(&f_comm,server_id.data(),server_id.size()) ;
+    #ifdef _usingEP
+    comm_client_server=EP_Comm_f2c(f_comm.mpi_fint) ;
+    #else
     comm_client_server=MPI_Comm_f2c(f_comm) ;
+    #endif
   }
 }

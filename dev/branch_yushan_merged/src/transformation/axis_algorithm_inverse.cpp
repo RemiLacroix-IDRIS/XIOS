@@ -172,8 +172,8 @@ void CAxisAlgorithmInverse::updateAxisValue()
   }
 
   // Sending global index of grid source to corresponding process as well as the corresponding mask
-  std::vector<MPI_Request> requests;
-  std::vector<MPI_Status> status;
+  std::vector<ep_lib::MPI_Request> requests;
+  std::vector<ep_lib::MPI_Status> status;
   boost::unordered_map<int, unsigned long* > recvGlobalIndexSrc;
   boost::unordered_map<int, double* > sendValueToDest;
   for (std::map<int,int>::const_iterator itRecv = recvRankSizeMap.begin(); itRecv != recvRankSizeMap.end(); ++itRecv)
@@ -183,7 +183,7 @@ void CAxisAlgorithmInverse::updateAxisValue()
     recvGlobalIndexSrc[recvRank] = new unsigned long [recvSize];
     sendValueToDest[recvRank] = new double [recvSize];
 
-    requests.push_back(MPI_Request());
+    requests.push_back(ep_lib::MPI_Request());
     MPI_Irecv(recvGlobalIndexSrc[recvRank], recvSize, MPI_UNSIGNED_LONG, recvRank, 46, client->intraComm, &requests.back());
   }
 
@@ -205,16 +205,15 @@ void CAxisAlgorithmInverse::updateAxisValue()
     }
 
     // Send global index source and mask
-    requests.push_back(MPI_Request());
+    requests.push_back(ep_lib::MPI_Request());
     MPI_Isend(sendGlobalIndexSrc[sendRank], sendSize, MPI_UNSIGNED_LONG, sendRank, 46, client->intraComm, &requests.back());
   }
 
   status.resize(requests.size());
   MPI_Waitall(requests.size(), &requests[0], &status[0]);
 
-
-  std::vector<MPI_Request>().swap(requests);
-  std::vector<MPI_Status>().swap(status);
+  std::vector<ep_lib::MPI_Request>().swap(requests);
+  std::vector<ep_lib::MPI_Status>().swap(status);
 
   // Okie, on destination side, we will wait for information of masked index of source
   for (std::map<int,int>::const_iterator itSend = sendRankSizeMap.begin(); itSend != sendRankSizeMap.end(); ++itSend)
@@ -222,7 +221,7 @@ void CAxisAlgorithmInverse::updateAxisValue()
     int recvRank = itSend->first;
     int recvSize = itSend->second;
 
-    requests.push_back(MPI_Request());
+    requests.push_back(ep_lib::MPI_Request());
     MPI_Irecv(recvValueFromSrc[recvRank], recvSize, MPI_DOUBLE, recvRank, 48, client->intraComm, &requests.back());
   }
 
@@ -240,12 +239,11 @@ void CAxisAlgorithmInverse::updateAxisValue()
       *(sendValue + idx) = axisSrc_->value(localIndex);
     }
     // Okie, now inform the destination which source index are masked
-    requests.push_back(MPI_Request());
+    requests.push_back(ep_lib::MPI_Request());
     MPI_Isend(sendValueToDest[recvRank], recvSize, MPI_DOUBLE, recvRank, 48, client->intraComm, &requests.back());
   }
   status.resize(requests.size());
   MPI_Waitall(requests.size(), &requests[0], &status[0]);
-
 
   size_t nGloAxisDest = axisDest_->n_glo.getValue() - 1;
   for (std::map<int,int>::const_iterator itSend = sendRankSizeMap.begin(); itSend != sendRankSizeMap.end(); ++itSend)

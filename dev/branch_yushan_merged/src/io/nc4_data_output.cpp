@@ -27,7 +27,7 @@ namespace xios
 
       CNc4DataOutput::CNc4DataOutput
          (CFile* file, const StdString & filename, bool exist, bool useClassicFormat, bool useCFConvention,
-          MPI_Comm comm_file, bool multifile, bool isCollective, const StdString& timeCounterName)
+          ep_lib::MPI_Comm comm_file, bool multifile, bool isCollective, const StdString& timeCounterName)
             : SuperClass()
             , SuperClassWriter(filename, exist, useClassicFormat, useCFConvention, &comm_file, multifile, timeCounterName)
             , comm_file(comm_file)
@@ -77,7 +77,7 @@ namespace xios
          else setWrittenDomain(domid);
 
 
-        StdString dimXid, dimYid ;
+         StdString dimXid, dimYid ;
 
         nc_type typePrec ;
         if (domain->prec.isEmpty()) typePrec =  NC_FLOAT ;
@@ -462,7 +462,7 @@ namespace xios
       StdString domid = domain->getDomainOutputName();
       StdString domainName = domain->name;
       domain->assignMesh(domainName, domain->nvertex);
-      domain->mesh->createMeshEpsilon(server->intraComm, domain->lonvalue_srv, domain->latvalue_srv, domain->bounds_lon_srv, domain->bounds_lat_srv);
+      domain->mesh->createMeshEpsilon(static_cast<MPI_Comm>(server->intraComm.mpi_comm), domain->lonvalue_srv, domain->latvalue_srv, domain->bounds_lon_srv, domain->bounds_lat_srv);
 
       StdString node_x = domainName + "_node_x";
       StdString node_y = domainName + "_node_y";

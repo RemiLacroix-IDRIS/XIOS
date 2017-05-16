@@ -10,7 +10,7 @@
 
 
 #include "xios.hpp"
-#include "oasis_cinterface.hpp"
+//#include "oasis_cinterface.hpp"
 
 #include "attribute_template.hpp"
 #include "object_template.hpp"
@@ -22,7 +22,7 @@
 #include "field.hpp"
 #include "context.hpp"
 #include "context_client.hpp"
-#include "mpi.hpp"
+#include "mpi_std.hpp"
 #include "timer.hpp"
 #include "array_new.hpp"
 
@@ -54,17 +54,34 @@ extern "C"
    void cxios_init_client(const char* client_id , int len_client_id, MPI_Fint* f_local_comm, MPI_Fint* f_return_comm )
    {
       std::string str;
-      MPI_Comm local_comm;
-      MPI_Comm return_comm;
+      ep_lib::MPI_Comm local_comm;
+      ep_lib::MPI_Comm return_comm;
+      
+      ep_lib::fc_comm_map.clear();
 
       if (!cstr2string(client_id, len_client_id, str)) return;
 
       int initialized;
       MPI_Initialized(&initialized);
+
+      #ifdef _usingEP
+      if (initialized) local_comm = ep_lib::EP_Comm_f2c(static_cast< int >(*f_local_comm));
+      else local_comm = MPI_COMM_NULL;
+      #else
       if (initialized) local_comm=MPI_Comm_f2c(*f_local_comm);
-      else local_comm=MPI_COMM_NULL;
+      else local_comm = MPI_COMM_NULL;
+      #endif
+      
+     
+
       CXios::initClientSide(str, local_comm, return_comm);
-      *f_return_comm=MPI_Comm_c2f(return_comm);
+
+      #ifdef _usingEP
+      *f_return_comm = ep_lib::EP_Comm_c2f(return_comm);
+      #else
+      *f_return_comm = MPI_Comm_c2f(return_comm);
+      #endif
+
       CTimer::get("XIOS init").suspend();
       CTimer::get("XIOS").suspend();
    }
@@ -72,13 +89,15 @@ extern "C"
    void cxios_context_initialize(const char* context_id , int len_context_id, MPI_Fint* f_comm)
    {
      std::string str;
-     MPI_Comm comm;
+     ep_lib::MPI_Comm comm;
 
      if (!cstr2string(context_id, len_context_id, str)) return;
      CTimer::get("XIOS").resume();
      CTimer::get("XIOS init context").resume();
-     comm=MPI_Comm_f2c(*f_comm);
-     CClient::registerContext(str, comm);
+     comm = ep_lib::EP_Comm_f2c(static_cast< int >(*f_comm));
+
+     CClient::registerContext(str,comm);
+          
      CTimer::get("XIOS init context").suspend();
      CTimer::get("XIOS").suspend();
    }
@@ -99,7 +118,9 @@ extern "C"
      CTimer::get("XIOS").resume();
      CTimer::get("XIOS close definition").resume();
      CContext* context = CContext::getCurrent();
+     
      context->closeDefinition();
+     
      CTimer::get("XIOS close definition").suspend();
      CTimer::get("XIOS").suspend();
    }
@@ -108,6 +129,9 @@ extern "C"
    {
      CTimer::get("XIOS").resume();
      CTimer::get("XIOS context finalize").resume();
+     
+     
+     
      CContext* context = CContext::getCurrent();
      context->finalize();
      CTimer::get("XIOS context finalize").suspend();
@@ -428,7 +452,9 @@ extern "C"
 
       CContext* context = CContext::getCurrent();
       if (!context->hasServer && !context->client->isAttachedModeEnabled())
+      {
         context->checkBuffersAndListen();
+      }  
 
       CArray<double, 3>data(data_k8, shape(data_Xsize, data_Ysize, data_Zsize), neverDeleteData);
       CField::get(fieldid_str)->setData(data);

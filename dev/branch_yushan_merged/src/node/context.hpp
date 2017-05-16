@@ -87,8 +87,8 @@ namespace xios {
 
       public :
          // Initialize server or client
-         void initServer(MPI_Comm intraComm, MPI_Comm interComm, CContext* cxtClient = 0);
-         void initClient(MPI_Comm intraComm, MPI_Comm interComm, CContext* cxtServer = 0);
+         void initServer(ep_lib::MPI_Comm intraComm, ep_lib::MPI_Comm interComm, CContext* cxtClient = 0);
+         void initClient(ep_lib::MPI_Comm intraComm, ep_lib::MPI_Comm interComm, CContext* cxtServer = 0);
          bool isInitialized(void);
 
          // Put sever or client into loop state
@@ -205,7 +205,10 @@ namespace xios {
          std::vector<CField*> fieldsWithReadAccess;
 
          // Context root
-         static shared_ptr<CContextGroup> root;
+         //static shared_ptr<CContextGroup> root;
+
+         static shared_ptr<CContextGroup> *root_ptr;
+         #pragma omp threadprivate(root_ptr)
 
          // Determine context on client or not
          bool hasClient;
@@ -218,15 +221,18 @@ namespace xios {
 
          // Concrete contex client
          CContextClient* client;
+
+
          CRegistry* registryIn ;  //!< input registry which is read from file
          CRegistry* registryOut ; //!< output registry which will be wrote on file at the finalize
+         
 
       private:
          bool isPostProcessed;
          bool finalized;
          StdString idServer_;
          CGarbageCollector garbageCollector;
-         std::list<MPI_Comm> comms; //!< Communicators allocated internally
+         std::list<ep_lib::MPI_Comm> comms; //!< Communicators allocated internally
 
       public: // Some function maybe removed in the near future
         // virtual void toBinary  (StdOStream & os) const;

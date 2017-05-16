@@ -19,7 +19,7 @@ namespace xios
     \param [in] interComm_ communicator of group server
     \cxtSer [in] cxtSer Pointer to context of server side. (It is only used on case of attached mode)
     */
-    CContextClient::CContextClient(CContext* parent, MPI_Comm intraComm_, MPI_Comm interComm_, CContext* cxtSer)
+    CContextClient::CContextClient(CContext* parent, ep_lib::MPI_Comm intraComm_, ep_lib::MPI_Comm interComm_, CContext* cxtSer)
      : mapBufferSize_(), parentServer(cxtSer), maxBufferedEvents(4)
     {
       context = parent;
@@ -290,8 +290,12 @@ namespace xios
        double ratio = double(it->second) / maxEventSize.at(it->first);
        if (ratio < minBufferSizeEventSizeRatio) minBufferSizeEventSizeRatio = ratio;
      }
+     #ifdef _usingMPI
      MPI_Allreduce(MPI_IN_PLACE, &minBufferSizeEventSizeRatio, 1, MPI_DOUBLE, MPI_MIN, intraComm);
-
+     #elif _usingEP
+     MPI_Allreduce(&minBufferSizeEventSizeRatio, &minBufferSizeEventSizeRatio, 1, MPI_DOUBLE, MPI_MIN, intraComm);
+     #endif
+     
      if (minBufferSizeEventSizeRatio < 1.0)
        ERROR("void CContextClient::setBufferSize(const std::map<int,StdSize>& mapSize, const std::map<int,StdSize>& maxEventSize)",
              << "The buffer sizes and the maximum events sizes are incoherent.");
@@ -391,11 +395,11 @@ namespace xios
      StdSize totalBuf = 0;
      for (itMap = itbMap; itMap != iteMap; ++itMap)
      {
-       report(10) << " Memory report : Context <" << context->getId() << "> : client side : memory used for buffer of each connection to server" << endl
-                  << "  +) To server with rank " << itMap->first << " : " << itMap->second << " bytes " << endl;
+       //report(10) << " Memory report : Context <" << context->getId() << "> : client side : memory used for buffer of each connection to server" << endl
+       //           << "  +) To server with rank " << itMap->first << " : " << itMap->second << " bytes " << endl;
        totalBuf += itMap->second;
      }
-     report(0) << " Memory report : Context <" << context->getId() << "> : client side : total memory used for buffer " << totalBuf << " bytes" << endl;
+     //report(0) << " Memory report : Context <" << context->getId() << "> : client side : total memory used for buffer " << totalBuf << " bytes" << endl;
 
      releaseBuffers();
    }

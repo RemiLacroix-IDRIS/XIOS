@@ -4,7 +4,7 @@ PROGRAM test_complete
   USE mod_wait
   IMPLICIT NONE
   INCLUDE "mpif.h"
-  INTEGER :: rank
+  INTEGER :: rank, size
   INTEGER :: size_loc
   INTEGER :: ierr
 
@@ -27,13 +27,23 @@ PROGRAM test_complete
   DOUBLE PRECISION,ALLOCATABLE :: lon(:,:),lat(:,:),field_A_atm(:,:,:), field_A_srf(:,:), lonvalue(:,:)
   INTEGER, ALLOCATABLE :: kindex(:)
   INTEGER :: ni,ibegin,iend,nj,jbegin,jend
-  INTEGER :: i,j,l,ts,n, nb_pt
+  INTEGER :: i,j,l,ts,n, nb_pt, provided
 
 !!! MPI Initialization
 
-  CALL MPI_INIT(ierr)
+  CALL MPI_INIT_THREAD(3, provided, ierr)
+    if(provided .NE. 3) then
+      print*, "provided thread level = ", provided
+      call MPI_Abort()
+    endif 
+
+  
 
   CALL init_wait
+
+  CALL MPI_COMM_RANK(MPI_COMM_WORLD,rank,ierr)
+  CALL MPI_COMM_SIZE(MPI_COMM_WORLD,size,ierr)
+  if(rank < size-1) then
 
 !!! XIOS Initialization (get the local communicator)
 
@@ -219,7 +229,8 @@ PROGRAM test_complete
 !!! Boucle temporelle
 !####################################################################################
 
-    DO ts=1,24*10
+    DO ts=1,24*2
+    !DO ts=1,24
 
       CALL xios_get_handle("atmosphere",ctx_hdl)
       CALL xios_set_current_context(ctx_hdl)
@@ -254,19 +265,44 @@ PROGRAM test_complete
 
 !!! Fin des contextes
 
-    CALL xios_context_finalize()
-    CALL xios_get_handle("atmosphere",ctx_hdl)
+
+    CALL xios_get_handle("surface",ctx_hdl) 
+
     CALL xios_set_current_context(ctx_hdl)
     CALL xios_context_finalize()
+
+    print *, "xios_context_finalize(surface)" 
+
+     CALL xios_get_handle("atmosphere",ctx_hdl)
+
+     CALL xios_set_current_context(ctx_hdl)
+
+     CALL xios_context_finalize()
+
+     print *, "xios_context_finalize(atmosphere)"
+
+    
+
+!!! Fin de XIOS
+
+    
+
+    CALL xios_finalize()
 
     DEALLOCATE(lon, lat, field_A_atm, lonvalue)
     DEALLOCATE(kindex, field_A_srf)
 
-!!! Fin de XIOS
+     print *, "Client : xios_finalize "
 
     CALL MPI_COMM_FREE(comm, ierr)
 
-    CALL xios_finalize()
+  else
+
+    CALL xios_init_server
+    print *, "Server : xios_finalize "
+  
+    endif
+
 
     CALL MPI_FINALIZE(ierr)
 

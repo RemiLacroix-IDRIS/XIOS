@@ -64,7 +64,7 @@ namespace xios
             "Impossible to construct a spatial transform filter engine without a valid grid transformation.");
   }
 
-  std::map<CGridTransformation*, boost::shared_ptr<CSpatialTransformFilterEngine> > CSpatialTransformFilterEngine::engines;
+  std::map<CGridTransformation*, boost::shared_ptr<CSpatialTransformFilterEngine> > *CSpatialTransformFilterEngine::engines_ptr = 0;
 
   CSpatialTransformFilterEngine* CSpatialTransformFilterEngine::get(CGridTransformation* gridTransformation)
   {
@@ -72,11 +72,13 @@ namespace xios
       ERROR("CSpatialTransformFilterEngine& CSpatialTransformFilterEngine::get(CGridTransformation* gridTransformation)",
             "Impossible to get the requested engine, the grid transformation is invalid.");
 
-    std::map<CGridTransformation*, boost::shared_ptr<CSpatialTransformFilterEngine> >::iterator it = engines.find(gridTransformation);
-    if (it == engines.end())
+    if(engines_ptr == NULL) engines_ptr = new std::map<CGridTransformation*, boost::shared_ptr<CSpatialTransformFilterEngine> >;
+
+    std::map<CGridTransformation*, boost::shared_ptr<CSpatialTransformFilterEngine> >::iterator it = engines_ptr->find(gridTransformation);
+    if (it == engines_ptr->end())
     {
       boost::shared_ptr<CSpatialTransformFilterEngine> engine(new CSpatialTransformFilterEngine(gridTransformation));
-      it = engines.insert(std::make_pair(gridTransformation, engine)).first;
+      it = engines_ptr->insert(std::make_pair(gridTransformation, engine)).first;
     }
 
     return it->second.get();
@@ -152,7 +154,7 @@ namespace xios
       }
 
       idxSendBuff = 0;
-      std::vector<MPI_Request> sendRecvRequest;
+      std::vector<ep_lib::MPI_Request> sendRecvRequest;
       for (itSend = itbSend; itSend != iteSend; ++itSend, ++idxSendBuff)
       {
         int destRank = itSend->first;
@@ -162,7 +164,7 @@ namespace xios
         {
           sendBuff[idxSendBuff][idx] = dataCurrentSrc(localIndex_p(idx));
         }
-        sendRecvRequest.push_back(MPI_Request());
+        sendRecvRequest.push_back(ep_lib::MPI_Request());
         MPI_Isend(sendBuff[idxSendBuff], countSize, MPI_DOUBLE, destRank, 12, client->intraComm, &sendRecvRequest.back());
       }
 
@@ -180,11 +182,11 @@ namespace xios
       {
         int srcRank = itRecv->first;
         int countSize = itRecv->second.size();
-        sendRecvRequest.push_back(MPI_Request());
+        sendRecvRequest.push_back(ep_lib::MPI_Request());
         MPI_Irecv(recvBuff + currentBuff, countSize, MPI_DOUBLE, srcRank, 12, client->intraComm, &sendRecvRequest.back());
         currentBuff += countSize;
       }
-      std::vector<MPI_Status> status(sendRecvRequest.size());
+      std::vector<ep_lib::MPI_Status> status(sendRecvRequest.size());
       MPI_Waitall(sendRecvRequest.size(), &sendRecvRequest[0], &status[0]);
 
       dataCurrentDest.resize(*itNbListRecv);

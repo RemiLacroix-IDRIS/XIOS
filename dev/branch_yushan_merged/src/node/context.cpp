@@ -17,7 +17,8 @@
 
 namespace xios {
 
-  shared_ptr<CContextGroup> CContext::root;
+  //shared_ptr<CContextGroup> CContext::root;
+  shared_ptr<CContextGroup> * CContext::root_ptr = 0;
 
    /// ////////////////////// Définitions ////////////////////// ///
 
@@ -53,8 +54,14 @@ namespace xios {
    */
    CContextGroup* CContext::getRoot(void)
    {
-      if (root.get()==NULL) root=shared_ptr<CContextGroup>(new CContextGroup(xml::CXMLNode::GetRootName()));
-      return root.get();
+      //if (root.get()==NULL) root=shared_ptr<CContextGroup>(new CContextGroup(xml::CXMLNode::GetRootName()));
+      //return root.get();
+
+      //static shared_ptr<CContextGroup> *root_ptr;
+      if(root_ptr == 0) //root_ptr = new shared_ptr<CContextGroup>;
+      // if (root_ptr->get()==NULL) 
+      root_ptr = new shared_ptr<CContextGroup>(new CContextGroup(xml::CXMLNode::GetRootName()));
+      return root_ptr->get();
    }
 
    //----------------------------------------------------------------
@@ -235,10 +242,16 @@ namespace xios {
    ///---------------------------------------------------------------
 
    //! Initialize client side
-   void CContext::initClient(MPI_Comm intraComm, MPI_Comm interComm, CContext* cxtServer /*= 0*/)
+   void CContext::initClient(ep_lib::MPI_Comm intraComm, ep_lib::MPI_Comm interComm, CContext* cxtServer /*= 0*/)
    {
      hasClient=true;
-     client = new CContextClient(this,intraComm, interComm, cxtServer);
+     client = new CContextClient(this, intraComm, interComm, cxtServer);
+
+     int tmp_rank;
+     MPI_Comm_rank(intraComm, &tmp_rank);
+     MPI_Barrier(intraComm);
+     
+
      registryIn=new CRegistry(intraComm);
      registryIn->setPath(getId()) ;
      if (client->clientRank==0) registryIn->fromFile("xios_registry.bin") ;
@@ -247,7 +260,7 @@ namespace xios {
      registryOut=new CRegistry(intraComm) ;
      registryOut->setPath(getId()) ;
 
-     MPI_Comm intraCommServer, interCommServer;
+     ep_lib::MPI_Comm intraCommServer, interCommServer;
      if (cxtServer) // Attached mode
      {
        intraCommServer = intraComm;
@@ -310,7 +323,7 @@ namespace xios {
    }
 
    //! Initialize server
-   void CContext::initServer(MPI_Comm intraComm,MPI_Comm interComm, CContext* cxtClient /*= 0*/)
+   void CContext::initServer(ep_lib::MPI_Comm intraComm, ep_lib::MPI_Comm interComm, CContext* cxtClient /*= 0*/)
    {
      hasServer=true;
      server = new CContextServer(this,intraComm,interComm);
@@ -322,7 +335,7 @@ namespace xios {
      registryOut=new CRegistry(intraComm) ;
      registryOut->setPath(getId()) ;
 
-     MPI_Comm intraCommClient, interCommClient;
+     ep_lib::MPI_Comm intraCommClient, interCommClient;
      if (cxtClient) // Attached mode
      {
        intraCommClient = intraComm;
@@ -371,7 +384,7 @@ namespace xios {
           if (server->intraCommRank==0) CXios::globalRegistry->mergeRegistry(*registryOut) ;
         }
 
-        for (std::list<MPI_Comm>::iterator it = comms.begin(); it != comms.end(); ++it)
+        for (std::list<ep_lib::MPI_Comm>::iterator it = comms.begin(); it != comms.end(); ++it)
           MPI_Comm_free(&(*it));
         comms.clear();
       }
@@ -811,6 +824,9 @@ namespace xios {
    */
    void CContext::postProcessing()
    {
+     int myRank;
+     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+
      if (isPostProcessed) return;
 
       // Make sure the calendar was correctly created
@@ -1190,9 +1206,7 @@ namespace xios {
    //! Update calendar in each time step
    void CContext::updateCalendar(int step)
    {
-      info(50) << "updateCalendar : before : " << calendar->getCurrentDate() << endl;
       calendar->update(step);
-      info(50) << "updateCalendar : after : " << calendar->getCurrentDate() << endl;
 
       if (hasClient)
       {
@@ -1240,7 +1254,8 @@ namespace xios {
     bool hasctxt = CContext::has(id);
     CContext* context = CObjectFactory::CreateObject<CContext>(id).get();
     getRoot();
-    if (!hasctxt) CGroupFactory::AddChild(root, context->getShared());
+    //if (!hasctxt) CGroupFactory::AddChild(root, context->getShared());
+    if (!hasctxt) CGroupFactory::AddChild(*root_ptr, context->getShared());
 
 #define DECLARE_NODE(Name_, name_) \
     C##Name_##Definition::create(C##Name_##Definition::GetDefName());

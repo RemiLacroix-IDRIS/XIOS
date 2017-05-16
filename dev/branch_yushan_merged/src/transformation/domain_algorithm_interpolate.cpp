@@ -404,12 +404,12 @@ void CDomainAlgorithmInterpolate::processPole(std::map<int,std::vector<std::pair
   CContext* context = CContext::getCurrent();
   CContextClient* client=context->client;
 
-  MPI_Comm poleComme(MPI_COMM_NULL);
-  MPI_Comm_split(client->intraComm, interMapValuePole.empty() ? MPI_UNDEFINED : 1, 0, &poleComme);
+  ep_lib::MPI_Comm poleComme(MPI_COMM_NULL);
+  ep_lib::MPI_Comm_split(client->intraComm, interMapValuePole.empty() ? MPI_UNDEFINED : 1, 0, &poleComme);
   if (MPI_COMM_NULL != poleComme)
   {
     int nbClientPole;
-    MPI_Comm_size(poleComme, &nbClientPole);
+    ep_lib::MPI_Comm_size(poleComme, &nbClientPole);
 
     std::map<int,std::vector<std::pair<int,double> > >::iterator itePole = interMapValuePole.end(), itPole,
                                                                  itbPole = interMapValuePole.begin();
@@ -572,7 +572,7 @@ void CDomainAlgorithmInterpolate::exchangeRemapInfo(std::map<int,std::vector<std
   int* sendIndexSrcBuff  = new int [sendBuffSize];
   double* sendWeightBuff = new double [sendBuffSize];
 
-  std::vector<MPI_Request> sendRequest;
+  std::vector<ep_lib::MPI_Request> sendRequest;
 
   int sendOffSet = 0, l = 0;
   for (itMap = itbMap; itMap != iteMap; ++itMap)
@@ -593,7 +593,7 @@ void CDomainAlgorithmInterpolate::exchangeRemapInfo(std::map<int,std::vector<std
       }
     }
 
-    sendRequest.push_back(MPI_Request());
+    sendRequest.push_back(ep_lib::MPI_Request());
     MPI_Isend(sendIndexDestBuff + sendOffSet,
              k,
              MPI_INT,
@@ -601,7 +601,7 @@ void CDomainAlgorithmInterpolate::exchangeRemapInfo(std::map<int,std::vector<std
              MPI_DOMAIN_INTERPOLATION_DEST_INDEX,
              client->intraComm,
              &sendRequest.back());
-    sendRequest.push_back(MPI_Request());
+    sendRequest.push_back(ep_lib::MPI_Request());
     MPI_Isend(sendIndexSrcBuff + sendOffSet,
              k,
              MPI_INT,
@@ -609,7 +609,7 @@ void CDomainAlgorithmInterpolate::exchangeRemapInfo(std::map<int,std::vector<std
              MPI_DOMAIN_INTERPOLATION_SRC_INDEX,
              client->intraComm,
              &sendRequest.back());
-    sendRequest.push_back(MPI_Request());
+    sendRequest.push_back(ep_lib::MPI_Request());
     MPI_Isend(sendWeightBuff + sendOffSet,
              k,
              MPI_DOUBLE,
@@ -628,7 +628,7 @@ void CDomainAlgorithmInterpolate::exchangeRemapInfo(std::map<int,std::vector<std
   int clientSrcRank;
   while (receivedSize < recvBuffSize)
   {
-    MPI_Status recvStatus;
+    ep_lib::MPI_Status recvStatus;
     MPI_Recv((recvIndexDestBuff + receivedSize),
              recvBuffSize,
              MPI_INT,
@@ -639,8 +639,11 @@ void CDomainAlgorithmInterpolate::exchangeRemapInfo(std::map<int,std::vector<std
 
     int countBuff = 0;
     MPI_Get_count(&recvStatus, MPI_INT, &countBuff);
+    #ifdef _usingMPI
     clientSrcRank = recvStatus.MPI_SOURCE;
-
+    #elif _usingEP
+    clientSrcRank = recvStatus.ep_src;
+    #endif
     MPI_Recv((recvIndexSrcBuff + receivedSize),
              recvBuffSize,
              MPI_INT,
@@ -665,8 +668,9 @@ void CDomainAlgorithmInterpolate::exchangeRemapInfo(std::map<int,std::vector<std
     receivedSize += countBuff;
   }
 
-  std::vector<MPI_Status> requestStatus(sendRequest.size());
-  MPI_Waitall(sendRequest.size(), &sendRequest[0], MPI_STATUS_IGNORE);
+  std::vector<ep_lib::MPI_Status> requestStatus(sendRequest.size());
+  ep_lib::MPI_Status stat_ignore;
+  MPI_Waitall(sendRequest.size(), &sendRequest[0], &stat_ignore);
 
   delete [] sendIndexDestBuff;
   delete [] sendIndexSrcBuff;
@@ -757,7 +761,7 @@ void CDomainAlgorithmInterpolate::writeInterpolationInfo(std::string& filename,
   }
 
   MPI_Allreduce(&localNbWeight, &globalNbWeight, 1, MPI_LONG, MPI_SUM, client->intraComm);
-  MPI_Scan(&localNbWeight, &startIndex, 1, MPI_LONG, MPI_SUM, client->intraComm);
+  ep_lib::MPI_Scan(&localNbWeight, &startIndex, 1, MPI_LONG, MPI_SUM, client->intraComm);
   
   if (0 == globalNbWeight)
   {
@@ -770,8 +774,8 @@ void CDomainAlgorithmInterpolate::writeInterpolationInfo(std::string& filename,
 
   std::vector<StdSize> start(1, startIndex - localNbWeight);
   std::vector<StdSize> count(1, localNbWeight);
-  
-  WriteNetCdf netCdfWriter(filename, client->intraComm);  
+
+  WriteNetCdf netCdfWriter(filename, static_cast<MPI_Comm>(client->intraComm.mpi_comm));
 
   // Define some dimensions
   netCdfWriter.addDimensionWrite("n_src", n_src);
