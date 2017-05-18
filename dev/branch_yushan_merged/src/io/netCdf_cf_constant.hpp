@@ -4,6 +4,8 @@
 #include "inetcdf4.hpp"
 #include "netCdfInterface.hpp"
 
+// mpi_std.hpp
+
 namespace xios
 {
 const StdString CFLatUnits[] = {"degrees_north", "degree_north", "degree_N", "degrees_N", "degreeN", "degreesN"};

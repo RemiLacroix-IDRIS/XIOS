@@ -13,6 +13,8 @@
    #define UNLIMITED_DIM (size_t)(-1)
 #endif  //UNLIMITED_DIM
 
+// mpi_std.hpp
+
 namespace xios
 {
       /// ////////////////////// Déclarations ////////////////////// ///
@@ -27,7 +29,7 @@ namespace xios
             /// Constructeurs ///
             CONetCDF4(const StdString& filename, bool append, bool useClassicFormat = false,
             		  bool useCFConvention = true,
-                      const ep_lib::MPI_Comm* comm = NULL, bool multifile = true,
+                      const MPI_Comm* comm = NULL, bool multifile = true,
                       const StdString& timeCounterName = "time_counter");
 
             CONetCDF4(const CONetCDF4& onetcdf4);       // Not implemented.
@@ -36,7 +38,7 @@ namespace xios
 
             /// Initialisation ///
             void initialize(const StdString& filename, bool append, bool useClassicFormat, bool useCFConvention,
-                            const ep_lib::MPI_Comm* comm, bool multifile, const StdString& timeCounterName);
+                            const MPI_Comm* comm, bool multifile, const StdString& timeCounterName);
             void close(void);
             void sync(void);
             void definition_start(void);

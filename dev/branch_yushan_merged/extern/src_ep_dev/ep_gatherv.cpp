@@ -483,8 +483,12 @@ namespace ep_lib
     num_ep = comm.ep_comm_ptr->size_rank_info[1].second;
     mpi_size = comm.ep_comm_ptr->size_rank_info[2].second;
     
+    if(ep_size == mpi_size) 
+      return ::MPI_Allgatherv(sendbuf, sendcount, static_cast< ::MPI_Datatype>(datatype), recvbuf, recvcounts, displs,
+                              static_cast< ::MPI_Datatype>(datatype), static_cast< ::MPI_Comm>(comm.mpi_comm));
+    
 
-    assert(accumulate(recvcounts, recvcounts+ep_size-1, 0) == displs[ep_size-1]); // Only for continuous gather.
+    assert(accumulate(recvcounts, recvcounts+ep_size-1, 0) >= displs[ep_size-1]); // Only for continuous gather.
 
 
     ::MPI_Aint datasize, lb;

@@ -25,7 +25,7 @@
 
 namespace xios {
 
-   /// ////////////////////// Définitions ////////////////////// ///
+   /// ////////////////////// Dfinitions ////////////////////// ///
 
    CDomain::CDomain(void)
       : CObjectTemplate<CDomain>(), CDomainAttributes()
@@ -1494,14 +1494,14 @@ namespace xios {
       this->checkLonLat();
 
       if (context->hasClient)
-      { // Côté client uniquement
+      { // Ct client uniquement
          this->checkMask();
          this->checkDomainData();
          this->checkCompression();
          this->computeLocalMask() ;
       }
       else
-      { // Côté serveur uniquement
+      { // Ct serveur uniquement
       }
 
       this->isClientChecked = true;
@@ -1534,7 +1534,7 @@ namespace xios {
       this->checkArea();
 
       if (context->hasClient)
-      { // Côté client uniquement
+      { // Ct client uniquement
          this->checkMask();
          this->checkDomainData();
          this->checkCompression();
@@ -1542,7 +1542,7 @@ namespace xios {
 
       }
       else
-      { // Côté serveur uniquement
+      { // Ct serveur uniquement
       }
 
       if (context->hasClient)

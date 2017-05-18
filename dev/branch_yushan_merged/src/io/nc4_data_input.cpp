@@ -7,9 +7,11 @@
 #include "axis.hpp"
 #include "scalar.hpp"
 
+// mpi.hpp
+
 namespace xios
 {
-  CNc4DataInput::CNc4DataInput(const StdString& filename, MPI_Comm comm_file, bool multifile, bool isCollective /*= true*/, const StdString& timeCounterName /*= "time_counter"*/)
+  CNc4DataInput::CNc4DataInput(const StdString& filename, ::MPI_Comm comm_file, bool multifile, bool isCollective /*= true*/, const StdString& timeCounterName /*= "time_counter"*/)
     : SuperClass()
     , SuperClassWriter(filename, &comm_file, multifile, timeCounterName)
     , comm_file(comm_file)

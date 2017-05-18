@@ -34,6 +34,7 @@ namespace xios {
       typedef CTransformation<T>* (*CreateTransformationCallBack)(const StdString&, xml::CXMLNode*);
       typedef std::map<ETranformationType, CreateTransformationCallBack> CallBackMap;
       static CallBackMap* transformationCreationCallBacks_;
+      //#pragma omp threadprivate(transformationCreationCallBacks_)
 
       static bool registerTransformation(ETranformationType transType, CreateTransformationCallBack createFn);
       static bool unregisterTransformation(ETranformationType transType);
@@ -64,7 +65,6 @@ namespace xios {
   {
     if (0 == transformationCreationCallBacks_)
       transformationCreationCallBacks_ = new CallBackMap();
-
     return (*transformationCreationCallBacks_).insert(make_pair(transType, createFn)).second;
   }
 

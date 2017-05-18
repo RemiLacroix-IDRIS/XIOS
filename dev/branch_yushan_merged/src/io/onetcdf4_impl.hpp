@@ -4,6 +4,8 @@
 #include "onetcdf4.hpp"
 #include "netCdfInterface.hpp"
 
+// mpi_std.hpp
+
 namespace xios
 {
   template <class T, int ndim>

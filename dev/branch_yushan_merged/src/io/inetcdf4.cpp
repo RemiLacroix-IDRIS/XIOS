@@ -3,6 +3,10 @@
 #include "netCdf_cf_constant.hpp"
 
 #include <boost/algorithm/string.hpp>
+// mpi_std.hpp
+#ifdef _usingEP
+#include "ep_declaration.hpp"
+#endif
 
 namespace xios
 {
@@ -17,7 +21,7 @@ namespace xios
         comm = NULL;
     }
     mpi = comm && !multifile;
-    MPI_Info m_info;
+    MPI_Info m_info = MPI_INFO_NULL_STD;
 
     // The file format will be detected automatically by NetCDF, it is safe to always set NC_MPIIO
     // even if Parallel NetCDF ends up being used.
