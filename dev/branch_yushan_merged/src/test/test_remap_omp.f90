@@ -1,7 +1,8 @@
-PROGRAM test_remap
+PROGRAM test_remap_omp
 
   USE xios
   USE mod_wait
+  use omp_lib
   USE netcdf
 
   IMPLICIT NONE
@@ -35,16 +36,22 @@ PROGRAM test_remap
   INTEGER :: div,remain
   INTEGER :: varid
   INTEGER :: ts
-  INTEGER :: i,j
+  INTEGER :: i,j, provided
   INTEGER,PARAMETER :: llm=5, interpolatedLlm = 4, llm2 = 6
   DOUBLE PRECISION, PARAMETER :: missing_value = 100000
 
-  CALL MPI_INIT(ierr)
+    CALL MPI_INIT_THREAD(3, provided, ierr)
+    if(provided .NE. 3) then
+      print*, "provided thread level = ", provided
+      call MPI_Abort()
+    endif
   CALL init_wait
   
   CALL MPI_COMM_RANK(MPI_COMM_WORLD,rank,ierr)
   CALL MPI_COMM_SIZE(MPI_COMM_WORLD,size,ierr)
   if(rank < size-2) then
+
+  !$omp parallel default(private)
 
 !!! XIOS Initialization (get the local communicator)
 
@@ -183,6 +190,7 @@ PROGRAM test_remap
 
 
   dtime%second = 3600
+  
   CALL xios_set_timestep(dtime)
 
   CALL xios_close_context_definition()
@@ -228,11 +236,22 @@ PROGRAM test_remap
   DEALLOCATE(dst_lon, dst_lat, dst_boundslon,dst_boundslat)
   DEALLOCATE(tmp_field_0, tmp_field_1, tmp_field_2)
 
-  CALL MPI_COMM_FREE(comm, ierr)
+  
 
   CALL xios_finalize()
   
   print *, "Client : xios_finalize "
+
+  !$omp barrier
+
+  !$omp master 
+  CALL MPI_COMM_FREE(comm, ierr)
+  !$omp end master
+
+  !$omp barrier
+
+  !$omp end parallel
+
 
     else
 
@@ -243,7 +262,7 @@ PROGRAM test_remap
 
   CALL MPI_FINALIZE(ierr)
 
-END PROGRAM test_remap
+END PROGRAM test_remap_omp
 
 
 

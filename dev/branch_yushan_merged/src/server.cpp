@@ -48,6 +48,10 @@ namespace xios
         MPI_Comm newComm ;
 
         MPI_Comm_size(CXios::globalComm,&size) ;
+        
+        //size = CXios::globalComm.ep_comm_ptr->size_rank_info[0].second;
+        printf("global size = %d, size= %d\n", CXios::globalComm.ep_comm_ptr->size_rank_info[0].second, size);
+        
         MPI_Comm_rank(CXios::globalComm,&rank);
         hashAll=new unsigned long[size] ;
 

@@ -346,6 +346,7 @@ int Mapper::remap(Elt *elements, int nbElements, int order, bool renormalize, bo
     
     MPI_Waitall(nbSendRequest, sendRequest, status);
     MPI_Waitall(nbRecvRequest, recvRequest, status);
+    
 
     /* now that all values and gradients are available use them to computed interpolated values on target
        and also to compute weights */
