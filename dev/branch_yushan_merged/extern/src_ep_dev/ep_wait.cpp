@@ -85,7 +85,7 @@ namespace ep_lib {
         MPI_Comm_rank(MPI_COMM_WORLD, &dest_rank);
 
         int finished = 0;
-        bool finished_index[count];
+        int finished_index[count];
 
         for(int i=0; i<count; i++)
         {
@@ -96,17 +96,12 @@ namespace ep_lib {
         {
             for(int i=0; i<count; i++)
             {
+                //MPI_Test(&array_of_requests[i], &finished_index[i], &array_of_statuses[i]);
                 if(finished_index[i] == false) // this request has not been tested.
                 {
                     if(array_of_requests[i].type != 2) // isend or imrecv
                     {      
                         MPI_Wait(&array_of_requests[i], &array_of_statuses[i]);
-                        if(array_of_requests[i].type == 3)
-                        {
-                            //int check_count;
-                            //MPI_Get_count(&array_of_statuses[i], array_of_requests[i].ep_datatype, &check_count);
-                            //check_sum_recv(array_of_requests[i].buf, count, array_of_requests[i].ep_datatype, array_of_requests[i].ep_src, array_of_requests[i].ep_tag, array_of_requests[i].comm, 2);
-                        }
                         finished++;
                         finished_index[i] = true;
                     }

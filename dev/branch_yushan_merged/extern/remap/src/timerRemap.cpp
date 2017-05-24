@@ -8,7 +8,7 @@ namespace sphereRemap {
 
 using namespace std;
 
-map<string,CTimer*> CTimer::allTimer;
+map<string,CTimer*> *CTimer::allTimer = 0;
 
 CTimer::CTimer(const string& name_) : name(name_)
 {
@@ -54,9 +54,10 @@ void CTimer::print(void)
 
 CTimer& CTimer::get(const string name)
 {
+        if(allTimer == 0) allTimer = new map<string,CTimer*>;
 	map<string,CTimer*>::iterator it;
-	it=allTimer.find(name);
-	if (it==allTimer.end()) it=allTimer.insert(pair<string,CTimer*>(name,new CTimer(name))).first;
+	it=(*allTimer).find(name);
+	if (it==(*allTimer).end()) it=(*allTimer).insert(pair<string,CTimer*>(name,new CTimer(name))).first;
 	return *(it->second);
 }
 }

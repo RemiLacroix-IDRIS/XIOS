@@ -547,8 +547,8 @@ void Mapper::buildMeshTopology()
         }
     }
 
-    MPI_Waitall(nbRecvRequest, recvRequest, status);
     MPI_Waitall(nbSendRequest, sendRequest, status);
+    MPI_Waitall(nbRecvRequest, recvRequest, status);
 
     for (int rank = 0; rank < mpiSize; rank++)
         if (nbSendNode[rank] > 0) delete [] sendBuffer[rank];
@@ -619,9 +619,9 @@ void Mapper::buildMeshTopology()
         }
     }
 
-    MPI_Waitall(nbRecvRequest, recvRequest, status);
     MPI_Waitall(nbSendRequest, sendRequest, status);
-
+    MPI_Waitall(nbRecvRequest, recvRequest, status);
+ 
     int nbNeighbourNodes = 0;
     for (int rank = 0; rank < mpiSize; rank++)
         nbNeighbourNodes += nbRecvNode[rank];
@@ -802,9 +802,10 @@ void Mapper::computeIntersection(Elt *elements, int nbElements)
             nbRecvRequest++;
         }
     }
-
-    MPI_Waitall(nbRecvRequest, recvRequest, status);
+ 
     MPI_Waitall(nbSendRequest, sendRequest, status);
+    MPI_Waitall(nbRecvRequest, recvRequest, status);
+    
     char **sendBuffer2 = new char*[mpiSize];
     char **recvBuffer2 = new char*[mpiSize];
 
@@ -885,9 +886,10 @@ void Mapper::computeIntersection(Elt *elements, int nbElements)
             nbRecvRequest++;
         }
     }
-
-    MPI_Waitall(nbRecvRequest, recvRequest, status);
+    
     MPI_Waitall(nbSendRequest, sendRequest, status);
+    MPI_Waitall(nbRecvRequest, recvRequest, status);
+   
 
     delete [] sendRequest;
     delete [] recvRequest;

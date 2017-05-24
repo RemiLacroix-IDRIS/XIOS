@@ -611,6 +611,7 @@ namespace xios {
      MPI_Comm_dup(client->intraComm, &fileComm);
      if (time_counter_name.isEmpty()) time_counter_name = "time_counter";
 
+     //#pragma omp critical (_checkFile)
      checkFile();
 
      for (int idx = 0; idx < enabledFields.size(); ++idx)

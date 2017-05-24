@@ -51,7 +51,7 @@ PROGRAM test_remap_omp
   CALL MPI_COMM_SIZE(MPI_COMM_WORLD,size,ierr)
   if(rank < size-2) then
 
-  !$omp parallel default(private)
+  !$omp parallel default(firstprivate) 
 
 !!! XIOS Initialization (get the local communicator)
 
@@ -59,7 +59,11 @@ PROGRAM test_remap_omp
   CALL MPI_COMM_RANK(comm,rank,ierr)
   CALL MPI_COMM_SIZE(comm,size,ierr)
 
+  
+  !$omp critical (open_file)
   ierr=NF90_OPEN(src_file, NF90_NOWRITE, ncid)
+  !$omp end critical (open_file)
+
   ierr=NF90_INQ_VARID(ncid,"bounds_lon",varid)
   ierr=NF90_INQUIRE_VARIABLE(ncid, varid,dimids=dimids)
   ierr=NF90_INQUIRE_DIMENSION(ncid, dimids(1), len=src_nvertex)
@@ -133,7 +137,11 @@ PROGRAM test_remap_omp
     lval1(i) = i*10 + 2
   ENDDO
 
+  !$omp critical (open_file)
   ierr=NF90_OPEN(dst_file, NF90_NOWRITE, ncid)
+  !$omp end critical (open_file)
+
+  
   ierr=NF90_INQ_VARID(ncid,"bounds_lon",varid)
   ierr=NF90_INQUIRE_VARIABLE(ncid, varid,dimids=dimids)
   ierr=NF90_INQUIRE_DIMENSION(ncid, dimids(1), len=dst_nvertex)
@@ -167,7 +175,7 @@ PROGRAM test_remap_omp
   CALL xios_context_initialize("test",comm)
   CALL xios_get_handle("test",ctx_hdl)
   CALL xios_set_current_context(ctx_hdl)
-
+  
   CALL xios_set_domain_attr("src_domain", ni_glo=src_ni_glo, ibegin=src_ibegin, ni=src_ni, type="unstructured")
   CALL xios_set_domain_attr("src_domain", lonvalue_1D=src_lon, latvalue_1D=src_lat, &
                             bounds_lon_1D=src_boundslon, bounds_lat_1D=src_boundslat, nvertex=src_nvertex)
@@ -188,56 +196,14 @@ PROGRAM test_remap_omp
   CALL xios_set_domain_attr("src_domain_unstructured_read", lonvalue_1D=src_lon_tmp, latvalue_1D=src_lat_tmp, &
                             bounds_lon_1D=src_boundslon, bounds_lat_1D=src_boundslat, nvertex=src_nvertex)
 
-
   dtime%second = 3600
   
   CALL xios_set_timestep(dtime)
 
   CALL xios_close_context_definition()
-  CALL xios_get_domain_attr("src_domain_regular_read", ni=src_tmp_ni, nj=src_tmp_nj)
-  ALLOCATE(tmp_field_0(src_tmp_ni*src_tmp_nj))
-
-  CALL xios_get_axis_attr("src_axis_curvilinear_read", n=src_tmp_n)
-  CALL xios_get_domain_attr("src_domain_curvilinear_read", ni=src_tmp_ni, nj=src_tmp_nj)
-  ALLOCATE(tmp_field_1(src_tmp_ni*src_tmp_nj*src_tmp_n))
-
-  CALL xios_get_domain_attr("src_domain_unstructured_read", ni=src_tmp_ni, nj=src_tmp_nj)
-  ALLOCATE(tmp_field_2(src_tmp_ni*src_tmp_nj))
   
-  CALL xios_recv_field("src_field_regular", tmp_field_0)
-  CALL xios_recv_field("src_field_curvilinear", tmp_field_1)
-  CALL xios_recv_field("src_field_unstructured", tmp_field_2)
-
-  DO ts=1,10
-    CALL xios_update_calendar(ts)
-    CALL xios_send_field("src_field_2D",src_field_2D)
-    
-    DO i=1,src_ni
-      src_field_2D_clone(i) = src_field_2D(i)
-      IF ((23.5 * ts < src_lat(i)) .AND. (src_lat(i) < 65.5 *ts) .AND. (0 < src_lon(i)) .AND. (src_lon(i) < 30*ts)) THEN      
-        src_field_2D_clone(i) = missing_value    
-      ENDIF
-    ENDDO
-
-    CALL xios_send_field("src_field_2D_clone",src_field_2D_clone)
-    CALL xios_send_field("src_field_3D",src_field_3D)
-    CALL xios_send_field("src_field_3D_clone",src_field_3D)
-    CALL xios_send_field("src_field_4D",src_field_4D)
-    CALL xios_send_field("src_field_3D_pression",src_field_pression)
-    CALL xios_send_field("tmp_field_0",tmp_field_0)
-    CALL xios_send_field("tmp_field_1",tmp_field_1)
-    CALL xios_send_field("tmp_field_2",tmp_field_2)
-    CALL wait_us(5000) ;
-   ENDDO
-
   CALL xios_context_finalize()
-
-  DEALLOCATE(src_lon, src_lat, src_boundslon,src_boundslat, src_field_2D)
-  DEALLOCATE(dst_lon, dst_lat, dst_boundslon,dst_boundslat)
-  DEALLOCATE(tmp_field_0, tmp_field_1, tmp_field_2)
-
   
-
   CALL xios_finalize()
   
   print *, "Client : xios_finalize "

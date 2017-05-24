@@ -25,7 +25,10 @@ namespace sphereRemap {
     void reset(void);
     double getCumulatedTime(void);
     void print(void);
-    static map<string,CTimer*> allTimer;
+    //static map<string,CTimer*> allTimer;
+    static map<string,CTimer*> *allTimer;
+    #pragma omp threadprivate(allTimer)
+    
     static double getTime(void);
     static CTimer& get(string name);
   };

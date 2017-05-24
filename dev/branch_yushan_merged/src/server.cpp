@@ -339,6 +339,7 @@ namespace xios
          {
             MPI_Isend(buff,count,MPI_CHAR,i,2,intraComm,&requests[i-1]) ;
          }
+         
          MPI_Waitall(size-1,requests,status) ;
          registerContext(buff,count,it->second.leaderRank) ;
 

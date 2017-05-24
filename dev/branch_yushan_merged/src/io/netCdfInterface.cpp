@@ -102,7 +102,9 @@ This function opens a new netcdf file on parallel file system
 */
 int CNetCdfInterface::openPar(const StdString& fileName, int oMode, MPI_Comm comm, MPI_Info info, int& ncId)
 {
-  int status = xios::nc_open_par(fileName.c_str(), oMode, comm, info, &ncId);
+  int status;
+  #pragma omp critical (_netcdf)
+  status = xios::nc_open_par(fileName.c_str(), oMode, comm, info, &ncId);
   if (NC_NOERR != status)
   {
     StdString errormsg(nc_strerror(status));
@@ -346,7 +348,9 @@ This function makes a request to netcdf, returns length of a dimension, given it
 */
 int CNetCdfInterface::inqDimLen(int ncid, int dimId, StdSize& dimLen)
 {
-  int status = nc_inq_dimlen(ncid, dimId, &dimLen);
+  int status;
+  #pragma omp critical (_netcdf)
+  status = nc_inq_dimlen(ncid, dimId, &dimLen);
   if (NC_NOERR != status)
   {
     StdString errormsg(nc_strerror(status));
