@@ -14,6 +14,7 @@ using namespace std;
 
 namespace ep_lib
 {
+
   int MPI_Gatherv_local(const void *sendbuf, int count, MPI_Datatype datatype, void *recvbuf, const int recvcounts[], const int displs[], MPI_Comm comm)
   {
     if(datatype == MPI_INT)
@@ -346,6 +347,24 @@ namespace ep_lib
     num_ep = comm.ep_comm_ptr->size_rank_info[1].second;
     mpi_size = comm.ep_comm_ptr->size_rank_info[2].second;
     
+    if(ep_size == mpi_size) 
+      return ::MPI_Gatherv(sendbuf, sendcount, static_cast< ::MPI_Datatype>(datatype), recvbuf, recvcounts, displs,
+                              static_cast< ::MPI_Datatype>(datatype), root, static_cast< ::MPI_Comm>(comm.mpi_comm));
+
+    int recv_plus_displs[ep_size];
+    for(int i=0; i<ep_size; i++) recv_plus_displs[i] = recvcounts[i] + displs[i];
+    
+    #pragma omp single nowait
+    {
+      assert(recv_plus_displs[ep_rank-ep_rank_loc] >= displs[ep_rank-ep_rank_loc+1]);
+      for(int i=1; i<num_ep-1; i++)
+      {
+        assert(recv_plus_displs[ep_rank-ep_rank_loc+i] >= displs[ep_rank-ep_rank_loc+i+1]);
+        assert(recv_plus_displs[ep_rank-ep_rank_loc+i] >= displs[ep_rank-ep_rank_loc+i-1]);
+      }
+      assert(recv_plus_displs[ep_rank-ep_rank_loc+num_ep-1] >= displs[ep_rank-ep_rank_loc+num_ep-2]);
+    }
+
     if(ep_rank != root)
     {
       recvcounts = new int[ep_size];
@@ -365,54 +384,47 @@ namespace ep_lib
     ::MPI_Type_get_extent(static_cast< ::MPI_Datatype>(datatype), &lb, &datasize);
 
     void *local_gather_recvbuf;
+    int buffer_size;
 
     if(ep_rank_loc==0)
     {
-      int buffer_size = accumulate(recvcounts+ep_rank, recvcounts+ep_rank+num_ep, 0);
+      buffer_size = *std::max_element(recv_plus_displs+ep_rank, recv_plus_displs+ep_rank+num_ep);
+
       local_gather_recvbuf = new void*[datasize*buffer_size];
     }
 
-    // local gather to master
-    int local_displs[num_ep];
-    local_displs[0] = 0;
-    for(int i=1; i<num_ep; i++)
-    {
-      local_displs[i] = displs[ep_rank-ep_rank_loc+i]-displs[ep_rank-ep_rank_loc];
-    }
-    MPI_Gatherv_local(sendbuf, count, datatype, local_gather_recvbuf, recvcounts+ep_rank-ep_rank_loc, local_displs, comm);
+    MPI_Gatherv_local(sendbuf, count, datatype, local_gather_recvbuf, recvcounts+ep_rank-ep_rank_loc, displs+ep_rank-ep_rank_loc, comm);
 
     //MPI_Gather
     if(ep_rank_loc == 0)
     {
+      int *mpi_recvcnt= new int[mpi_size];
+      int *mpi_displs= new int[mpi_size];
 
-      int gatherv_recvcnt[mpi_size];
-      int gatherv_displs[mpi_size];
-      int gatherv_cnt = accumulate(recvcounts+ep_rank, recvcounts+ep_rank+num_ep, 0);
+      int buff_start = *std::min_element(displs+ep_rank, displs+ep_rank+num_ep);;
+      int buff_end = buffer_size;
 
-      //gatherv_recvcnt = new int[mpi_size];
-      //gatherv_displs = new int[mpi_size];
-
-
-      ::MPI_Allgather(&gatherv_cnt, 1, MPI_INT_STD, gatherv_recvcnt, 1, MPI_INT_STD, static_cast< ::MPI_Comm>(comm.mpi_comm));
-
-      gatherv_displs[0] = 0;
-      for(int i=1; i<mpi_size; i++)
-      {
-        gatherv_displs[i] = gatherv_recvcnt[i-1] + gatherv_displs[i-1];
-      }
+      int mpi_sendcnt = buff_end - buff_start;
 
 
-      ::MPI_Gatherv(local_gather_recvbuf, gatherv_cnt, static_cast< ::MPI_Datatype>(datatype), recvbuf, gatherv_recvcnt,
-                    gatherv_displs, static_cast< ::MPI_Datatype>(datatype), root_mpi_rank, static_cast< ::MPI_Comm>(comm.mpi_comm));
+      ::MPI_Gather(&mpi_sendcnt, 1, MPI_INT_STD, mpi_recvcnt, 1, MPI_INT_STD, root_mpi_rank, static_cast< ::MPI_Comm>(comm.mpi_comm));
+      ::MPI_Gather(&buff_start,  1, MPI_INT_STD, mpi_displs,  1, MPI_INT_STD, root_mpi_rank, static_cast< ::MPI_Comm>(comm.mpi_comm));
 
-      //delete[] gatherv_recvcnt;
-      //delete[] gatherv_displs;
+
+      ::MPI_Gatherv(local_gather_recvbuf + datasize*buff_start, mpi_sendcnt, static_cast< ::MPI_Datatype>(datatype), recvbuf, mpi_recvcnt,
+                       mpi_displs, static_cast< ::MPI_Datatype>(datatype), root_mpi_rank, static_cast< ::MPI_Comm>(comm.mpi_comm));
+
+      delete[] mpi_recvcnt;
+      delete[] mpi_displs;
     }
+
+    int global_min_displs = *std::min_element(displs, displs+ep_size);
+    int global_recvcnt = *std::max_element(recv_plus_displs, recv_plus_displs+ep_size);
 
 
     if(root_ep_loc != 0 && mpi_rank == root_mpi_rank) // root is not master, master send to root and root receive from master
     {
-      innode_memcpy(0, recvbuf, root_ep_loc, recvbuf, accumulate(recvcounts, recvcounts+ep_size, 0), datatype, comm);
+      innode_memcpy(0, recvbuf+datasize*global_min_displs, root_ep_loc, recvbuf+datasize*global_min_displs, global_recvcnt, datatype, comm);
     }
 
 
@@ -486,9 +498,21 @@ namespace ep_lib
     if(ep_size == mpi_size) 
       return ::MPI_Allgatherv(sendbuf, sendcount, static_cast< ::MPI_Datatype>(datatype), recvbuf, recvcounts, displs,
                               static_cast< ::MPI_Datatype>(datatype), static_cast< ::MPI_Comm>(comm.mpi_comm));
-    
+   
 
-    assert(accumulate(recvcounts, recvcounts+ep_size-1, 0) >= displs[ep_size-1]); // Only for continuous gather.
+    int recv_plus_displs[ep_size];
+    for(int i=0; i<ep_size; i++) recv_plus_displs[i] = recvcounts[i] + displs[i];
+
+    #pragma omp single nowait
+    {
+      assert(recv_plus_displs[ep_rank-ep_rank_loc] >= displs[ep_rank-ep_rank_loc+1]);
+      for(int i=1; i<num_ep-1; i++)
+      {
+        assert(recv_plus_displs[ep_rank-ep_rank_loc+i] >= displs[ep_rank-ep_rank_loc+i+1]);
+        assert(recv_plus_displs[ep_rank-ep_rank_loc+i] >= displs[ep_rank-ep_rank_loc+i-1]);
+      }
+      assert(recv_plus_displs[ep_rank-ep_rank_loc+num_ep-1] >= displs[ep_rank-ep_rank_loc+num_ep-2]);
+    }
 
 
     ::MPI_Aint datasize, lb;
@@ -496,47 +520,45 @@ namespace ep_lib
     ::MPI_Type_get_extent(static_cast< ::MPI_Datatype>(datatype), &lb, &datasize);
 
     void *local_gather_recvbuf;
+    int buffer_size;
 
     if(ep_rank_loc==0)
     {
-      int buffer_size = accumulate(recvcounts+ep_rank, recvcounts+ep_rank+num_ep, 0);
+      buffer_size = *std::max_element(recv_plus_displs+ep_rank, recv_plus_displs+ep_rank+num_ep);
+
       local_gather_recvbuf = new void*[datasize*buffer_size];
     }
 
     // local gather to master
-    int local_displs[num_ep];
-    local_displs[0] = 0;
-    for(int i=1; i<num_ep; i++)
-    {
-      local_displs[i] = displs[ep_rank-ep_rank_loc+i]-displs[ep_rank-ep_rank_loc];
-    }
-    MPI_Gatherv_local(sendbuf, count, datatype, local_gather_recvbuf, recvcounts+ep_rank-ep_rank_loc, local_displs, comm);
+    MPI_Gatherv_local(sendbuf, count, datatype, local_gather_recvbuf, recvcounts+ep_rank-ep_rank_loc, displs+ep_rank-ep_rank_loc, comm);
 
     //MPI_Gather
     if(ep_rank_loc == 0)
     {
-      int *gatherv_recvcnt;
-      int *gatherv_displs;
-      int gatherv_cnt = accumulate(recvcounts+ep_rank, recvcounts+ep_rank+num_ep, 0);
+      int *mpi_recvcnt= new int[mpi_size];
+      int *mpi_displs= new int[mpi_size];
 
-      gatherv_recvcnt = new int[mpi_size];
-      gatherv_displs = new int[mpi_size];
+      int buff_start = *std::min_element(displs+ep_rank, displs+ep_rank+num_ep);;
+      int buff_end = buffer_size;
 
-      ::MPI_Allgather(&gatherv_cnt, 1, MPI_INT_STD, gatherv_recvcnt, 1, MPI_INT_STD, static_cast< ::MPI_Comm>(comm.mpi_comm));
-      gatherv_displs[0] = displs[0];
-      for(int i=1; i<mpi_size; i++)
-      {
-        gatherv_displs[i] = gatherv_recvcnt[i-1] + gatherv_displs[i-1];
-      }
+      int mpi_sendcnt = buff_end - buff_start;
 
-      ::MPI_Allgatherv(local_gather_recvbuf, gatherv_cnt, static_cast< ::MPI_Datatype>(datatype), recvbuf, gatherv_recvcnt,
-                    gatherv_displs, static_cast< ::MPI_Datatype>(datatype), static_cast< ::MPI_Comm>(comm.mpi_comm));
 
-      delete[] gatherv_recvcnt;
-      delete[] gatherv_displs;
+      ::MPI_Allgather(&mpi_sendcnt, 1, MPI_INT_STD, mpi_recvcnt, 1, MPI_INT_STD, static_cast< ::MPI_Comm>(comm.mpi_comm));
+      ::MPI_Allgather(&buff_start,  1, MPI_INT_STD, mpi_displs,  1, MPI_INT_STD, static_cast< ::MPI_Comm>(comm.mpi_comm));
+
+
+      ::MPI_Allgatherv((char*)local_gather_recvbuf + datasize*buff_start, mpi_sendcnt, static_cast< ::MPI_Datatype>(datatype), recvbuf, mpi_recvcnt,
+                       mpi_displs, static_cast< ::MPI_Datatype>(datatype), static_cast< ::MPI_Comm>(comm.mpi_comm));
+
+      delete[] mpi_recvcnt;
+      delete[] mpi_displs;
     }
 
-    MPI_Bcast_local(recvbuf, accumulate(recvcounts, recvcounts+ep_size, 0), datatype, comm);
+    int global_min_displs = *std::min_element(displs, displs+ep_size);
+    int global_recvcnt = *std::max_element(recv_plus_displs, recv_plus_displs+ep_size);
+
+    MPI_Bcast_local(recvbuf+datasize*global_min_displs, global_recvcnt, datatype, comm);
 
     if(ep_rank_loc==0)
     {
