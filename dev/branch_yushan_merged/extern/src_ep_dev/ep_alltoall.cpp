@@ -15,11 +15,13 @@ namespace ep_lib
     
     int ep_size;
     MPI_Comm_size(comm, &ep_size);
+    
 
     for(int i=0; i<ep_size; i++)
     {
-      MPI_Gather(sendbuf+i*sendcount*typesize, sendcount, sendtype, recvbuf, recvcount, recvtype, i, comm);
+      ep_lib::MPI_Gather(sendbuf+i*sendcount*typesize, sendcount, sendtype, recvbuf, recvcount, recvtype, i, comm);
     }
+    
 
     return 0;
   }

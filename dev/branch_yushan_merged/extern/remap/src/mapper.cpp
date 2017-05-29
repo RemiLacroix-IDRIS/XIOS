@@ -20,9 +20,9 @@ namespace sphereRemap {
    This function convertes from the former to the latter. */
 void cptOffsetsFromLengths(const int *lengths, int *offsets, int sz)
 {
-	offsets[0] = 0;
-	for (int i = 1; i < sz; i++)
-		offsets[i] = offsets[i-1] + lengths[i-1];
+  offsets[0] = 0;
+  for (int i = 1; i < sz; i++)
+    offsets[i] = offsets[i-1] + lengths[i-1];
 }
 
 
@@ -30,12 +30,12 @@ void Mapper::setSourceMesh(const double* boundsLon, const double* boundsLat, int
 {
   srcGrid.pole = Coord(pole[0], pole[1], pole[2]);
 
-	int mpiRank, mpiSize;
-	MPI_Comm_rank(communicator, &mpiRank);
-	MPI_Comm_size(communicator, &mpiSize);
+  int mpiRank, mpiSize;
+  MPI_Comm_rank(communicator, &mpiRank);
+  MPI_Comm_size(communicator, &mpiSize);
 
-	sourceElements.reserve(nbCells);
-	sourceMesh.reserve(nbCells);
+  sourceElements.reserve(nbCells);
+  sourceMesh.reserve(nbCells);
   sourceGlobalId.resize(nbCells) ;
 
   if (globalId==NULL)
@@ -48,17 +48,17 @@ void Mapper::setSourceMesh(const double* boundsLon, const double* boundsLat, int
   }
   else sourceGlobalId.assign(globalId,globalId+nbCells);
 
-	for (int i = 0; i < nbCells; i++)
-	{
-		int offs = i*nVertex;
-		Elt elt(boundsLon + offs, boundsLat + offs, nVertex);
-		elt.src_id.rank = mpiRank;
-		elt.src_id.ind = i;
+  for (int i = 0; i < nbCells; i++)
+  {
+    int offs = i*nVertex;
+    Elt elt(boundsLon + offs, boundsLat + offs, nVertex);
+    elt.src_id.rank = mpiRank;
+    elt.src_id.ind = i;
     elt.src_id.globalId = sourceGlobalId[i];
-		sourceElements.push_back(elt);
-		sourceMesh.push_back(Node(elt.x, cptRadius(elt), &sourceElements.back()));
-		cptEltGeom(sourceElements[i], Coord(pole[0], pole[1], pole[2]));
-	}
+    sourceElements.push_back(elt);
+    sourceMesh.push_back(Node(elt.x, cptRadius(elt), &sourceElements.back()));
+    cptEltGeom(sourceElements[i], Coord(pole[0], pole[1], pole[2]));
+  }
 
 }
 
@@ -484,7 +484,6 @@ void Mapper::buildMeshTopology()
     CMPIRouting mpiRoute(communicator);
     mpiRoute.init(routes);
     int nRecv = mpiRoute.getTotalSourceElement();
-    // cout << mpiRank << " NRECV " << nRecv << "(" << routes.size() << ")"<< endl;
 
     int *nbSendNode = new int[mpiSize];
     int *nbRecvNode = new int[mpiSize];
@@ -878,11 +877,13 @@ void Mapper::computeIntersection(Elt *elements, int nbElements)
         if (sentMessageSize[rank] > 0)
         {
             MPI_Issend(sendBuffer2[rank], sentMessageSize[rank], MPI_CHAR, rank, 0, communicator, &sendRequest[nbSendRequest]);
+            printf("proc %d send %d elements to proc %d\n", mpiRank, sentMessageSize[rank], rank);
             nbSendRequest++;
         }
         if (recvMessageSize[rank] > 0)
         {
             MPI_Irecv(recvBuffer2[rank], recvMessageSize[rank], MPI_CHAR, rank, 0, communicator, &recvRequest[nbRecvRequest]);
+            printf("proc %d recv %d elements from proc %d\n", mpiRank, recvMessageSize[rank], rank);
             nbRecvRequest++;
         }
     }

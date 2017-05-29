@@ -13,10 +13,11 @@
 using namespace std;
 
 
-namespace ep_lib {
+namespace ep_lib 
+{
 
-	int MPI_Recv(void *buf, int count, MPI_Datatype datatype, int src, int tag, MPI_Comm comm, MPI_Status *status)
-	{
+  int MPI_Recv(void *buf, int count, MPI_Datatype datatype, int src, int tag, MPI_Comm comm, MPI_Status *status)
+  {
     int dest_rank;
     MPI_Comm_rank(comm, &dest_rank);
 
@@ -40,46 +41,44 @@ namespace ep_lib {
     MPI_Wait(&request, status);
 
     return 0;
-	}
+  }
 
 
 
 
-	int MPI_Irecv(void *buf, int count, MPI_Datatype datatype, int src, int tag, MPI_Comm comm, MPI_Request *request)
-	{
+  int MPI_Irecv(void *buf, int count, MPI_Datatype datatype, int src, int tag, MPI_Comm comm, MPI_Request *request)
+  {
 
-		Debug("MPI_Irecv with EP");
+    Debug("MPI_Irecv with EP");
     int dest_rank;
     MPI_Comm_rank(comm, &dest_rank);
 
- 		if(!comm.is_ep)
-		{
-		  ::MPI_Request mpi_request;
-		  ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm > (comm.mpi_comm);
-		  ::MPI_Irecv(buf, count, static_cast< ::MPI_Datatype> (datatype), src<0? MPI_ANY_SOURCE : src, tag<0? MPI_ANY_TAG: tag, mpi_comm, &mpi_request);
+    if(!comm.is_ep)
+    {
+      ::MPI_Request mpi_request;
+      ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm > (comm.mpi_comm);
+      ::MPI_Irecv(buf, count, static_cast< ::MPI_Datatype> (datatype), src<0? MPI_ANY_SOURCE : src, tag<0? MPI_ANY_TAG: tag, mpi_comm, &mpi_request);
 
-		  request->mpi_request = mpi_request;
+      request->mpi_request = mpi_request;
       request->ep_src = src;
       request->ep_datatype = datatype;
       request->ep_tag = tag;
-		}
+    }
 
-		Message_Check(comm);
+    Message_Check(comm);
 		
 
-		request->mpi_request = MPI_REQUEST_NULL_STD;
-		request->buf = buf;
+    request->mpi_request = MPI_REQUEST_NULL_STD;
+    request->buf = buf;
     request->comm = comm;
-		request->type = 2;
+    request->type = 2;
 
-		request->ep_src = src;
+    request->ep_src = src;
     request->ep_tag = tag;
     request->ep_datatype = datatype;
 
-
-    
-		/* With Improbe*/
-		Message_Check(comm);
+    /* With Improbe*/
+    Message_Check(comm);
 
     int flag = false;
     MPI_Message message;
@@ -93,18 +92,18 @@ namespace ep_lib {
     }
 
     return 0;
-	}
+  }
 
-	int MPI_Imrecv(void *buf, int count, MPI_Datatype datatype, MPI_Message *message, MPI_Request *request)
-	{
-		Debug("MPI_Imrecv");
+  int MPI_Imrecv(void *buf, int count, MPI_Datatype datatype, MPI_Message *message, MPI_Request *request)
+  {
+    Debug("MPI_Imrecv");
 
-		request->type = 3;
+    request->type = 3;
 
     ::MPI_Request mpi_request;
     ::MPI_Message mpi_message = static_cast< ::MPI_Message >(message->mpi_message);
 		
-		::MPI_Imrecv(buf, count, static_cast< ::MPI_Datatype>(datatype), &mpi_message, &mpi_request);
+    ::MPI_Imrecv(buf, count, static_cast< ::MPI_Datatype>(datatype), &mpi_message, &mpi_request);
 
     request->mpi_request = mpi_request;
     request->ep_datatype = datatype;
@@ -113,17 +112,17 @@ namespace ep_lib {
     request->buf = buf;
 
     return 0;
-	}
+  }
 
 
   int MPI_Mrecv(void *buf, int count, MPI_Datatype datatype, MPI_Message *message, MPI_Status *status)
-	{
+  {
     Debug("EP Mrecv called\n");
 
     ::MPI_Status mpi_status;
     ::MPI_Message mpi_message = static_cast< ::MPI_Message >(message->mpi_message);
-		
-		::MPI_Mrecv(buf, count, static_cast< ::MPI_Datatype>(datatype), &mpi_message, &mpi_status);
+    
+    ::MPI_Mrecv(buf, count, static_cast< ::MPI_Datatype>(datatype), &mpi_message, &mpi_status);
 
     status->mpi_status = new ::MPI_Status(mpi_status);
     status->ep_src = message->ep_src;
@@ -133,9 +132,8 @@ namespace ep_lib {
     //check_sum_recv(buf, count, datatype, message->ep_src, message->ep_tag);
 
     return 0;
-	}
-
-
-  
+  }
 
 }
+
+

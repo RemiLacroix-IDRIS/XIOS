@@ -351,6 +351,8 @@ namespace ep_lib
     ::MPI_Type_get_extent(static_cast< ::MPI_Datatype>(datatype), &lb, &datasize);
 
     void *local_gather_recvbuf;
+    void *master_recvbuf;
+    if(ep_rank_loc == 0 && mpi_rank == root_mpi_rank && root_ep_loc != 0) master_recvbuf = new void*[sizeof(recvbuf)];
 
     if(ep_rank_loc==0)
     {
@@ -380,9 +382,16 @@ namespace ep_lib
         gatherv_displs[i] = gatherv_recvcnt[i-1] + gatherv_displs[i-1];
       }
 
-
-      ::MPI_Gatherv(local_gather_recvbuf, count*num_ep, static_cast< ::MPI_Datatype>(datatype), recvbuf, gatherv_recvcnt,
+      if(root_ep_loc != 0) // gather to root_master
+      {
+        ::MPI_Gatherv(local_gather_recvbuf, count*num_ep, static_cast< ::MPI_Datatype>(datatype), master_recvbuf, gatherv_recvcnt,
                     gatherv_displs, static_cast< ::MPI_Datatype>(datatype), root_mpi_rank, static_cast< ::MPI_Comm>(comm.mpi_comm));
+      }
+      else
+      {
+        ::MPI_Gatherv(local_gather_recvbuf, count*num_ep, static_cast< ::MPI_Datatype>(datatype), recvbuf, gatherv_recvcnt,
+                    gatherv_displs, static_cast< ::MPI_Datatype>(datatype), root_mpi_rank, static_cast< ::MPI_Comm>(comm.mpi_comm));
+      }
 
       delete[] gatherv_recvcnt;
       delete[] gatherv_displs;
@@ -391,13 +400,15 @@ namespace ep_lib
 
     if(root_ep_loc != 0 && mpi_rank == root_mpi_rank) // root is not master, master send to root and root receive from master
     {
-      innode_memcpy(0, recvbuf, root_ep_loc, recvbuf, count*ep_size, datatype, comm);
+      innode_memcpy(0, master_recvbuf, root_ep_loc, recvbuf, count*ep_size, datatype, comm);
+      if(ep_rank_loc == 0 ) delete[] master_recvbuf;
     }
 
 
 
     if(ep_rank_loc==0)
     {
+
       if(datatype == MPI_INT)
       {
         delete[] static_cast<int*>(local_gather_recvbuf);
