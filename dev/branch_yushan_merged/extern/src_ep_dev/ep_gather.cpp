@@ -325,6 +325,8 @@ namespace ep_lib
     }
 
     if(!comm.mpi_comm) return 0;
+    
+    MPI_Bcast(&recvcount, 1, MPI_INT, root, comm);
 
     assert(static_cast< ::MPI_Datatype>(sendtype) == static_cast< ::MPI_Datatype>(recvtype) && sendcount == recvcount);
 

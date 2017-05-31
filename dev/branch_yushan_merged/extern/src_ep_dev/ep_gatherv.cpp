@@ -347,9 +347,21 @@ namespace ep_lib
     num_ep = comm.ep_comm_ptr->size_rank_info[1].second;
     mpi_size = comm.ep_comm_ptr->size_rank_info[2].second;
     
+    
+    
     if(ep_size == mpi_size) 
       return ::MPI_Gatherv(sendbuf, sendcount, static_cast< ::MPI_Datatype>(datatype), recvbuf, recvcounts, displs,
                               static_cast< ::MPI_Datatype>(datatype), root, static_cast< ::MPI_Comm>(comm.mpi_comm));
+
+    if(ep_rank != root)
+    {
+      recvcounts = new int[ep_size];
+      displs = new int[ep_size];
+    }
+    
+    MPI_Bcast(const_cast< int* >(displs),     ep_size, MPI_INT, root, comm);
+    MPI_Bcast(const_cast< int* >(recvcounts), ep_size, MPI_INT, root, comm);
+                              
 
     int recv_plus_displs[ep_size];
     for(int i=0; i<ep_size; i++) recv_plus_displs[i] = recvcounts[i] + displs[i];
@@ -364,15 +376,6 @@ namespace ep_lib
       }
       assert(recv_plus_displs[ep_rank-ep_rank_loc+num_ep-1] >= displs[ep_rank-ep_rank_loc+num_ep-2]);
     }
-
-    if(ep_rank != root)
-    {
-      recvcounts = new int[ep_size];
-      displs = new int[ep_size];
-    }
-    
-    MPI_Bcast(const_cast< int* >(recvcounts), ep_size, MPI_INT, root, comm);
-    MPI_Bcast(const_cast< int* >(displs), ep_size, MPI_INT, root, comm);
 
 
     int root_mpi_rank = comm.rank_map->at(root).second;
