@@ -14,9 +14,9 @@ using namespace std;
 
 namespace ep_lib {
 
-	int MPI_Test(MPI_Request *request, int *flag, MPI_Status *status)
-	{
-		Debug("MPI_Test with EP");
+  int MPI_Test(MPI_Request *request, int *flag, MPI_Status *status)
+  {
+    Debug("MPI_Test with EP");
 
     *flag = false;
 
@@ -55,9 +55,21 @@ namespace ep_lib {
 
     if(request->type == 3)  // imrecv
     {
-      ::MPI_Request mpi_request = static_cast< ::MPI_Request >(request->mpi_request);
+      ::MPI_Request *mpi_request = static_cast< ::MPI_Request* >(&(request->mpi_request));
       ::MPI_Status mpi_status;
-      ::MPI_Test(&mpi_request, flag, &mpi_status);
+      
+      ::MPI_Errhandler_set(MPI_COMM_WORLD_STD, MPI_ERRORS_RETURN);
+      int error_code = ::MPI_Test(mpi_request, flag, &mpi_status);
+      if (error_code != MPI_SUCCESS) {
+      
+         char error_string[BUFSIZ];
+         int length_of_error_string, error_class;
+      
+         ::MPI_Error_class(error_code, &error_class);
+         ::MPI_Error_string(error_class, error_string, &length_of_error_string);
+         printf("%s\n", error_string);
+      }
+      
       if(*flag)
       {
         status->mpi_status = new ::MPI_Status(mpi_status);
@@ -78,12 +90,12 @@ namespace ep_lib {
       return 0;
     }
 		
-	}
+  }
 
 
-	int MPI_Testall(int count, MPI_Request *array_of_requests, int *flag, MPI_Status *array_of_statuses)
-	{
-	  Debug("MPI_Testall with EP");
+  int MPI_Testall(int count, MPI_Request *array_of_requests, int *flag, MPI_Status *array_of_statuses)
+  {
+    Debug("MPI_Testall with EP");
     *flag = true;
     int i=0;
     while(*flag && i<count )
@@ -91,7 +103,7 @@ namespace ep_lib {
       MPI_Test(&array_of_requests[i], flag, &array_of_statuses[i]);
       i++;
     }
-	}
+  }
 
 
 }

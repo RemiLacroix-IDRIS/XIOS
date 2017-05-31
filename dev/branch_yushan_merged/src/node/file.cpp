@@ -633,7 +633,7 @@ namespace xios {
      }
 
      // Now everything is ok, close it
-     close();
+     //close();
    }
 
 

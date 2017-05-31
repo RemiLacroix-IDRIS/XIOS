@@ -127,7 +127,11 @@ This function closes a netcdf file, given its id
 */
 int CNetCdfInterface::close(int ncId)
 {
-  int status = nc_close(ncId);
+  int status = NC_NOERR;
+  //#pragma omp critical (_netcdf)
+  #pragma omp master
+  {
+  status = nc_close(ncId);
   if (NC_NOERR != status)
   {
     StdString errormsg(nc_strerror(status));
@@ -138,7 +142,7 @@ int CNetCdfInterface::close(int ncId)
     StdString e = sstr.str();
     throw CNetCdfException(e);
   }
-
+  }
   return status;
 }
 

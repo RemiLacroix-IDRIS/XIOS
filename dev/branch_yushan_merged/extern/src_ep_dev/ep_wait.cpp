@@ -99,7 +99,9 @@ namespace ep_lib
         {
           if(array_of_requests[i].type != 2) // isend or imrecv
           {      
-            MPI_Wait(&array_of_requests[i], &array_of_statuses[i]);
+            //MPI_Wait(&array_of_requests[i], &array_of_statuses[i]);
+            int tested=false;
+            while(!tested) MPI_Test(&array_of_requests[i], &tested, &array_of_statuses[i]);
             finished++;
             finished_index[i] = true;
           }

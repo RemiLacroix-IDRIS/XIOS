@@ -269,8 +269,9 @@ int Mapper::remap(Elt *elements, int nbElements, int order, bool renormalize, bo
 
     MPI_Status *status = new MPI_Status[4*mpiSize];
     
-    MPI_Waitall(nbSendRequest, sendRequest, status);
     MPI_Waitall(nbRecvRequest, recvRequest, status);
+    MPI_Waitall(nbSendRequest, sendRequest, status);
+    
 
     /* for all indices that have been received from requesting ranks: pack values and gradients, then send */
     nbSendRequest = 0;
@@ -299,9 +300,9 @@ int Mapper::remap(Elt *elements, int nbElements, int order, bool renormalize, bo
                 else
                     sendNeighIds[rank][j] = sstree.localElements[recvElement[rank][j]].src_id;
             }
-            MPI_Issend(sendValue[rank],  nbRecvElement[rank], MPI_DOUBLE, rank, 0, communicator, &sendRequest[nbSendRequest]);
+            MPI_Issend(sendValue[rank], nbRecvElement[rank], MPI_DOUBLE, rank, 0, communicator, &sendRequest[nbSendRequest]);
             nbSendRequest++;
-            MPI_Issend(sendArea[rank],  nbRecvElement[rank], MPI_DOUBLE, rank, 0, communicator, &sendRequest[nbSendRequest]);
+            MPI_Issend(sendArea[rank], nbRecvElement[rank], MPI_DOUBLE, rank, 0, communicator, &sendRequest[nbSendRequest]);
             nbSendRequest++;
             if (order == 2)
             {
@@ -316,8 +317,7 @@ int Mapper::remap(Elt *elements, int nbElements, int order, bool renormalize, bo
             {
                 MPI_Issend(sendNeighIds[rank], 4*nbRecvElement[rank], MPI_INT, rank, 0, communicator, &sendRequest[nbSendRequest]);
                 //ym  --> attention taille GloId
-                nbSendRequest++;
-                
+                nbSendRequest++;                
             }
         }
         if (nbSendElement[rank] > 0)
@@ -344,8 +344,9 @@ int Mapper::remap(Elt *elements, int nbElements, int order, bool renormalize, bo
         }
     }
     
-    MPI_Waitall(nbSendRequest, sendRequest, status);
     MPI_Waitall(nbRecvRequest, recvRequest, status);
+    MPI_Waitall(nbSendRequest, sendRequest, status); 
+    
     
 
     /* now that all values and gradients are available use them to computed interpolated values on target
@@ -406,9 +407,9 @@ int Mapper::remap(Elt *elements, int nbElements, int order, bool renormalize, bo
             i++;
         }
     }
-
+    
     /* free all memory allocated in this function */
-    for (int rank = 0; rank < mpiSize; rank++)
+    /*for (int rank = 0; rank < mpiSize; rank++)
     {
         if (nbSendElement[rank] > 0)
         {
@@ -445,6 +446,7 @@ int Mapper::remap(Elt *elements, int nbElements, int order, bool renormalize, bo
     delete[] recvGrad;
     delete[] sendNeighIds;
     delete[] recvNeighIds;
+    */
     return i;
 }
 
@@ -545,9 +547,9 @@ void Mapper::buildMeshTopology()
             nbRecvRequest++;
         }
     }
-
-    MPI_Waitall(nbSendRequest, sendRequest, status);
+    
     MPI_Waitall(nbRecvRequest, recvRequest, status);
+    MPI_Waitall(nbSendRequest, sendRequest, status);
 
     for (int rank = 0; rank < mpiSize; rank++)
         if (nbSendNode[rank] > 0) delete [] sendBuffer[rank];
@@ -618,8 +620,8 @@ void Mapper::buildMeshTopology()
         }
     }
 
-    MPI_Waitall(nbSendRequest, sendRequest, status);
     MPI_Waitall(nbRecvRequest, recvRequest, status);
+    MPI_Waitall(nbSendRequest, sendRequest, status);
  
     int nbNeighbourNodes = 0;
     for (int rank = 0; rank < mpiSize; rank++)
@@ -802,8 +804,9 @@ void Mapper::computeIntersection(Elt *elements, int nbElements)
         }
     }
  
-    MPI_Waitall(nbSendRequest, sendRequest, status);
     MPI_Waitall(nbRecvRequest, recvRequest, status);
+    MPI_Waitall(nbSendRequest, sendRequest, status);
+    
     
     char **sendBuffer2 = new char*[mpiSize];
     char **recvBuffer2 = new char*[mpiSize];
@@ -877,19 +880,18 @@ void Mapper::computeIntersection(Elt *elements, int nbElements)
         if (sentMessageSize[rank] > 0)
         {
             MPI_Issend(sendBuffer2[rank], sentMessageSize[rank], MPI_CHAR, rank, 0, communicator, &sendRequest[nbSendRequest]);
-            printf("proc %d send %d elements to proc %d\n", mpiRank, sentMessageSize[rank], rank);
             nbSendRequest++;
         }
         if (recvMessageSize[rank] > 0)
         {
             MPI_Irecv(recvBuffer2[rank], recvMessageSize[rank], MPI_CHAR, rank, 0, communicator, &recvRequest[nbRecvRequest]);
-            printf("proc %d recv %d elements from proc %d\n", mpiRank, recvMessageSize[rank], rank);
             nbRecvRequest++;
         }
     }
     
-    MPI_Waitall(nbSendRequest, sendRequest, status);
     MPI_Waitall(nbRecvRequest, recvRequest, status);
+    MPI_Waitall(nbSendRequest, sendRequest, status);
+   
    
 
     delete [] sendRequest;

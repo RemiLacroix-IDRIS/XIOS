@@ -403,9 +403,11 @@ void CDomainAlgorithmInterpolate::processPole(std::map<int,std::vector<std::pair
 {
   CContext* context = CContext::getCurrent();
   CContextClient* client=context->client;
+  int split_key;
+  ep_lib::MPI_Comm_rank(client->intraComm, &split_key);
 
   ep_lib::MPI_Comm poleComme(MPI_COMM_NULL);
-  ep_lib::MPI_Comm_split(client->intraComm, interMapValuePole.empty() ? MPI_UNDEFINED : 1, 0, &poleComme);
+  ep_lib::MPI_Comm_split(client->intraComm, interMapValuePole.empty() ? 9 : 1, split_key, &poleComme);
   if (MPI_COMM_NULL != poleComme)
   {
     int nbClientPole;
@@ -420,11 +422,12 @@ void CDomainAlgorithmInterpolate::processPole(std::map<int,std::vector<std::pair
 
     std::vector<int> recvCount(nbClientPole,0);
     std::vector<int> displ(nbClientPole,0);
-    MPI_Allgather(&nbWeight,1,MPI_INT,&recvCount[0],1,MPI_INT,poleComme) ;
+    ep_lib::MPI_Allgather(&nbWeight,1,MPI_INT,&recvCount[0],1,MPI_INT,poleComme) ;
 
     displ[0]=0;
     for(int n=1;n<nbClientPole;++n) displ[n]=displ[n-1]+recvCount[n-1] ;
     int recvSize=displ[nbClientPole-1]+recvCount[nbClientPole-1] ;
+    
 
     std::vector<int> sendSourceIndexBuff(nbWeight);
     std::vector<double> sendSourceWeightBuff(nbWeight);
@@ -443,8 +446,8 @@ void CDomainAlgorithmInterpolate::processPole(std::map<int,std::vector<std::pair
     std::vector<double> recvSourceWeightBuff(recvSize);
 
     // Gather all index and weight for pole
-    MPI_Allgatherv(&sendSourceIndexBuff[0],nbWeight,MPI_INT,&recvSourceIndexBuff[0],&recvCount[0],&displ[0],MPI_INT,poleComme);
-    MPI_Allgatherv(&sendSourceWeightBuff[0],nbWeight,MPI_DOUBLE,&recvSourceWeightBuff[0],&recvCount[0],&displ[0],MPI_DOUBLE,poleComme);
+    ep_lib::MPI_Allgatherv(&sendSourceIndexBuff[0],nbWeight,MPI_INT,&recvSourceIndexBuff[0],&recvCount[0],&displ[0],MPI_INT,poleComme);
+    ep_lib::MPI_Allgatherv(&sendSourceWeightBuff[0],nbWeight,MPI_DOUBLE,&recvSourceWeightBuff[0],&recvCount[0],&displ[0],MPI_DOUBLE,poleComme);
 
     std::map<int,double> recvTemp;
     for (int idx = 0; idx < recvSize; ++idx)
@@ -566,7 +569,7 @@ void CDomainAlgorithmInterpolate::exchangeRemapInfo(std::map<int,std::vector<std
   }
 
 
-  MPI_Allreduce(sendBuff, recvBuff, nbClient, MPI_INT, MPI_SUM, client->intraComm);
+  ep_lib::MPI_Allreduce(sendBuff, recvBuff, nbClient, MPI_INT, MPI_SUM, client->intraComm);
 
   int* sendIndexDestBuff = new int [sendBuffSize];
   int* sendIndexSrcBuff  = new int [sendBuffSize];
@@ -594,7 +597,7 @@ void CDomainAlgorithmInterpolate::exchangeRemapInfo(std::map<int,std::vector<std
     }
 
     sendRequest.push_back(ep_lib::MPI_Request());
-    MPI_Isend(sendIndexDestBuff + sendOffSet,
+    ep_lib::MPI_Isend(sendIndexDestBuff + sendOffSet,
              k,
              MPI_INT,
              itMap->first,
@@ -602,7 +605,7 @@ void CDomainAlgorithmInterpolate::exchangeRemapInfo(std::map<int,std::vector<std
              client->intraComm,
              &sendRequest.back());
     sendRequest.push_back(ep_lib::MPI_Request());
-    MPI_Isend(sendIndexSrcBuff + sendOffSet,
+    ep_lib::MPI_Isend(sendIndexSrcBuff + sendOffSet,
              k,
              MPI_INT,
              itMap->first,
@@ -610,7 +613,7 @@ void CDomainAlgorithmInterpolate::exchangeRemapInfo(std::map<int,std::vector<std
              client->intraComm,
              &sendRequest.back());
     sendRequest.push_back(ep_lib::MPI_Request());
-    MPI_Isend(sendWeightBuff + sendOffSet,
+    ep_lib::MPI_Isend(sendWeightBuff + sendOffSet,
              k,
              MPI_DOUBLE,
              itMap->first,
@@ -629,7 +632,7 @@ void CDomainAlgorithmInterpolate::exchangeRemapInfo(std::map<int,std::vector<std
   while (receivedSize < recvBuffSize)
   {
     ep_lib::MPI_Status recvStatus;
-    MPI_Recv((recvIndexDestBuff + receivedSize),
+    ep_lib::MPI_Recv((recvIndexDestBuff + receivedSize),
              recvBuffSize,
              MPI_INT,
              MPI_ANY_SOURCE,
@@ -638,13 +641,13 @@ void CDomainAlgorithmInterpolate::exchangeRemapInfo(std::map<int,std::vector<std
              &recvStatus);
 
     int countBuff = 0;
-    MPI_Get_count(&recvStatus, MPI_INT, &countBuff);
+    ep_lib::MPI_Get_count(&recvStatus, MPI_INT, &countBuff);
     #ifdef _usingMPI
     clientSrcRank = recvStatus.MPI_SOURCE;
     #elif _usingEP
     clientSrcRank = recvStatus.ep_src;
     #endif
-    MPI_Recv((recvIndexSrcBuff + receivedSize),
+    ep_lib::MPI_Recv((recvIndexSrcBuff + receivedSize),
              recvBuffSize,
              MPI_INT,
              clientSrcRank,
@@ -652,7 +655,7 @@ void CDomainAlgorithmInterpolate::exchangeRemapInfo(std::map<int,std::vector<std
              client->intraComm,
              &recvStatus);
 
-    MPI_Recv((recvWeightBuff + receivedSize),
+    ep_lib::MPI_Recv((recvWeightBuff + receivedSize),
              recvBuffSize,
              MPI_DOUBLE,
              clientSrcRank,
@@ -670,7 +673,7 @@ void CDomainAlgorithmInterpolate::exchangeRemapInfo(std::map<int,std::vector<std
 
   std::vector<ep_lib::MPI_Status> requestStatus(sendRequest.size());
   ep_lib::MPI_Status stat_ignore;
-  MPI_Waitall(sendRequest.size(), &sendRequest[0], &stat_ignore);
+  ep_lib::MPI_Waitall(sendRequest.size(), &sendRequest[0], &stat_ignore);
 
   delete [] sendIndexDestBuff;
   delete [] sendIndexSrcBuff;
@@ -760,7 +763,7 @@ void CDomainAlgorithmInterpolate::writeInterpolationInfo(std::string& filename,
     }    
   }
 
-  MPI_Allreduce(&localNbWeight, &globalNbWeight, 1, MPI_LONG, MPI_SUM, client->intraComm);
+  ep_lib::MPI_Allreduce(&localNbWeight, &globalNbWeight, 1, MPI_LONG, MPI_SUM, client->intraComm);
   ep_lib::MPI_Scan(&localNbWeight, &startIndex, 1, MPI_LONG, MPI_SUM, client->intraComm);
   
   if (0 == globalNbWeight)

@@ -55,9 +55,22 @@ bool insertNeighbour( Elt& a, const Elt& b, bool insert )
   {
     for (int j = 0; j < b.n; j++)
     {
-// share a full edge ? be carefull at the orientation
-      assert(squaredist(a.vertex[ i       ], b.vertex[ j       ]) > 1e-10*1e-10 ||
-             squaredist(a.vertex[(i+1)%a.n], b.vertex[(j+1)%b.n]) > 1e-10*1e-10);
+      // share a full edge ? be carefull at the orientation
+      /*
+      if(squaredist(a.vertex[i], b.vertex[j]) > 1e-10*1e-10 ||
+         squaredist(a.vertex[(i+1)%a.n], b.vertex[(j+1)%b.n]) > 1e-10*1e-10 )
+      {      
+        printf("A : squaredist(a.vertex[%d], b.vertex[%d]) = %.10e  %d\n", 
+                i, j, squaredist(a.vertex[i], b.vertex[j]), 
+                squaredist(a.vertex[i], b.vertex[j]) > 1e-10*1e-10 ? true : false);
+        printf("B : squaredist(a.vertex[%d], b.vertex[%d]) = %.10e  %d\n", 
+                (i+1)%a.n, (j+1)%b.n, squaredist(a.vertex[(i+1)%a.n], b.vertex[(j+1)%b.n]),
+                squaredist(a.vertex[(i+1)%a.n], b.vertex[(j+1)%b.n]) > 1e-10*1e-10 ? true : false);
+
+        assert(squaredist(a.vertex[ i       ], b.vertex[ j       ]) > 1e-10*1e-10 ||
+               squaredist(a.vertex[(i+1)%a.n], b.vertex[(j+1)%b.n]) > 1e-10*1e-10);
+        exit(0);
+      }*/
       if (   squaredist(a.vertex[ i       ], b.vertex[ j           ]) < 1e-10*1e-10 &&
              squaredist(a.vertex[(i+1)%a.n], b.vertex[(j+b.n-1)%b.n]) < 1e-10*1e-10)
       {

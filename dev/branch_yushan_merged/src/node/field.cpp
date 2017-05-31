@@ -25,7 +25,7 @@
 
 namespace xios{
 
-   /// ////////////////////// Définitions ////////////////////// ///
+   /// ////////////////////// Dfinitions ////////////////////// ///
 
    CField::CField(void)
       : CObjectTemplate<CField>(), CFieldAttributes()
@@ -690,6 +690,8 @@ namespace xios{
    {
      CContext* context = CContext::getCurrent();
      solveOnlyReferenceEnabledField(doSending2Server);
+     int myRank;
+     MPI_Comm_rank(context->client->intraComm, &myRank);
 
      if (!areAllReferenceSolved)
      {
@@ -710,7 +712,11 @@ namespace xios{
 
      if (context->hasClient)
      {
+       MPI_Barrier(context->client->intraComm);
+       printf("Proc %d enters function\n", myRank);
        solveTransformedGrid();
+       MPI_Barrier(context->client->intraComm);
+       printf("Proc %d exits function\n", myRank);
      }
 
      solveCheckMaskIndex(doSending2Server);
