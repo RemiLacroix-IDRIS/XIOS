@@ -302,20 +302,20 @@ int Mapper::remap(Elt *elements, int nbElements, int order, bool renormalize, bo
             }
             MPI_Issend(sendValue[rank], nbRecvElement[rank], MPI_DOUBLE, rank, 0, communicator, &sendRequest[nbSendRequest]);
             nbSendRequest++;
-            MPI_Issend(sendArea[rank], nbRecvElement[rank], MPI_DOUBLE, rank, 0, communicator, &sendRequest[nbSendRequest]);
+            MPI_Issend(sendArea[rank], nbRecvElement[rank], MPI_DOUBLE, rank, 1, communicator, &sendRequest[nbSendRequest]);
             nbSendRequest++;
             if (order == 2)
             {
                 MPI_Issend(sendGrad[rank], 3*nbRecvElement[rank]*(NMAX+1),
-                        MPI_DOUBLE, rank, 0, communicator, &sendRequest[nbSendRequest]);
+                        MPI_DOUBLE, rank, 2, communicator, &sendRequest[nbSendRequest]);
                 nbSendRequest++;
-                MPI_Issend(sendNeighIds[rank], 4*nbRecvElement[rank]*(NMAX+1), MPI_INT, rank, 0, communicator, &sendRequest[nbSendRequest]);
+                MPI_Issend(sendNeighIds[rank], 4*nbRecvElement[rank]*(NMAX+1), MPI_INT, rank, 3, communicator, &sendRequest[nbSendRequest]);
                 //ym  --> attention taille GloId
                 nbSendRequest++;
             }
             else
             {
-                MPI_Issend(sendNeighIds[rank], 4*nbRecvElement[rank], MPI_INT, rank, 0, communicator, &sendRequest[nbSendRequest]);
+                MPI_Issend(sendNeighIds[rank], 4*nbRecvElement[rank], MPI_INT, rank, 4, communicator, &sendRequest[nbSendRequest]);
                 //ym  --> attention taille GloId
                 nbSendRequest++;                
             }
@@ -324,20 +324,20 @@ int Mapper::remap(Elt *elements, int nbElements, int order, bool renormalize, bo
         {
             MPI_Irecv(recvValue[rank],  nbSendElement[rank], MPI_DOUBLE, rank, 0, communicator, &recvRequest[nbRecvRequest]);
             nbRecvRequest++;
-            MPI_Irecv(recvArea[rank],  nbSendElement[rank], MPI_DOUBLE, rank, 0, communicator, &recvRequest[nbRecvRequest]);
+            MPI_Irecv(recvArea[rank],  nbSendElement[rank], MPI_DOUBLE, rank, 1, communicator, &recvRequest[nbRecvRequest]);
             nbRecvRequest++;
             if (order == 2)
             {
                 MPI_Irecv(recvGrad[rank], 3*nbSendElement[rank]*(NMAX+1),
-                        MPI_DOUBLE, rank, 0, communicator, &recvRequest[nbRecvRequest]);
+                        MPI_DOUBLE, rank, 2, communicator, &recvRequest[nbRecvRequest]);
                 nbRecvRequest++;
-                MPI_Irecv(recvNeighIds[rank], 4*nbSendElement[rank]*(NMAX+1), MPI_INT, rank, 0, communicator, &recvRequest[nbRecvRequest]);
+                MPI_Irecv(recvNeighIds[rank], 4*nbSendElement[rank]*(NMAX+1), MPI_INT, rank, 3, communicator, &recvRequest[nbRecvRequest]);
                 //ym  --> attention taille GloId
                 nbRecvRequest++;
             }
             else
             {
-                MPI_Irecv(recvNeighIds[rank], 4*nbSendElement[rank], MPI_INT, rank, 0, communicator, &recvRequest[nbRecvRequest]);
+                MPI_Irecv(recvNeighIds[rank], 4*nbSendElement[rank], MPI_INT, rank, 4, communicator, &recvRequest[nbRecvRequest]);
                 //ym  --> attention taille GloId
                 nbRecvRequest++;
             }

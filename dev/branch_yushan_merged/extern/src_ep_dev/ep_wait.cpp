@@ -57,9 +57,20 @@ namespace ep_lib
 
     if(request->type == 3)
     {
-      ::MPI_Request mpi_request = static_cast< ::MPI_Request >(request->mpi_request);
+      ::MPI_Request *mpi_request = static_cast< ::MPI_Request* >(&(request->mpi_request));
       ::MPI_Status mpi_status;
-      ::MPI_Wait(&mpi_request, &mpi_status);
+      ::MPI_Errhandler_set(MPI_COMM_WORLD_STD, MPI_ERRORS_RETURN);
+      int error_code = ::MPI_Wait(mpi_request, &mpi_status);
+      if (error_code != MPI_SUCCESS) {
+      
+         char error_string[BUFSIZ];
+         int length_of_error_string, error_class;
+      
+         ::MPI_Error_class(error_code, &error_class);
+         ::MPI_Error_string(error_class, error_string, &length_of_error_string);
+         printf("%s\n", error_string);
+      }
+      
 
       status->mpi_status = new ::MPI_Status(mpi_status);
       status->ep_src = request->ep_src;
@@ -80,8 +91,9 @@ namespace ep_lib
 
   int MPI_Waitall(int count, MPI_Request *array_of_requests, MPI_Status *array_of_statuses)
   {
-    int dest_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &dest_rank);
+    //int dest_rank;
+    //MPI_Comm_rank(MPI_COMM_WORLD, &dest_rank);
+    //printf("proc %d enters waitall\n", dest_rank);
 
     int finished = 0;
     int finished_index[count];
@@ -99,9 +111,9 @@ namespace ep_lib
         {
           if(array_of_requests[i].type != 2) // isend or imrecv
           {      
-            //MPI_Wait(&array_of_requests[i], &array_of_statuses[i]);
-            int tested=false;
-            while(!tested) MPI_Test(&array_of_requests[i], &tested, &array_of_statuses[i]);
+            MPI_Wait(&array_of_requests[i], &array_of_statuses[i]);
+            //int tested=false;
+            //while(!tested) MPI_Test(&array_of_requests[i], &tested, &array_of_statuses[i]);
             finished++;
             finished_index[i] = true;
           }
@@ -126,6 +138,7 @@ namespace ep_lib
         }
       }    
     }
+    //printf("proc %d exits waitall\n", dest_rank);
     return MPI_SUCCESS;
   }  /* end of mpi_waitall*/
 

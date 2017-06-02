@@ -74,7 +74,10 @@ This function opens a netcdf file, given its name and open mode, return its id
 */
 int CNetCdfInterface::open(const StdString& fileName, int oMode, int& ncId)
 {
-  int status = nc_open(fileName.c_str(), oMode, &ncId);
+  int status = NC_NOERR;
+  #pragma omp critical (_netcdf)
+  status = nc_open(fileName.c_str(), oMode, &ncId);
+  
   if (NC_NOERR != status)
   {
     StdString errormsg(nc_strerror(status));
@@ -104,7 +107,7 @@ int CNetCdfInterface::openPar(const StdString& fileName, int oMode, MPI_Comm com
 {
   int status;
   #pragma omp critical (_netcdf)
-  status = xios::nc_open_par(fileName.c_str(), oMode, comm, info, &ncId);
+  status = xios::nc_open_par(fileName.c_str(), oMode, comm, info, &ncId); // nc_open
   if (NC_NOERR != status)
   {
     StdString errormsg(nc_strerror(status));
@@ -128,8 +131,8 @@ This function closes a netcdf file, given its id
 int CNetCdfInterface::close(int ncId)
 {
   int status = NC_NOERR;
-  //#pragma omp critical (_netcdf)
-  #pragma omp master
+  #pragma omp critical (_netcdf)
+  //#pragma omp master
   {
   status = nc_close(ncId);
   if (NC_NOERR != status)

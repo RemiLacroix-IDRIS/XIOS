@@ -577,6 +577,10 @@ namespace xios {
 
       bool isCollective = par_access.isEmpty() || par_access == par_access_attr::collective;
 
+      #ifdef _usingEP
+      if(omp_get_num_threads() != 1 ) multifile = true;
+      #endif
+
       if (isOpen) data_out->closeFile();
       if (time_counter_name.isEmpty()) data_in = shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), static_cast< ::MPI_Comm >(fileComm.mpi_comm), multifile, isCollective));
       else data_in = shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), static_cast< ::MPI_Comm >(fileComm.mpi_comm), multifile, isCollective, time_counter_name));
@@ -608,11 +612,13 @@ namespace xios {
      CContextClient* client=context->client;
 
      // It would probably be better to call initFile() somehow
+     
      MPI_Comm_dup(client->intraComm, &fileComm);
      if (time_counter_name.isEmpty()) time_counter_name = "time_counter";
 
-     //#pragma omp critical (_checkFile)
-     checkFile();
+     //#pragma omp critical (_readAttributesOfEnabledFieldsInReadMode_)
+     //{
+     checkFile(); // calls nc_open
 
      for (int idx = 0; idx < enabledFields.size(); ++idx)
      {
@@ -626,14 +632,23 @@ namespace xios {
         enabledFields[idx]->solveGenerateGrid();
 
         // Read necessary value from file
-        this->data_in->readFieldAttributesValues(enabledFields[idx]);
-
+        #pragma omp critical (_func)
+        {
+          //checkFile();
+          this->data_in->readFieldAttributesValues(enabledFields[idx]);
+          //close();
+        }
+        
         // Fill attributes for base reference
         enabledFields[idx]->solveGridDomainAxisBaseRef();
      }
 
      // Now everything is ok, close it
-     //close();
+     close();
+     //}
+     
+     //if (fileComm != MPI_COMM_NULL) MPI_Comm_free(&fileComm);
+     
    }
 
 

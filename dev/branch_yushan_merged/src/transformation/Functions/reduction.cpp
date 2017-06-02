@@ -49,6 +49,8 @@ bool CReductionAlgorithm::initReductionOperation()
 
   (*CReductionAlgorithm::ReductionOperations_ptr)["average"] = TRANS_REDUCE_AVERAGE;
   CAverageReductionAlgorithm::registerTrans();
+
+  printf("*CReductionAlgorithm::ReductionOperations_ptr = %p\t %p\n", *CReductionAlgorithm::ReductionOperations_ptr, &(*CReductionAlgorithm::ReductionOperations_ptr));
 }
 
 //bool CReductionAlgorithm::_dummyInit = CReductionAlgorithm::initReductionOperation(CReductionAlgorithm::ReductionOperations);
