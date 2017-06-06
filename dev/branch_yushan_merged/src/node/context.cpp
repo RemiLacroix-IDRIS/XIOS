@@ -13,6 +13,8 @@
 #include "message.hpp"
 #include "type.hpp"
 #include "xios_spl.hpp"
+#include "timer.hpp"
+#include "memtrack.hpp"
 
 
 namespace xios {
@@ -401,6 +403,7 @@ namespace xios {
    */
    void CContext::closeDefinition(void)
    {
+     CTimer::get("Context : close definition").resume() ;
      // There is nothing client need to send to server
      if (hasClient)
      {
@@ -454,6 +457,7 @@ namespace xios {
 
       startPrefetchingOfEnabledReadModeFiles();
     }
+    CTimer::get("Context : close definition").suspend() ;
    }
 
    void CContext::findAllEnabledFields(void)
@@ -1207,7 +1211,9 @@ namespace xios {
    void CContext::updateCalendar(int step)
    {
       calendar->update(step);
-
+      #ifdef XIOS_MEMTRACK_LIGHT
+      info(50) << " Current memory used by XIOS : "<<  MemTrack::getCurrentMemorySize()*1.0/(1024*1024)<<" Mbyte, at timestep "<<step<<" of context "<<this->getId()<<endl ;
+#endif
       if (hasClient)
       {
         checkPrefetchingOfEnabledReadModeFiles();

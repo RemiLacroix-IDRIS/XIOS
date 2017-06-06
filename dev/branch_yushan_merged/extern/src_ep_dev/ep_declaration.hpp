@@ -58,7 +58,7 @@ extern ep_lib::MPI_Comm MPI_COMM_NULL;
 
 extern ep_lib::MPI_Status MPI_STATUS_IGNORE;
 extern ep_lib::MPI_Request MPI_REQUEST_NULL;
-//extern ep_lib::MPI_Info MPI_INFO_NULL;
+extern ep_lib::MPI_Info MPI_INFO_NULL;
 
 #endif // EP_DECLARATION_HPP_INCLUDED
 

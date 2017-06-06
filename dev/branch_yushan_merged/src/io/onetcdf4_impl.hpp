@@ -24,8 +24,11 @@ namespace xios
     if (this->wmpi && !collective)
     CNetCdfInterface::varParAccess(grpid, varid, NC_INDEPENDENT);
 
+    CTimer::get("Files : get data infos").resume();
     this->getWriteDataInfos
     (name, record, array_size,  sstart, scount, start, count);
+    CTimer::get("Files : get data infos").suspend();
+
     if (data.numElements() != array_size)
     {
       ERROR("CONetCDF4::writeData(...)",
@@ -53,8 +56,10 @@ namespace xios
     if (this->wmpi && !collective)
     CNetCdfInterface::varParAccess(grpid, varid, NC_INDEPENDENT);
 
-    this->getWriteDataInfos
-    (name, record, array_size,  sstart, scount, start, count);
+    CTimer::get("CONetCDF4::writeData getWriteDataInfos").resume();
+    this->getWriteDataInfos(name, record, array_size,  sstart, scount, start, count);
+    CTimer::get("CONetCDF4::writeData getWriteDataInfos").suspend();
+ 
     if (data.numElements()*stringArrayLen != array_size)
     {
       ERROR("CONetCDF4::writeData(...)",
@@ -71,7 +76,9 @@ namespace xios
       it->copy(PtrArrayStr,it->size()) ;
       PtrArrayStr[it->size()]='\0' ;
     }
+    CTimer::get("CONetCDF4::writeData writeData_").resume();
     this->writeData_(grpid, varid, sstart, scount, ArrayStr);
+    CTimer::get("CONetCDF4::writeData writeData_").suspend();
     delete [] ArrayStr ;
   }
 

@@ -27,7 +27,7 @@ namespace xios
     StdOFStream CClient::m_infoStream;
     StdOFStream CClient::m_errorStream;
 
-    StdOFStream CClient::array_infoStream[10];
+    StdOFStream CClient::array_infoStream[16];
 
     void CClient::initialize(const string& codeId, MPI_Comm& localComm, MPI_Comm& returnComm)
     {
@@ -51,7 +51,7 @@ namespace xios
             assert(return_level == 3);
           }
           CTimer::get("XIOS").resume() ;
-          CTimer::get("XIOS init").resume() ;
+          CTimer::get("XIOS init/finalize").resume() ;
           boost::hash<string> hashString ;
 
           unsigned long hashClient=hashString(codeId) ;
@@ -150,7 +150,7 @@ namespace xios
         MPI_Comm_dup(localComm,&intraComm) ;
 
         CTimer::get("XIOS").resume() ;
-        CTimer::get("XIOS init").resume() ;
+        CTimer::get("XIOS init/finalize").resume() ;
 
         if (CXios::usingServer)
         {
@@ -268,7 +268,7 @@ namespace xios
       MPI_Comm_free(&interComm);
       MPI_Comm_free(&intraComm);
 
-      CTimer::get("XIOS finalize").suspend() ;
+      CTimer::get("XIOS init/finalize").suspend() ;
       CTimer::get("XIOS").suspend() ;
 
       if (!is_MPI_Initialized)
@@ -282,6 +282,7 @@ namespace xios
 
   /*    #pragma omp critical (_output)
       {
+         report(0) <<" Performance report : Whole time from XIOS init and finalize: "<< CTimer::get("XIOS init/finalize").getCumulatedTime()<<" s"<<endl ;
          report(0) <<"     Performance report : total time spent for XIOS : "<< CTimer::get("XIOS").getCumulatedTime()<<" s"<<endl ;
          report(0)<< "     Performance report : time spent for waiting free buffer : "<< CTimer::get("Blocking time").getCumulatedTime()<<" s"<<endl ;
          report(0)<< "     Performance report : Ratio : "<< CTimer::get("Blocking time").getCumulatedTime()/CTimer::get("XIOS").getCumulatedTime()*100.<<" %"<<endl ;
@@ -289,7 +290,8 @@ namespace xios
          report(0)<< "     Memory report : Current buffer_size : "<<CXios::bufferSize<<endl ;
          report(0)<< "     Memory report : Minimum buffer size required : " << CClientBuffer::maxRequestSize << " bytes" << endl ;
          report(0)<< "     Memory report : increasing it by a factor will increase performance, depending of the volume of data wrote in file at each time step of the file"<<endl ;
-       }      
+         report(100)<<CTimer::getAllCumulatedTime()<<endl ;
+      }      
 */
    }
 
