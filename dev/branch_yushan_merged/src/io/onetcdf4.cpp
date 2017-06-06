@@ -56,8 +56,7 @@ namespace xios
          {
             CTimer::get("Files : create").resume();
             if (wmpi)
-               //CNetCdfInterface::createPar(filename, mode, static_cast<MPI_Comm>(comm->mpi_comm), MPI_INFO_NULL_STD, this->ncidp);           
-               CNetCdfInterface::createPar(filename, mode, *comm, MPI_INFO_NULL_STD, this->ncidp);           
+               CNetCdfInterface::createPar(filename, mode, *comm, MPI_INFO_NULL_STD, this->ncidp);
             else
                CNetCdfInterface::create(filename, mode, this->ncidp);
             CTimer::get("Files : create").suspend();

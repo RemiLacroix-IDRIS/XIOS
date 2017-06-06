@@ -16,7 +16,6 @@
 #include "timer.hpp"
 #include "memtrack.hpp"
 
-
 namespace xios {
 
   //shared_ptr<CContextGroup> CContext::root;
@@ -1211,9 +1210,11 @@ namespace xios {
    void CContext::updateCalendar(int step)
    {
       calendar->update(step);
-      #ifdef XIOS_MEMTRACK_LIGHT
+#ifdef XIOS_MEMTRACK_LIGHT
+      #pragma omp critical (_output)
       info(50) << " Current memory used by XIOS : "<<  MemTrack::getCurrentMemorySize()*1.0/(1024*1024)<<" Mbyte, at timestep "<<step<<" of context "<<this->getId()<<endl ;
 #endif
+
       if (hasClient)
       {
         checkPrefetchingOfEnabledReadModeFiles();

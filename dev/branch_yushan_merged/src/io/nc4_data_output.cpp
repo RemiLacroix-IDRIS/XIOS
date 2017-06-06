@@ -1832,7 +1832,6 @@ namespace xios
                                : StdString("Created by xios");
 
          singleDomain = (file->nbDomains == 1);
-
          StdString conv_str ;
          if (file->convention_str.isEmpty())
          {
@@ -1840,7 +1839,8 @@ namespace xios
             else conv_str="UGRID" ;
          }
          else conv_str=file->convention_str ;
-           
+
+
          try
          {
            this->writeFileAttributes(filename, description,
@@ -2272,7 +2272,6 @@ namespace xios
                     }
                   }
                 }
-
 
                 CTimer::get("Files : writing data").resume();
                 SuperClassWriter::writeData(fieldData, fieldid, isCollective, field->getNStep() - 1, &start, &count);

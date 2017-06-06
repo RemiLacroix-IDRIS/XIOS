@@ -35,7 +35,7 @@ void CSumReductionAlgorithm::apply(const std::vector<std::pair<int,double> >& lo
   if (ignoreMissingValue)
   {
     int nbLocalIndex = localIndex.size();
-    int currentlocalIndex = 0;    
+    int currentlocalIndex = 0;
   
     for (int idx = 0; idx < nbLocalIndex; ++idx)
     {

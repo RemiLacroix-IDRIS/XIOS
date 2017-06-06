@@ -40,6 +40,7 @@ void CAverageReductionAlgorithm::apply(const std::vector<std::pair<int,double> >
     int currentlocalIndex = 0;
     double currentWeight  = 0.0;    
 
+
     for (int idx = 0; idx < nbLocalIndex; ++idx)
     {
       currentlocalIndex = localIndex[idx].first;

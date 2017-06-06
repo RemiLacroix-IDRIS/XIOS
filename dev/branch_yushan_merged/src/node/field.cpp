@@ -124,7 +124,7 @@ namespace xios{
 
   void CField::sendUpdateData(const CArray<double,1>& data)
   {
-    CTimer::get("Field : send data").resume();
+    CTimer::get("XIOS send data").resume();
 
     CContext* context = CContext::getCurrent();
     CContextClient* client = context->client;
@@ -176,7 +176,7 @@ namespace xios{
       client->sendEvent(event);
     }
 
-    CTimer::get("Field : send data").suspend();
+    CTimer::get("XIOS send data").suspend();
   }
 
   void CField::recvUpdateData(CEventServer& event)

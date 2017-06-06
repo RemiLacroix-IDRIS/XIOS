@@ -3,7 +3,7 @@
 
 #include "onetcdf4.hpp"
 #include "netCdfInterface.hpp"
-
+#include "timer.hpp"
 // mpi_std.hpp
 
 namespace xios
@@ -59,7 +59,6 @@ namespace xios
     CTimer::get("CONetCDF4::writeData getWriteDataInfos").resume();
     this->getWriteDataInfos(name, record, array_size,  sstart, scount, start, count);
     CTimer::get("CONetCDF4::writeData getWriteDataInfos").suspend();
- 
     if (data.numElements()*stringArrayLen != array_size)
     {
       ERROR("CONetCDF4::writeData(...)",
