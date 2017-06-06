@@ -176,6 +176,8 @@ namespace xios
      MemTrack::TrackListMemoryUsage() ;
      MemTrack::TrackDumpBlocks();
 #endif
+
+#endif
   }
 
   //! Init server by parsing only xios part of config file
