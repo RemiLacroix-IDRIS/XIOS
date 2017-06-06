@@ -415,7 +415,7 @@ int Mapper::remap(Elt *elements, int nbElements, int order, bool renormalize, bo
     }
     
     /* free all memory allocated in this function */
-    /*for (int rank = 0; rank < mpiSize; rank++)
+    for (int rank = 0; rank < mpiSize; rank++)
     {
         if (nbSendElement[rank] > 0)
         {
@@ -452,7 +452,7 @@ int Mapper::remap(Elt *elements, int nbElements, int order, bool renormalize, bo
     delete[] recvGrad;
     delete[] sendNeighIds;
     delete[] recvNeighIds;
-    */
+    
     return i;
 }
 
