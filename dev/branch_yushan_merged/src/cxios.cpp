@@ -162,16 +162,10 @@ namespace xios
        globalRegistry->toFile("xios_registry.bin") ;
        delete globalRegistry ;
      }
+     CClient::closeInfoStream();
+  
+
 #ifdef XIOS_MEMTRACK
-
-#ifdef XIOS_MEMTRACK_LIGHT
-       #pragma omp critical (_output)
-       report(10) << " Memory report : current memory used by XIOS : "<<  MemTrack::getCurrentMemorySize()*1.0/(1024*1024)<<" Mbyte" << endl ;
-       #pragma omp critical (_output)
-       report(10) << " Memory report : maximum memory used by XIOS : "<<  MemTrack::getMaxMemorySize()*1.0/(1024*1024)<<" Mbyte" << endl ;
-#endif
-
-#ifdef XIOS_MEMTRACK_FULL
 
 #ifdef XIOS_MEMTRACK_LIGHT
        report(10) << " Memory report : current memory used by XIOS : "<<  MemTrack::getCurrentMemorySize()*1.0/(1024*1024)<<" Mbyte" << endl ;
@@ -181,10 +175,6 @@ namespace xios
 #ifdef XIOS_MEMTRACK_FULL
      MemTrack::TrackListMemoryUsage() ;
      MemTrack::TrackDumpBlocks();
-#endif
-
-     CClient::closeInfoStream();
-
 #endif
   }
 
@@ -244,24 +234,9 @@ namespace xios
        globalRegistry->toFile("xios_registry.bin") ;
        delete globalRegistry ;
      }
-    CServer::finalize();
 
     CServer::finalize();
-#ifdef XIOS_MEMTRACK
-
-#ifdef XIOS_MEMTRACK_LIGHT
-       #pragma omp critical (_output)
-       report(10) << " Memory report : current memory used by XIOS : "<<  MemTrack::getCurrentMemorySize()*1.0/(1024*1024)<<" Mbyte" << endl ;
-       #pragma omp critical (_output)
-       report(10) << " Memory report : maximum memory used by XIOS : "<<  MemTrack::getMaxMemorySize()*1.0/(1024*1024)<<" Mbyte" << endl ;
-#endif
-
-#ifdef XIOS_MEMTRACK_FULL
-     MemTrack::TrackListMemoryUsage() ;
-     MemTrack::TrackDumpBlocks();
-#endif
-
-#endif 
+        
     CServer::closeInfoStream();
   }
 

@@ -51,9 +51,6 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 extern "C"
 {
   void addr2line(const char *file_name, char** addr, int naddr) ;
-#ifdef XIOS_MEMTRACK_LIGHT
-  void addr2line(const char *file_name, char** addr, int naddr) {} 
-#endif
 }
 /* ------------------------------------------------------------ */
 /* -------------------- namespace MemTrack -------------------- */
@@ -61,11 +58,6 @@ extern "C"
 
 namespace MemTrack
 {
-    size_t currentMemorySize=0 ;
-    size_t maxMemorySize=0 ; 
-
-    size_t getCurrentMemorySize(void) {return currentMemorySize; }
-    size_t getMaxMemorySize(void) {return maxMemorySize ; }
 
     /* ------------------------------------------------------------ */
     /* --------------------- class BlockHeader -------------------- */
@@ -383,9 +375,6 @@ namespace MemTrack
         
         // Get the offset to the user chunk and return it.
         UserChunk *pUser = GetUserAddress(pProlog);
-
-        currentMemorySize += size ;
-        if (currentMemorySize>maxMemorySize) maxMemorySize=currentMemorySize ;
         
         return pUser;
     }
@@ -411,7 +400,6 @@ namespace MemTrack
 
         // Unlink the block header from the list and destroy it.
         BlockHeader *pBlockHeader = GetHeaderAddress(pProlog);
-        currentMemorySize-=pBlockHeader->GetRequestedSize();
         BlockHeader::RemoveNode(pBlockHeader);
         pBlockHeader->~BlockHeader();
         pBlockHeader = NULL;

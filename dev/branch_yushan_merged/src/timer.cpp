@@ -2,8 +2,6 @@
 #include "mpi.hpp"
 #include <string>
 #include <map>
-#include <iostream>
-#include <sstream>
 #include "tracer.hpp"
 #include <iostream>
 #include <sstream>
@@ -68,16 +66,6 @@ namespace xios
     if (it == (*allTimer_ptr).end())
       it = (*allTimer_ptr).insert(std::make_pair(name, CTimer(name))).first;
     return it->second;
-  }
-
-  string CTimer::getAllCumulatedTime(void)
-  {
-    if(allTimer_ptr == 0) allTimer_ptr = new std::map<std::string,CTimer>;
-
-    std::ostringstream strOut ;
-    for(std::map<std::string,CTimer>::iterator it=(*allTimer_ptr).begin();it!=(*allTimer_ptr).end();++it)
-      strOut<<"Timer : "<<it->first<<"    -->   cumulated time : "<<it->second.getCumulatedTime()<<std::endl ;
-    return strOut.str() ;
   }
 
 }

@@ -15,7 +15,6 @@
 #include "xios_spl.hpp"
 #include "context_client.hpp"
 #include "mpi.hpp"
-#include "timer.hpp"
 
 namespace xios {
 
@@ -274,16 +273,12 @@ namespace xios {
     {
       if (mode.isEmpty() || mode.getValue() == mode_attr::write)
       {
-        CTimer::get("Files : create headers").resume();
         if (!isOpen) createHeader();
-        CTimer::get("Files : create headers").suspend();
         checkSync();
       }
       else
       {
-        CTimer::get("Files : open headers").resume();
         if (!isOpen) openInReadMode();
-        CTimer::get("Files : open headers").suspend();
       }
       checkSplit();
     }

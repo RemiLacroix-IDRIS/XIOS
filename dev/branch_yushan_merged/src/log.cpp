@@ -6,7 +6,7 @@
 namespace xios
 {
 
-  std::filebuf* info_FB[16];
+  std::filebuf* info_FB[10];
 
 
   CLog info("info") ;

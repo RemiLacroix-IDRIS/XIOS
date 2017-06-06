@@ -124,7 +124,7 @@ namespace xios{
 
   void CField::sendUpdateData(const CArray<double,1>& data)
   {
-    CTimer::get("XIOS send data").resume();
+    CTimer::get("XIOS Send Data").resume();
 
     CContext* context = CContext::getCurrent();
     CContextClient* client = context->client;
@@ -176,7 +176,7 @@ namespace xios{
       client->sendEvent(event);
     }
 
-    CTimer::get("XIOS send data").suspend();
+    CTimer::get("XIOS Send Data").suspend();
   }
 
   void CField::recvUpdateData(CEventServer& event)
@@ -186,7 +186,7 @@ namespace xios{
 
     list<CEventServer::SSubEvent>::iterator it;
     string fieldId;
-    CTimer::get("Field : recv data").resume();
+
     for (it = event.subEvents.begin(); it != event.subEvents.end(); ++it)
     {
       int rank = it->rank;
@@ -196,7 +196,6 @@ namespace xios{
       buffers.push_back(buffer);
     }
     get(fieldId)->recvUpdateData(ranks,buffers);
-    CTimer::get("Field : recv data").suspend();
   }
 
   void  CField::recvUpdateData(vector<int>& ranks, vector<CBufferIn*>& buffers)
