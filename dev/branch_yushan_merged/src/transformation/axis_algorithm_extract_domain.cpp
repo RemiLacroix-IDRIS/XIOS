@@ -12,7 +12,6 @@
 #include "domain.hpp"
 #include "grid.hpp"
 #include "grid_transformation_factory_impl.hpp"
-#include "reduction.hpp"
 
 namespace xios {
 CGenericAlgorithmTransformation* CAxisAlgorithmExtractDomain::create(CGrid* gridDst, CGrid* gridSrc,
@@ -61,6 +60,10 @@ CAxisAlgorithmExtractDomain::CAxisAlgorithmExtractDomain(CAxis* axisDestination,
   }
 
   pos_ = algo->position;
+
+  if(CReductionAlgorithm::ReductionOperations_ptr == 0) 
+    CReductionAlgorithm::initReductionOperation();
+
   reduction_ = CReductionAlgorithm::createOperation((*CReductionAlgorithm::ReductionOperations_ptr)[op]);
 }
 

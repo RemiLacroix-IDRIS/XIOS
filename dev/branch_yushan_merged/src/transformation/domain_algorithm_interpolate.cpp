@@ -110,7 +110,8 @@ void CDomainAlgorithmInterpolate::computeRemap()
   const double poleValue = 90.0;
   const int constNVertex = 4; // Value by default number of vertex for rectangular domain
   int nVertexSrc, nVertexDest;
-  nVertexSrc = nVertexDest = constNVertex;
+  nVertexSrc = constNVertex;
+  nVertexDest = constNVertex;
 
   // First of all, try to retrieve the boundary values of domain source and domain destination
   int localDomainSrcSize = domainSrc_->i_index.numElements();

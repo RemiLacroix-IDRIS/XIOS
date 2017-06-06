@@ -13,13 +13,21 @@
 #include "meshutil.hpp" // cptArea
 #include "mapper.hpp"
 #include "cputime.hpp" // cputime
+#include "gridRemap.hpp"
 
 using namespace sphereRemap ;
+
+extern CRemapGrid srcGrid;
+#pragma omp threadprivate(srcGrid)
+
+extern CRemapGrid tgtGrid;
+#pragma omp threadprivate(tgtGrid)
+
 
 /* mapper is a ponter to a global class instance whoes members are allocated in the first step (finding the sizes of the weight arrays)
    and deallocated during the second step (computing the weights) */
 Mapper *mapper;
-
+#pragma omp threadprivate(mapper)
 
 /** xxx_bounds_yyy is of length n_vert_per_cell_xxx*n_cell_xxx
    This function computes the weights and returns number of weights is returned through the last argument.
@@ -147,7 +155,10 @@ extern "C" void mpi_init()
 	/*int argc = 0;
 	char **argv = NULL;
 	MPI_Init(&argc, &argv);*/
-	MPI_Init(NULL, NULL);
+	//MPI_Init(NULL, NULL);
+        int provided;
+        MPI_Init_thread(NULL, NULL, 3, &provided);
+        assert(provided >= 3);
 }
 
 extern "C" int mpi_rank()

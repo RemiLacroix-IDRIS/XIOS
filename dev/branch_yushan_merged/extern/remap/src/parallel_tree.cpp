@@ -16,6 +16,12 @@ namespace sphereRemap {
 
 static const int assignLevel = 2;
 
+extern CRemapGrid srcGrid;
+#pragma omp threadprivate(srcGrid)
+
+extern CRemapGrid tgtGrid;
+#pragma omp threadprivate(tgtGrid)
+
 // only the circle is packed, rest of node will be initialized on unpacking
 static void packNode(Node& node, char *buffer, int& index)
 {

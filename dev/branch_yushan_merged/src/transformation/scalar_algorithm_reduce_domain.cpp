@@ -13,7 +13,7 @@
 #include "grid.hpp"
 #include "grid_transformation_factory_impl.hpp"
 
-#include "reduction.hpp"
+
 
 namespace xios {
 CGenericAlgorithmTransformation* CScalarAlgorithmReduceDomain::create(CGrid* gridDst, CGrid* gridSrc,
@@ -67,7 +67,10 @@ CScalarAlgorithmReduceDomain::CScalarAlgorithmReduceDomain(CScalar* scalarDestin
          << "Scalar destination " << scalarDestination->getId());
 
   }
-  
+
+  if(CReductionAlgorithm::ReductionOperations_ptr == 0) 
+    CReductionAlgorithm::initReductionOperation();
+
   if ((*CReductionAlgorithm::ReductionOperations_ptr).end() == (*CReductionAlgorithm::ReductionOperations_ptr).find(op))
     ERROR("CScalarAlgorithmReduceDomain::CScalarAlgorithmReduceDomain(CDomain* domainDestination, CDomain* domainSource, CReduceDomainToScalar* algo)",
        << "Operation '" << op << "' not found. Please make sure to use a supported one"

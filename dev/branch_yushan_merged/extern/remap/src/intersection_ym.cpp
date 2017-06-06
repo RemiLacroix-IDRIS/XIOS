@@ -16,6 +16,12 @@ namespace sphereRemap {
 using namespace std;
 using namespace ClipperLib ;
 
+extern CRemapGrid srcGrid;
+#pragma omp threadprivate(srcGrid)
+
+extern CRemapGrid tgtGrid;
+#pragma omp threadprivate(tgtGrid)
+
 double intersect_ym(Elt *a, Elt *b)
 {
 

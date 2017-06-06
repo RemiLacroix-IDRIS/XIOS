@@ -13,7 +13,7 @@
 #include "grid.hpp"
 #include "grid_transformation_factory_impl.hpp"
 
-#include "reduction.hpp"
+
 
 namespace xios {
 CGenericAlgorithmTransformation* CScalarAlgorithmExtractAxis::create(CGrid* gridDst, CGrid* gridSrc,
@@ -48,6 +48,10 @@ CScalarAlgorithmExtractAxis::CScalarAlgorithmExtractAxis(CScalar* scalarDestinat
   algo->checkValid(scalarDestination, axisSource);
   StdString op = "extract";
   pos_ = algo->position;
+  
+  if(CReductionAlgorithm::ReductionOperations_ptr == 0) 
+    CReductionAlgorithm::initReductionOperation();
+  
   reduction_ = CReductionAlgorithm::createOperation((*CReductionAlgorithm::ReductionOperations_ptr)[op]);
 }
 

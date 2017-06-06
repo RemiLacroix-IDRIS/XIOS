@@ -12,11 +12,12 @@
 #include "reduce_axis_to_scalar.hpp"
 #include "grid.hpp"
 #include "grid_transformation_factory_impl.hpp"
-#include "reduction.hpp"
-
-#include "reduction.hpp"
 
 namespace xios {
+
+//extern std::map<StdString,EReductionType> *CReductionAlgorithm::ReductionOperations_ptr; 
+//#pragma omp threadprivate(CReductionAlgorithm::ReductionOperations_ptr)
+
 CGenericAlgorithmTransformation* CScalarAlgorithmReduceAxis::create(CGrid* gridDst, CGrid* gridSrc,
                                                                      CTransformation<CScalar>* transformation,
                                                                      int elementPositionInGrid,
@@ -74,12 +75,14 @@ CScalarAlgorithmReduceAxis::CScalarAlgorithmReduceAxis(CScalar* scalarDestinatio
 
   }
   
-  //if ((*CReductionAlgorithm::ReductionOperations_ptr).end() == (*CReductionAlgorithm::ReductionOperations_ptr).find(op))
-  //  if ((CReductionAlgorithm::ReductionOperations_ptr)->end() == (CReductionAlgorithm::ReductionOperations_ptr)->find(op))
-  //  ERROR("CScalarAlgorithmReduceAxis::CScalarAlgorithmReduceAxis(CAxis* axisDestination, CAxis* axisSource, CReduceAxisToScalar* algo)",
-  //     << "Operation '" << op << "' not found. Please make sure to use a supported one"
-  //     << "Axis source " <<axisSource->getId() << std::endl
-  //     << "Scalar destination " << scalarDestination->getId());
+  if(CReductionAlgorithm::ReductionOperations_ptr == 0) 
+    CReductionAlgorithm::initReductionOperation();
+  
+  if ((*CReductionAlgorithm::ReductionOperations_ptr).end() == (*CReductionAlgorithm::ReductionOperations_ptr).find(op))
+    ERROR("CScalarAlgorithmReduceAxis::CScalarAlgorithmReduceAxis(CAxis* axisDestination, CAxis* axisSource, CReduceAxisToScalar* algo)",
+       << "Operation '" << op << "' not found. Please make sure to use a supported one"
+       << "Axis source " <<axisSource->getId() << std::endl
+       << "Scalar destination " << scalarDestination->getId());
 
   reduction_ = CReductionAlgorithm::createOperation((*CReductionAlgorithm::ReductionOperations_ptr)[op]);
 }

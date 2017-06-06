@@ -11,6 +11,7 @@
 
 #include "scalar_algorithm_transformation.hpp"
 #include "transformation.hpp"
+#include "reduction.hpp"
 
 namespace xios {
 
@@ -23,7 +24,7 @@ class CReductionAlgorithm;
   \class CScalarAlgorithmReduceDomain
   Reducing an DOMAIN to a scalar
 */
-class CScalarAlgorithmReduceDomain : public CScalarAlgorithmTransformation
+class CScalarAlgorithmReduceDomain : public CScalarAlgorithmTransformation, public CReductionAlgorithm
 {
 public:
   CScalarAlgorithmReduceDomain(CScalar* scalarDestination, CDomain* domainSource, CReduceDomainToScalar* algo);

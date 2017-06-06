@@ -10,30 +10,12 @@ namespace xios {
 CReductionAlgorithm::CallBackMap* CReductionAlgorithm::reductionCreationCallBacks_ = 0;
 //std::map<StdString,EReductionType> CReductionAlgorithm::ReductionOperations = std::map<StdString,EReductionType>();
 std::map<StdString,EReductionType> *CReductionAlgorithm::ReductionOperations_ptr = 0; 
-
-bool CReductionAlgorithm::initReductionOperation(std::map<StdString,EReductionType>& m)
-{
-  // So so stupid way to intialize operation but it works ...
-  m["sum"] = TRANS_REDUCE_SUM;
-  CSumReductionAlgorithm::registerTrans();
-
-  m["min"] = TRANS_REDUCE_MIN;
-  CMinReductionAlgorithm::registerTrans();
-
-  m["max"] = TRANS_REDUCE_MAX;
-  CMaxReductionAlgorithm::registerTrans();
-
-  m["extract"] = TRANS_REDUCE_EXTRACT;
-  CExtractReductionAlgorithm::registerTrans();
-
-  m["average"] = TRANS_REDUCE_AVERAGE;
-  CAverageReductionAlgorithm::registerTrans();
-}
+//#pragma omp threadprivate(CReductionAlgorithm::ReductionOperations_ptr)
 
 
 bool CReductionAlgorithm::initReductionOperation()
 {
-  if(CReductionAlgorithm::ReductionOperations_ptr == NULL) CReductionAlgorithm::ReductionOperations_ptr = new std::map<StdString,EReductionType>();
+  CReductionAlgorithm::ReductionOperations_ptr = new std::map<StdString,EReductionType>();
   // So so stupid way to intialize operation but it works ...
   (*CReductionAlgorithm::ReductionOperations_ptr)["sum"] = TRANS_REDUCE_SUM;
   CSumReductionAlgorithm::registerTrans();
@@ -49,18 +31,14 @@ bool CReductionAlgorithm::initReductionOperation()
 
   (*CReductionAlgorithm::ReductionOperations_ptr)["average"] = TRANS_REDUCE_AVERAGE;
   CAverageReductionAlgorithm::registerTrans();
-
-  printf("*CReductionAlgorithm::ReductionOperations_ptr = %p\t %p\n", *CReductionAlgorithm::ReductionOperations_ptr, &(*CReductionAlgorithm::ReductionOperations_ptr));
 }
 
 //bool CReductionAlgorithm::_dummyInit = CReductionAlgorithm::initReductionOperation(CReductionAlgorithm::ReductionOperations);
-bool CReductionAlgorithm::_dummyInit = CReductionAlgorithm::initReductionOperation();
+//bool CReductionAlgorithm::_dummyInit = CReductionAlgorithm::initReductionOperation();
 
 CReductionAlgorithm* CReductionAlgorithm::createOperation(EReductionType reduceType)
 {
   int reduceTypeInt = reduceType;
-  //if (0 == reductionCreationCallBacks_)
-  //  reductionCreationCallBacks_ = new CallBackMap();
 
   CallBackMap::const_iterator it = (*reductionCreationCallBacks_).find(reduceType);
   if ((*reductionCreationCallBacks_).end() == it)

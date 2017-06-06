@@ -16,6 +16,12 @@ namespace sphereRemap {
 
 using namespace std;
 
+extern CRemapGrid srcGrid;
+#pragma omp threadprivate(srcGrid)
+
+extern CRemapGrid tgtGrid;
+#pragma omp threadprivate(tgtGrid)
+
 /** returns index of edge of a that is shared with b,
     or NOT_FOUND if a and b do not share an edge */
 int neighbour_idx(const Elt& a, const Elt& b)

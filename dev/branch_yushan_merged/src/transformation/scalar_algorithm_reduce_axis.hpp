@@ -11,6 +11,7 @@
 
 #include "scalar_algorithm_transformation.hpp"
 #include "transformation.hpp"
+#include "reduction.hpp"
 
 namespace xios {
 
@@ -23,7 +24,7 @@ class CReductionAlgorithm;
   \class CScalarAlgorithmReduceAxis
   Reducing an axis to a scalar
 */
-class CScalarAlgorithmReduceAxis : public CScalarAlgorithmTransformation
+class CScalarAlgorithmReduceAxis : public CScalarAlgorithmTransformation, public CReductionAlgorithm
 {
 public:
   CScalarAlgorithmReduceAxis(CScalar* scalarDestination, CAxis* axisSource, CReduceAxisToScalar* algo);

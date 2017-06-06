@@ -27,7 +27,7 @@ public:
   #pragma omp threadprivate(ReductionOperations_ptr)
 
 public:
-  CReductionAlgorithm() {}
+  CReductionAlgorithm() { }
 
   /*!
     Create an operation (sum, max, min) based on type
