@@ -354,7 +354,10 @@ namespace ep_lib
 
     void *local_gather_recvbuf;
     void *master_recvbuf;
-    if(ep_rank_loc == 0 && mpi_rank == root_mpi_rank && root_ep_loc != 0) master_recvbuf = new void*[sizeof(recvbuf)];
+    if(ep_rank_loc == 0 && mpi_rank == root_mpi_rank && root_ep_loc != 0) 
+    {
+      master_recvbuf = new void*[datasize*ep_size*count];
+    }
 
     if(ep_rank_loc==0)
     {
@@ -403,14 +406,12 @@ namespace ep_lib
     if(root_ep_loc != 0 && mpi_rank == root_mpi_rank) // root is not master, master send to root and root receive from master
     {
       innode_memcpy(0, master_recvbuf, root_ep_loc, recvbuf, count*ep_size, datatype, comm);
-      if(ep_rank_loc == 0 ) delete[] master_recvbuf;
     }
 
 
 
     if(ep_rank_loc==0)
     {
-
       if(datatype == MPI_INT)
       {
         delete[] static_cast<int*>(local_gather_recvbuf);
@@ -435,9 +436,9 @@ namespace ep_lib
       {
         delete[] static_cast<unsigned long*>(local_gather_recvbuf);
       }
+      
+      if(root_ep_loc != 0 && mpi_rank == root_mpi_rank) delete[] master_recvbuf;
     }
-
-
   }
 
 

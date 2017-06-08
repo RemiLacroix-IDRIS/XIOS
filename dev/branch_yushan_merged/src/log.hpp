@@ -18,7 +18,7 @@ namespace xios
       : ostream(cout.rdbuf()), level(0), name(name_), strBuf_(sBuff) 
     {
       omp_init_lock( &mutex );
-      for(int i=0; i<10; i++)
+      for(int i=0; i<16; i++)
         strBuf_array[i] = sBuff;
     }
 
@@ -60,7 +60,7 @@ namespace xios
     int level ;
     string name ;
     std::streambuf* strBuf_;
-    std::streambuf* strBuf_array[10];
+    std::streambuf* strBuf_array[16];
     omp_lock_t mutex;
   };
 
@@ -69,7 +69,7 @@ namespace xios
   extern CLog error;
 
 
-  extern std::filebuf* info_FB[10];
+  extern std::filebuf* info_FB[16];
 
 
 }

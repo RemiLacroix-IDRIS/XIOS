@@ -21,9 +21,19 @@ namespace ep_lib
 
     if(request->type == 1)
     {
-      ::MPI_Request mpi_request = static_cast< ::MPI_Request >(request->mpi_request);
+      ::MPI_Request *mpi_request = static_cast< ::MPI_Request* >(&(request->mpi_request));
       ::MPI_Status mpi_status;
-      ::MPI_Wait(&mpi_request, &mpi_status);
+      ::MPI_Errhandler_set(MPI_COMM_WORLD_STD, MPI_ERRORS_RETURN);
+      int error_code = ::MPI_Wait(mpi_request, &mpi_status);
+      if (error_code != MPI_SUCCESS) {
+      
+         char error_string[BUFSIZ];
+         int length_of_error_string, error_class;
+      
+         ::MPI_Error_class(error_code, &error_class);
+         ::MPI_Error_string(error_class, error_string, &length_of_error_string);
+         printf("%s\n", error_string);
+      }
 
       status->mpi_status = &mpi_status;
       status->ep_src = request->ep_src;

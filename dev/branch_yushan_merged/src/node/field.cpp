@@ -714,11 +714,7 @@ namespace xios{
 
      if (context->hasClient)
      {
-       //MPI_Barrier(context->client->intraComm);
-       //printf("Proc %d enters function\n", myRank);
        solveTransformedGrid();
-       //MPI_Barrier(context->client->intraComm);
-       //printf("Proc %d exits function\n", myRank);
      }
 
      solveCheckMaskIndex(doSending2Server);

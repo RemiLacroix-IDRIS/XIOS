@@ -30,8 +30,13 @@ namespace ep_lib
 
   int MPI_Gatherv(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, const int recvcounts[], const int displs[],
                   MPI_Datatype recvtype, int root, MPI_Comm comm);
+  int MPI_Gatherv_special(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, const int recvcounts[], const int displs[],
+                          MPI_Datatype recvtype, int root, MPI_Comm comm);
   int MPI_Allgatherv(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, const int recvcounts[], const int displs[],
-                  MPI_Datatype recvtype, MPI_Comm comm);
+                     MPI_Datatype recvtype, MPI_Comm comm);
+  int MPI_Allgatherv_special(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, const int recvcounts[], const int displs[],
+                             MPI_Datatype recvtype, MPI_Comm comm);
+
 
   int MPI_Scatter(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm);
   int MPI_Scatterv(const void *sendbuf, const int sendcounts[], const int displs[], MPI_Datatype sendtype, void *recvbuf, int recvcount,

@@ -365,16 +365,25 @@ namespace ep_lib
 
     int recv_plus_displs[ep_size];
     for(int i=0; i<ep_size; i++) recv_plus_displs[i] = recvcounts[i] + displs[i];
-    
-    #pragma omp single nowait
+
+    for(int j=0; j<mpi_size; j++)
     {
-      assert(recv_plus_displs[ep_rank-ep_rank_loc] >= displs[ep_rank-ep_rank_loc+1]);
+      if(recv_plus_displs[j*num_ep] < displs[j*num_ep+1] ||
+         recv_plus_displs[j*num_ep + num_ep -1] < displs[j*num_ep + num_ep -2])  
+      {  
+        Debug("Call special implementation of mpi_gatherv. 1st condition not OK\n");
+        return MPI_Allgatherv_special(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, comm);
+      }
+
       for(int i=1; i<num_ep-1; i++)
       {
-        assert(recv_plus_displs[ep_rank-ep_rank_loc+i] >= displs[ep_rank-ep_rank_loc+i+1]);
-        assert(recv_plus_displs[ep_rank-ep_rank_loc+i] >= displs[ep_rank-ep_rank_loc+i-1]);
+        if(recv_plus_displs[j*num_ep+i] < displs[j*num_ep+i+1] || 
+           recv_plus_displs[j*num_ep+i] < displs[j*num_ep+i-1])
+        {
+          Debug("Call special implementation of mpi_gatherv. 2nd condition not OK\n");
+          return MPI_Allgatherv_special(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, comm);
+        }
       }
-      assert(recv_plus_displs[ep_rank-ep_rank_loc+num_ep-1] >= displs[ep_rank-ep_rank_loc+num_ep-2]);
     }
 
 
@@ -390,7 +399,11 @@ namespace ep_lib
     int buffer_size;
     void *master_recvbuf;
 
-    if(ep_rank_loc == 0 && mpi_rank == root_mpi_rank && root_ep_loc != 0) master_recvbuf = new void*[sizeof(recvbuf)];
+    if(ep_rank_loc == 0 && mpi_rank == root_mpi_rank && root_ep_loc != 0) 
+    {
+      master_recvbuf = new void*[sizeof(recvbuf)];
+      assert(root_ep_loc == 0);
+    }
 
     if(ep_rank_loc==0)
     {
@@ -506,6 +519,9 @@ namespace ep_lib
     ep_size = comm.ep_comm_ptr->size_rank_info[0].second;
     num_ep = comm.ep_comm_ptr->size_rank_info[1].second;
     mpi_size = comm.ep_comm_ptr->size_rank_info[2].second;
+
+    //printf("size of recvbuf = %lu\n", sizeof(recvbuf));
+    //printf("size of (char*)recvbuf = %lu\n", sizeof((char*)recvbuf));
     
     if(ep_size == mpi_size) 
       return ::MPI_Allgatherv(sendbuf, sendcount, static_cast< ::MPI_Datatype>(datatype), recvbuf, recvcounts, displs,
@@ -515,17 +531,25 @@ namespace ep_lib
     int recv_plus_displs[ep_size];
     for(int i=0; i<ep_size; i++) recv_plus_displs[i] = recvcounts[i] + displs[i];
 
-    #pragma omp single nowait
+    for(int j=0; j<mpi_size; j++)
     {
-      assert(recv_plus_displs[ep_rank-ep_rank_loc] >= displs[ep_rank-ep_rank_loc+1]);
+      if(recv_plus_displs[j*num_ep] < displs[j*num_ep+1] ||
+         recv_plus_displs[j*num_ep + num_ep -1] < displs[j*num_ep + num_ep -2])  
+      {  
+        Debug("Call special implementation of mpi_allgatherv.\n");
+        return MPI_Allgatherv_special(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, comm);
+      }
+
       for(int i=1; i<num_ep-1; i++)
       {
-        assert(recv_plus_displs[ep_rank-ep_rank_loc+i] >= displs[ep_rank-ep_rank_loc+i+1]);
-        assert(recv_plus_displs[ep_rank-ep_rank_loc+i] >= displs[ep_rank-ep_rank_loc+i-1]);
+        if(recv_plus_displs[j*num_ep+i] < displs[j*num_ep+i+1] || 
+           recv_plus_displs[j*num_ep+i] < displs[j*num_ep+i-1])
+        {
+          Debug("Call special implementation of mpi_allgatherv.\n");
+          return MPI_Allgatherv_special(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, comm);
+        }
       }
-      assert(recv_plus_displs[ep_rank-ep_rank_loc+num_ep-1] >= displs[ep_rank-ep_rank_loc+num_ep-2]);
     }
-
 
     ::MPI_Aint datasize, lb;
 
@@ -595,6 +619,211 @@ namespace ep_lib
         delete[] static_cast<unsigned long*>(local_gather_recvbuf);
       }
       else // if(datatype == MPI_CHAR)
+      {
+        delete[] static_cast<char*>(local_gather_recvbuf);
+      }
+    }
+  }
+
+  int MPI_Gatherv_special(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, const int recvcounts[], const int displs[],
+                          MPI_Datatype recvtype, int root, MPI_Comm comm)
+  {
+    int ep_rank, ep_rank_loc, mpi_rank;
+    int ep_size, num_ep, mpi_size;
+
+    ep_rank = comm.ep_comm_ptr->size_rank_info[0].first;
+    ep_rank_loc = comm.ep_comm_ptr->size_rank_info[1].first;
+    mpi_rank = comm.ep_comm_ptr->size_rank_info[2].first;
+    ep_size = comm.ep_comm_ptr->size_rank_info[0].second;
+    num_ep = comm.ep_comm_ptr->size_rank_info[1].second;
+    mpi_size = comm.ep_comm_ptr->size_rank_info[2].second;
+
+    int root_mpi_rank = comm.rank_map->at(root).second;
+    int root_ep_loc = comm.rank_map->at(root).first;
+
+    ::MPI_Aint datasize, lb;
+    ::MPI_Type_get_extent(static_cast< ::MPI_Datatype>(sendtype), &lb, &datasize);
+
+    void *local_gather_recvbuf;
+    int buffer_size;
+
+    int *local_displs = new int[num_ep];
+    int *local_rvcnts = new int[num_ep];
+    for(int i=0; i<num_ep; i++) local_rvcnts[i] = recvcounts[ep_rank-ep_rank_loc + i];
+    local_displs[0] = 0;
+    for(int i=1; i<num_ep; i++) local_displs[i] = local_displs[i-1] + local_rvcnts[i-1];
+
+    if(ep_rank_loc==0)
+    {
+      buffer_size = local_displs[num_ep-1] + recvcounts[ep_rank+num_ep-1];
+      local_gather_recvbuf = new void*[datasize*buffer_size];
+    }
+
+    // local gather to master
+    MPI_Gatherv_local(sendbuf, sendcount, sendtype, local_gather_recvbuf, local_rvcnts, local_displs, comm); // all sendbuf gathered to master
+
+    int **mpi_recvcnts = new int*[num_ep];
+    int **mpi_displs   = new int*[num_ep];
+    for(int i=0; i<num_ep; i++) 
+    {
+      mpi_recvcnts[i] = new int[mpi_size];
+      mpi_displs[i]   = new int[mpi_size];
+      for(int j=0; j<mpi_size; j++)
+      {
+        mpi_recvcnts[i][j] = recvcounts[j*num_ep + i];
+        mpi_displs[i][j]   = displs[j*num_ep + i];
+      }
+    } 
+
+    void *master_recvbuf;
+    if(ep_rank_loc == 0 && mpi_rank == root_mpi_rank && root_ep_loc != 0) master_recvbuf = new void*[sizeof(recvbuf)];
+
+    if(ep_rank_loc == 0 && root_ep_loc == 0) // master in MPI_Allgatherv loop
+      for(int i=0; i<num_ep; i++)
+      {
+        ::MPI_Gatherv(local_gather_recvbuf + datasize*local_displs[i], recvcounts[ep_rank+i], static_cast< ::MPI_Datatype>(sendtype), recvbuf, mpi_recvcnts[i], mpi_displs[i],
+                    static_cast< ::MPI_Datatype>(recvtype), root_mpi_rank, static_cast< ::MPI_Comm>(comm.mpi_comm));
+      }
+    if(ep_rank_loc == 0 && root_ep_loc != 0)
+      for(int i=0; i<num_ep; i++)
+      {
+        ::MPI_Gatherv(local_gather_recvbuf + datasize*local_displs[i], recvcounts[ep_rank+i], static_cast< ::MPI_Datatype>(sendtype), master_recvbuf, mpi_recvcnts[i], mpi_displs[i],
+                    static_cast< ::MPI_Datatype>(recvtype), root_mpi_rank, static_cast< ::MPI_Comm>(comm.mpi_comm));
+      }
+
+
+    if(root_ep_loc != 0 && mpi_rank == root_mpi_rank) // root is not master, master send to root and root receive from master
+    {
+      for(int i=0; i<ep_size; i++)
+        innode_memcpy(0, master_recvbuf + datasize*displs[i], root_ep_loc, recvbuf + datasize*displs[i], recvcounts[i], sendtype, comm);
+
+      if(ep_rank_loc == 0) delete[] master_recvbuf;
+    }
+
+    
+    delete[] local_displs;
+    delete[] local_rvcnts;
+    for(int i=0; i<num_ep; i++) { delete[] mpi_recvcnts[i]; 
+                                  delete[] mpi_displs[i]; }
+    delete[] mpi_recvcnts;
+    delete[] mpi_displs;
+    if(ep_rank_loc==0)
+    {
+      if(sendtype == MPI_INT)
+      {
+        delete[] static_cast<int*>(local_gather_recvbuf);
+      }
+      else if(sendtype == MPI_FLOAT)
+      {
+        delete[] static_cast<float*>(local_gather_recvbuf);
+      }
+      else if(sendtype == MPI_DOUBLE)
+      {
+        delete[] static_cast<double*>(local_gather_recvbuf);
+      }
+      else if(sendtype == MPI_LONG)
+      {
+        delete[] static_cast<long*>(local_gather_recvbuf);
+      }
+      else if(sendtype == MPI_UNSIGNED_LONG)
+      {
+        delete[] static_cast<unsigned long*>(local_gather_recvbuf);
+      }
+      else // if(sendtype == MPI_CHAR)
+      {
+        delete[] static_cast<char*>(local_gather_recvbuf);
+      }
+    }
+  }
+
+  int MPI_Allgatherv_special(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, const int recvcounts[], const int displs[],
+                             MPI_Datatype recvtype, MPI_Comm comm)
+  {
+    int ep_rank, ep_rank_loc, mpi_rank;
+    int ep_size, num_ep, mpi_size;
+
+    ep_rank = comm.ep_comm_ptr->size_rank_info[0].first;
+    ep_rank_loc = comm.ep_comm_ptr->size_rank_info[1].first;
+    mpi_rank = comm.ep_comm_ptr->size_rank_info[2].first;
+    ep_size = comm.ep_comm_ptr->size_rank_info[0].second;
+    num_ep = comm.ep_comm_ptr->size_rank_info[1].second;
+    mpi_size = comm.ep_comm_ptr->size_rank_info[2].second;
+
+
+    ::MPI_Aint datasize, lb;
+    ::MPI_Type_get_extent(static_cast< ::MPI_Datatype>(sendtype), &lb, &datasize);
+
+    void *local_gather_recvbuf;
+    int buffer_size;
+
+    int *local_displs = new int[num_ep];
+    int *local_rvcnts = new int[num_ep];
+    for(int i=0; i<num_ep; i++) local_rvcnts[i] = recvcounts[ep_rank-ep_rank_loc + i];
+    local_displs[0] = 0;
+    for(int i=1; i<num_ep; i++) local_displs[i] = local_displs[i-1] + local_rvcnts[i-1];
+
+    if(ep_rank_loc==0)
+    {
+      buffer_size = local_displs[num_ep-1] + recvcounts[ep_rank+num_ep-1];
+      local_gather_recvbuf = new void*[datasize*buffer_size];
+    }
+
+    // local gather to master
+    MPI_Gatherv_local(sendbuf, sendcount, sendtype, local_gather_recvbuf, local_rvcnts, local_displs, comm); // all sendbuf gathered to master
+
+    int **mpi_recvcnts = new int*[num_ep];
+    int **mpi_displs   = new int*[num_ep];
+    for(int i=0; i<num_ep; i++) 
+    {
+      mpi_recvcnts[i] = new int[mpi_size];
+      mpi_displs[i]   = new int[mpi_size];
+      for(int j=0; j<mpi_size; j++)
+      {
+        mpi_recvcnts[i][j] = recvcounts[j*num_ep + i];
+        mpi_displs[i][j]   = displs[j*num_ep + i];
+      }
+    } 
+
+    if(ep_rank_loc == 0) // master in MPI_Allgatherv loop
+    for(int i=0; i<num_ep; i++)
+    {
+      ::MPI_Allgatherv(local_gather_recvbuf + datasize*local_displs[i], recvcounts[ep_rank+i], static_cast< ::MPI_Datatype>(sendtype), recvbuf, mpi_recvcnts[i], mpi_displs[i],
+                  static_cast< ::MPI_Datatype>(recvtype), static_cast< ::MPI_Comm>(comm.mpi_comm));
+    }
+
+    for(int i=0; i<ep_size; i++)
+      MPI_Bcast_local(recvbuf + datasize*displs[i], recvcounts[i], recvtype, comm);
+
+    
+    delete[] local_displs;
+    delete[] local_rvcnts;
+    for(int i=0; i<num_ep; i++) { delete[] mpi_recvcnts[i]; 
+                                  delete[] mpi_displs[i]; }
+    delete[] mpi_recvcnts;
+    delete[] mpi_displs;
+    if(ep_rank_loc==0)
+    {
+      if(sendtype == MPI_INT)
+      {
+        delete[] static_cast<int*>(local_gather_recvbuf);
+      }
+      else if(sendtype == MPI_FLOAT)
+      {
+        delete[] static_cast<float*>(local_gather_recvbuf);
+      }
+      else if(sendtype == MPI_DOUBLE)
+      {
+        delete[] static_cast<double*>(local_gather_recvbuf);
+      }
+      else if(sendtype == MPI_LONG)
+      {
+        delete[] static_cast<long*>(local_gather_recvbuf);
+      }
+      else if(sendtype == MPI_UNSIGNED_LONG)
+      {
+        delete[] static_cast<unsigned long*>(local_gather_recvbuf);
+      }
+      else // if(sendtype == MPI_CHAR)
       {
         delete[] static_cast<char*>(local_gather_recvbuf);
       }

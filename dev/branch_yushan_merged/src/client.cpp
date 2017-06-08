@@ -27,7 +27,7 @@ namespace xios
     StdOFStream CClient::m_infoStream;
     StdOFStream CClient::m_errorStream;
 
-    StdOFStream CClient::array_infoStream[10];
+    StdOFStream CClient::array_infoStream[16];
 
     void CClient::initialize(const string& codeId, MPI_Comm& localComm, MPI_Comm& returnComm)
     {
