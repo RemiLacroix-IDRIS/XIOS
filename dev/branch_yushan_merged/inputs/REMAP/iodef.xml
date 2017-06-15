@@ -33,8 +33,24 @@
    </field_definition>
 
    <file_definition type="one_file" par_access="collective" output_freq="1ts" output_level="10" enabled=".TRUE.">
+      
+      <file_group id="read_then_write_files" enabled=".TRUE.">
+       <file id="output_regular_pole" name="output_dst_regular" >
+          <field field_ref="tmp_field_0" name="field_regular_0" enabled=".TRUE."/>
+          <field field_ref="dst_field_regular" name="field_regular" enabled=".TRUE."/>
+          <field field_ref="dst_field_regular_pole_0" name="field_regular_pole_0" enabled=".FALSE." />
+          <field field_ref="dst_field_regular_pole_1" name="field_regular_pole_1" enabled=".FALSE." />
+       </file>
+       <file id="output_dst_curvilinear" name="output_dst_curvilinear" enabled=".TRUE." >
+          <field field_ref="tmp_field_1" operation="instant"/>
+       </file>
+       <file id="output_dst_unstructured" name="output_dst_unstructured" enabled=".TRUE." >
+          <field field_ref="tmp_field_2" operation="instant"/>
+       </file>
+     </file_group>
+
       <file_group id="write_files" >
-        <file id="output_2D" name="output_2D" >
+        <file id="output_2D" name="output_2D" enabled=".TRUE.">
           <field field_ref="src_field_2D" name="field_src" />
           <field field_ref="src_field_2D_clone" name="field_src_clone" default_value="100000" />
           <field field_ref="src_field_2D" name="field_dst_regular_0"  domain_ref="dst_domain_regular_pole" />
@@ -43,7 +59,7 @@
           <field field_ref="dst_field_2D_clone" name="field_dst_regular_3" detect_missing_value=".false." default_value="100000" />
           <field field_ref="dst_field_2D_extract" name="field_dst_regular_4" />
         </file> 
-       <file id="output_3D" name="output_3D" enabled=".TRUE." >
+       <file id="output_3D" name="output_3D" enabled=".TRUE.">
           <field field_ref="src_field_3D" name="field_src" />
           <field field_ref="src_field_3D_pression" name="field" />
           <field field_ref="dst_field_3D_interp" name="field_dst_interp_domain" />
@@ -65,20 +81,7 @@
           <field id="src_field_unstructured" name="field" grid_ref="src_grid_unstructured_read" operation="instant"/>
        </file>
       </file_group>
-     <file_group id="read_then_write_files" enabled=".TRUE.">
-       <file id="output_regular_pole" name="output_dst_regular" >
-          <field field_ref="tmp_field_0" name="field_regular_0" />
-          <field field_ref="dst_field_regular" name="field_regular" />
-          <field field_ref="dst_field_regular_pole_0" name="field_regular_pole_0" enabled=".FALSE." />
-          <field field_ref="dst_field_regular_pole_1" name="field_regular_pole_1" enabled=".FALSE." />
-       </file>
-       <file id="output_dst_curvilinear" name="output_dst_curvilinear">
-          <field field_ref="tmp_field_1" operation="instant"/>
-       </file>
-       <file id="output_dst_unstructured" name="output_dst_unstructured" >
-          <field field_ref="tmp_field_2" operation="instant"/>
-       </file>
-     </file_group>
+     
    </file_definition>
 
    <scalar_definition>

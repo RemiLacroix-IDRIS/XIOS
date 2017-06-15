@@ -54,7 +54,10 @@ namespace xios
 
     CArray<double,1> fieldData(grid->getWrittenDataSize());
     if (!field->default_value.isEmpty()) fieldData = field->default_value;
-
+    #ifdef _usingEP
+    SuperClass::type = ONE_FILE;
+    //printf("SuperClass::type = %d\n", SuperClass::type);
+    #endif
     switch (SuperClass::type)
     {
       case MULTI_FILE:

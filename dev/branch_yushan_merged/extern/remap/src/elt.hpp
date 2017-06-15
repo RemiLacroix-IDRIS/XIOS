@@ -52,26 +52,25 @@ struct Polyg
 
 struct Elt : Polyg
 {
-	Elt() {}
-	Elt(const double *bounds_lon, const double *bounds_lat, int max_num_vert)
-	{
-		int k = 0;
-		vertex[k++] = xyz(bounds_lon[0], bounds_lat[0]);
-		for (int i = 1; i < max_num_vert; i++)
-		{
-			vertex[k] = xyz(bounds_lon[i], bounds_lat[i]);
-			/* netCDF convention: if first vertex repeats element is finished (at least three vertices == triagle) */
-			if (k >= 3 && squaredist(vertex[k], vertex[0]) < EPS*EPS) 
-				break;
-			/* eliminate zero edges: move to next vertex only if it is different */
-			if (squaredist(vertex[k], vertex[k-1]) > EPS*EPS)
-				k++;
-			else
-				/* cout << "Removed edge " << k << " due to zero length (coinciding endpoints)." << endl */ ;
-		}
-		n = k;
-		x = barycentre(vertex, n);
-	}
+  Elt() {}
+  Elt(const double *bounds_lon, const double *bounds_lat, int max_num_vert)
+  {
+    int k = 0;
+    vertex[k++] = xyz(bounds_lon[0], bounds_lat[0]);
+    for (int i = 1; i < max_num_vert; i++)
+    {
+      vertex[k] = xyz(bounds_lon[i], bounds_lat[i]);
+      /* netCDF convention: if first vertex repeats element is finished (at least three vertices == triagle) */
+      if (k >= 3 && squaredist(vertex[k], vertex[0]) < EPS*EPS) 
+        break;
+      /* eliminate zero edges: move to next vertex only if it is different */
+      if (squaredist(vertex[k], vertex[k-1]) > EPS*EPS)
+        k++;
+      //else cout << "Removed edge " << k << " due to zero length (coinciding endpoints)." << endl ;
+    }
+    n = k;
+    x = barycentre(vertex, n);
+  }
 
 	Elt& operator=(const Elt& rhs)
 	{
@@ -95,14 +94,14 @@ struct Elt : Polyg
 		return *this;
 	}
 
-	void delete_intersections()
-	{
-		for (list<Polyg*>::iterator it = this->is.begin(); it != this->is.end(); it++)
-		{
-			Polyg* poly = *it;
-			delete poly;
-		}
-	}
+  void delete_intersections()
+  {
+    for (list<Polyg*>::iterator it = this->is.begin(); it != this->is.end(); it++)
+    {
+      Polyg* poly = *it;
+      delete poly;
+    }
+  }
 
   void insert_vertex(int i, const Coord& v)
   {

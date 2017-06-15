@@ -578,13 +578,20 @@ namespace xios {
       bool isCollective = par_access.isEmpty() || par_access == par_access_attr::collective;
 
       #ifdef _usingEP
-      if(omp_get_num_threads() != 1 ) multifile = true;
-      #endif
-
+      //printf("multifile was %d\n", multifile);
+      multifile = true;
       if (isOpen) data_out->closeFile();
       if (time_counter_name.isEmpty()) data_in = shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), static_cast< ::MPI_Comm >(fileComm.mpi_comm), multifile, isCollective));
       else data_in = shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), static_cast< ::MPI_Comm >(fileComm.mpi_comm), multifile, isCollective, time_counter_name));
       isOpen = true;
+      #else
+      if (isOpen) data_out->closeFile();
+      if (time_counter_name.isEmpty()) data_in = shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), static_cast< ::MPI_Comm >(fileComm.mpi_comm), multifile, isCollective));
+      else data_in = shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), static_cast< ::MPI_Comm >(fileComm.mpi_comm), multifile, isCollective, time_counter_name));
+      isOpen = true;
+      #endif
+
+      
     }
   }
 

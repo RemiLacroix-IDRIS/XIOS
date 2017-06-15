@@ -28,84 +28,84 @@ CBasicTree::CBasicTree() : ri(0), levelSize(MAX_LEVEL_SIZE), root(NULL)
 
 void CBasicTree::routeNodes(vector<int>& route, vector<Node>& nodes, int assignLevel)
 {
-	for (int i = 0; i < nodes.size(); i++)
-	{
-		root->routeNode(&nodes[i], assignLevel);
-		route[i] = nodes[i].route;
-	}
+  for (int i = 0; i < nodes.size(); i++)
+  {
+    root->routeNode(&nodes[i], assignLevel);
+    route[i] = nodes[i].route;
+  }
 }
 
 void CBasicTree::routeIntersections(vector<vector<int> >& routes, vector<Node>& nodes)
 {
-	for (int i = 0; i < nodes.size(); i++)
-		root->routeIntersection(routes[i], &nodes[i]);
+  for (int i = 0; i < nodes.size(); i++)
+    root->routeIntersection(routes[i], &nodes[i]);
 }
 
 void CBasicTree::build(vector<Node>& nodes)
 {
-	newRoot(1);
-	insertNodes(nodes);
+  newRoot(1);
+  insertNodes(nodes);
 }
 
 void CBasicTree::output(ostream& flux, int level)
 {
-	root->output(flux,level,0) ;
+  root->output(flux,level,0) ;
 }
 void CBasicTree::slim(int nbIts)
 {
-	for (int i = 0; i < nbIts; i++)
-	{
-		for (int level = root->level - 1; level > 0; level--)
-		{
-			slim2(root, level);
-			ri = 0;
-			emptyPool();
-		}
+  for (int i = 0; i < nbIts; i++)
+  {
+    for (int level = root->level - 1; level > 0; level--)
+    {
+      slim2(root, level);
+      ri = 0;
+      emptyPool();
+    }
 
-		for (int level = 2; level < root->level; level++)
-		{
-			slim2(root, level);
-			ri = 0;
-			emptyPool();
-		}
-	}
+    for (int level = 2; level < root->level; level++)
+    {
+      slim2(root, level);
+      ri = 0;
+      emptyPool();
+    }
+  }
 }
 
 
 
 void CBasicTree::insertNode(NodePtr node)
 {
-	node->tree = this;
-	increaseLevelSize(0);
-	push_back(node);
+  node->tree = this;
+  increaseLevelSize(0);
+  push_back(node);
 
-	NodePtr q;
-	while (pool.size())
-	{
-		q = pool.front();
-		pool.pop_front();
-		q = insert(q, root);
-		if (ri)
-		{
-			delete q;
-			ri = 0;
-		}
-	}
+  NodePtr q;
+  while (pool.size())
+  {
+    q = pool.front();
+    pool.pop_front();
+    q = insert(q, root);
+    if (ri)
+    {
+      delete q;
+      ri = 0;
+    }
+  }
 }
 
 void CBasicTree::emptyPool(void)
 {
-	while (pool.size())
-	{
-		NodePtr q = pool.front();
-		pool.pop_front();
-		q = insert(q, root);
-		if (ri)
-		{
-			delete q;
-			ri = 0;
-		}
-	}
+  while (pool.size())
+  {
+    NodePtr q = pool.front();
+    pool.pop_front();
+    q = insert(q, root);
+    if (ri)
+    {
+      delete q;
+      ri = 0;
+    }
+  }
 }
 
 void CBasicTree::push_back(NodePtr node)

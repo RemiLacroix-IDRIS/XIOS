@@ -314,8 +314,8 @@ void CParallelTree::buildLocalTree(const vector<Node>& node, const vector<int>& 
 void CParallelTree::build(vector<Node>& node, vector<Node>& node2)
 {
 
-	int assignLevel = 2;
-	int nbSampleNodes = 2*ipow(MAX_NODE_SZ + 1, assignLevel);
+  int assignLevel = 2;
+  int nbSampleNodes = 2*ipow(MAX_NODE_SZ + 1, assignLevel);
 
 
   long int nb1, nb2, nb, nbTot ;
@@ -325,24 +325,24 @@ void CParallelTree::build(vector<Node>& node, vector<Node>& node2)
   int commSize ;
   MPI_Comm_size(communicator,&commSize) ;
   
-	// make multiple of two
-	nbSampleNodes /= 2;
-	nbSampleNodes *= 2;
-//  assert( nbTot > nbSampleNodes*commSize) ;
+  // make multiple of two
+  nbSampleNodes /= 2;
+  nbSampleNodes *= 2;
+  //assert( nbTot > nbSampleNodes*commSize) ;
     
   int nbSampleNodes1 = nbSampleNodes * (nb1*commSize)/(1.*nbTot) ;
   int nbSampleNodes2 = nbSampleNodes * (nb2*commSize)/(1.*nbTot) ;
   
 
-//	assert(node.size() > nbSampleNodes);
-//	assert(node2.size() > nbSampleNodes);
-//	assert(node.size() + node2.size() > nbSampleNodes);
-	vector<Node> sampleNodes; sampleNodes.reserve(nbSampleNodes1+nbSampleNodes2);
+  //assert(node.size() > nbSampleNodes);
+  //assert(node2.size() > nbSampleNodes);
+  //assert(node.size() + node2.size() > nbSampleNodes);
+  vector<Node> sampleNodes; sampleNodes.reserve(nbSampleNodes1+nbSampleNodes2);
 
-	vector<int> randomArray1(node.size());
-	randomizeArray(randomArray1);
-	vector<int> randomArray2(node2.size());
-	randomizeArray(randomArray2);
+  vector<int> randomArray1(node.size());
+  randomizeArray(randomArray1);
+  vector<int> randomArray2(node2.size());
+  randomizeArray(randomArray2);
 
 /*	
         int s1,s2 ;

@@ -20,6 +20,7 @@ namespace xios
       if (commSize <= 1)
         comm = NULL;
     }
+
     mpi = comm && !multifile;
     MPI_Info m_info = MPI_INFO_NULL_STD;
 

@@ -717,7 +717,6 @@ void CClientClientDHTTemplate<T,H>::sendRecvRank(int level,
   {
     MPI_Irecv(&recvBuff[0]+2*idx, 2, MPI_INT,
               recvRank[idx], MPI_DHT_INDEX_0, this->internalComm_, &request[nRequest]);
-    printf("proc %d recv from proc %d with tag %d\n", my_rank, recvRank[idx], MPI_DHT_INDEX_0);          
     ++nRequest;
   }
 
@@ -734,7 +733,6 @@ void CClientClientDHTTemplate<T,H>::sendRecvRank(int level,
   {
     MPI_Isend(&sendBuff[idx*2], 2, MPI_INT,
               sendRank[idx], MPI_DHT_INDEX_0, this->internalComm_, &request[nRequest]);
-    printf("proc %d send to proc %d with tag %d\n", my_rank, sendRank[idx], MPI_DHT_INDEX_0);
     ++nRequest;
   }
 

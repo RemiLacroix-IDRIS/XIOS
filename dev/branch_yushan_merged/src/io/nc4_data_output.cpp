@@ -1101,7 +1101,7 @@ namespace xios
             }
 
             SuperClassWriter::definition_end();
-
+            printf("SuperClass::type = %d\n", SuperClass::type);
             switch (SuperClass::type)
             {
               case MULTI_FILE:
