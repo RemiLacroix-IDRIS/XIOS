@@ -87,6 +87,7 @@ namespace xios
       if (count > 0)
       {
         MPI_Issend(buffer[current], count, MPI_CHAR, serverRank, 20, interComm, &request);
+        #pragma omp critical (_output)
         pending = true;
         if (current == 1) current = 0;
         else current = 1;

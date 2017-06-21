@@ -3,10 +3,10 @@
 #include "attribute_template.hpp"
 #include "group_template.hpp"
 #include "context.hpp"
-
+//mpi.hpp
 namespace xios
 {
-      /// ////////////////////// Définitions ////////////////////// ///
+      /// ////////////////////// Dfinitions ////////////////////// ///
 
       CDataOutput::~CDataOutput(void)
       { /* Ne rien faire de plus */ }

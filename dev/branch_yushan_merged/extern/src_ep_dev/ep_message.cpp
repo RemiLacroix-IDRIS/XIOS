@@ -49,9 +49,22 @@ namespace ep_lib
         }
       }
       #elif _intelmpi
-      ::MPI_Improbe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpi_comm, &flag, &message, &status); 
-      #endif
+      //#pragma omp critical (_mpi_call)
+      //::MPI_Improbe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpi_comm, &flag, &message, &status); 
+      #pragma omp critical (_mpi_call)
+      {
+        ::MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpi_comm, &flag, &status);
+        if(flag)
+        {
+          Debug("find message in mpi comm \n");
+          mpi_source = status.MPI_SOURCE;
+          int tag = status.MPI_TAG;
+          ::MPI_Mprobe(mpi_source, tag, mpi_comm, &message, &status);
 
+        }
+      }
+      #endif
+      
       if(flag)
       {
 
@@ -127,7 +140,19 @@ namespace ep_lib
         }
       }
       #elif _intelmpi
-      ::MPI_Improbe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpi_comm, &flag, &message, &status);       
+      #pragma omp critical (_mpi_call)
+      {
+        ::MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpi_comm, &flag, &status);
+        if(flag)
+        {
+          Debug("find message in mpi comm \n");
+          mpi_source = status.MPI_SOURCE;
+          int tag = status.MPI_TAG;
+          ::MPI_Mprobe(mpi_source, tag, mpi_comm, &message, &status);
+
+        }
+      }
+      //::MPI_Improbe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpi_comm, &flag, &message, &status);       
       #endif
 
       if(flag)
@@ -182,7 +207,19 @@ namespace ep_lib
         }
       }
       #elif _intelmpi
-      ::MPI_Improbe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpi_comm, &flag, &message, &status);       
+      #pragma omp critical (_mpi_call)
+      {
+        ::MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpi_comm, &flag, &status);
+        if(flag)
+        {
+          Debug("find message in mpi comm \n");
+          mpi_source = status.MPI_SOURCE;
+          int tag = status.MPI_TAG;
+          ::MPI_Mprobe(mpi_source, tag, mpi_comm, &message, &status);
+
+        }
+      }
+      //::MPI_Improbe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpi_comm, &flag, &message, &status);       
       #endif
 
       if(flag)

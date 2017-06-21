@@ -21,10 +21,10 @@ namespace ep_lib
 
     if(request->type == 1)
     {
-      ::MPI_Request *mpi_request = static_cast< ::MPI_Request* >(&(request->mpi_request));
+      ::MPI_Request mpi_request = static_cast< ::MPI_Request >(request->mpi_request);
       ::MPI_Status mpi_status;
       ::MPI_Errhandler_set(MPI_COMM_WORLD_STD, MPI_ERRORS_RETURN);
-      int error_code = ::MPI_Wait(mpi_request, &mpi_status);
+      int error_code = ::MPI_Wait(&mpi_request, &mpi_status);
       if (error_code != MPI_SUCCESS) {
       
          char error_string[BUFSIZ];
@@ -67,10 +67,10 @@ namespace ep_lib
 
     if(request->type == 3)
     {
-      ::MPI_Request *mpi_request = static_cast< ::MPI_Request* >(&(request->mpi_request));
+      ::MPI_Request mpi_request = static_cast< ::MPI_Request >(request->mpi_request);
       ::MPI_Status mpi_status;
       ::MPI_Errhandler_set(MPI_COMM_WORLD_STD, MPI_ERRORS_RETURN);
-      int error_code = ::MPI_Wait(mpi_request, &mpi_status);
+      int error_code = ::MPI_Wait(&mpi_request, &mpi_status);
       if (error_code != MPI_SUCCESS) {
       
          char error_string[BUFSIZ];
@@ -121,9 +121,10 @@ namespace ep_lib
         {
           if(array_of_requests[i].type != 2) // isend or imrecv
           {      
-            MPI_Wait(&array_of_requests[i], &array_of_statuses[i]);
-            //int tested=false;
-            //while(!tested) MPI_Test(&array_of_requests[i], &tested, &array_of_statuses[i]);
+            //MPI_Wait(&array_of_requests[i], &array_of_statuses[i]);
+            int tested;
+            MPI_Test(&array_of_requests[i], &tested, &array_of_statuses[i]);
+            if(!tested) MPI_Wait(&array_of_requests[i], &array_of_statuses[i]);
             finished++;
             finished_index[i] = true;
           }

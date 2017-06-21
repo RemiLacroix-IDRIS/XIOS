@@ -15,13 +15,15 @@
 #include "cputime.hpp" // cputime
 #include "gridRemap.hpp"
 
+#include <stdio.h>
+
 using namespace sphereRemap ;
 
-extern CRemapGrid srcGrid;
-#pragma omp threadprivate(srcGrid)
+//extern CRemapGrid srcGrid;
+//#pragma omp threadprivate(srcGrid)
 
-extern CRemapGrid tgtGrid;
-#pragma omp threadprivate(tgtGrid)
+//extern CRemapGrid tgtGrid;
+//#pragma omp threadprivate(tgtGrid)
 
 
 /* mapper is a ponter to a global class instance whoes members are allocated in the first step (finding the sizes of the weight arrays)
@@ -39,15 +41,16 @@ extern "C" void remap_get_num_weights(const double* src_bounds_lon, const double
                      const double* dst_pole,
                      int order, int* n_weights)
 {
-	assert(src_bounds_lon);
-	assert(src_bounds_lat);
-	assert(n_vert_per_cell_src >= 3);
-	assert(n_cell_src >= 4);
-	assert(dst_bounds_lon);
-	assert(dst_bounds_lat);
-	assert(n_vert_per_cell_dst >= 3);
-	assert(n_cell_dst >= 4);
-	assert(1 <= order && order <= 2);
+  printf("libmapper callded : remap_get_num_weights\n");
+  assert(src_bounds_lon);
+  assert(src_bounds_lat);
+  assert(n_vert_per_cell_src >= 3);
+  assert(n_cell_src >= 4);
+  assert(dst_bounds_lon);
+  assert(dst_bounds_lat);
+  assert(n_vert_per_cell_dst >= 3);
+  assert(n_cell_dst >= 4);
+  assert(1 <= order && order <= 2);
 
   mapper = new Mapper(MPI_COMM_WORLD);
   mapper->setVerbosity(PROGRESS) ;
@@ -86,7 +89,7 @@ extern "C" void remap_get_num_weights(const double* src_bounds_lon, const double
 	}
 	double tic = cputime();
 	mapper = new Mapper(MPI_COMM_WORLD);
-  mapper->setVerbosity(PROGRESS) ;
+        mapper->setVerbosity(PROGRESS) ;
 	mapper->buildSSTree(src_msh, dst_msh);
 	double tac = cputime();
 	vector<double> timings = mapper->computeWeights(dst_elt, src_elt, order);
@@ -121,6 +124,7 @@ extern "C" void remap_get_barycentres_and_areas(const double* bounds_lon, const 
                      const double* pole,
                      double* centre_lon, double* centre_lat, double* areas)
 {
+  printf("libmapper callded : remap_get_barycentres_and_areas\n");
 	for (int i = 0; i < n_cell; i++)
 	{
 		int offs = i*n_vert_per_cell;
@@ -144,6 +148,7 @@ extern "C" void remap_get_weights(double* weights, int* src_indices, int* src_ra
 
 extern "C" void remap_get_weights(double* weights, int* src_indices, int* dst_indices)
 {
+  printf("libmapper callded : remap_get_weights\n");
 	memcpy(weights, mapper->remapMatrix, mapper->nWeights*sizeof(double));
 	memcpy(src_indices, mapper->srcAddress, mapper->nWeights*sizeof(int));
 	memcpy(dst_indices, mapper->dstAddress, mapper->nWeights*sizeof(int));

@@ -51,7 +51,7 @@ PROGRAM test_remap_omp
   CALL MPI_COMM_SIZE(MPI_COMM_WORLD,size,ierr)
   if(rank < size-2) then
 
-  !$omp parallel default(firstprivate) firstprivate(dtime)
+  !$omp parallel default(private) firstprivate(dtime)
 
 !!! XIOS Initialization (get the local communicator)
 
@@ -68,7 +68,7 @@ PROGRAM test_remap_omp
   !$omp end critical (open_file)
 
   ierr=NF90_INQ_VARID(ncid,"bounds_lon",varid)
-  ierr=NF90_INQUIRE_VARIABLE(ncid, varid,dimids=dimids)
+  ierr=NF90_INQUIRE_VARIABLE(ncid, varid, dimids=dimids)
   ierr=NF90_INQUIRE_DIMENSION(ncid, dimids(1), len=src_nvertex)
   ierr=NF90_INQUIRE_DIMENSION(ncid, dimids(2), len=src_ni_glo)
 
@@ -82,6 +82,9 @@ PROGRAM test_remap_omp
     src_ibegin= remain * (div+1) + (rank-remain) * div ;
   ENDIF
 
+  if(src_ni .LE. 0) CALL MPI_ABORT()
+
+
   ALLOCATE(src_lon(src_ni), src_lon_tmp(src_ni))
   ALLOCATE(src_lat(src_ni), src_lat_tmp(src_ni))
   ALLOCATE(src_boundslon(src_nvertex,src_ni))
@@ -94,6 +97,9 @@ PROGRAM test_remap_omp
   ALLOCATE(lval(llm))
   ALLOCATE(lval1(interpolatedLlm))
   ALLOCATE(lval2(llm2))
+  lval2 = 0
+  lval=0
+  lval1=0
 
   ierr=NF90_INQ_VARID(ncid,"lon",varid)
   ierr=NF90_GET_VAR(ncid,varid, src_lon, start=(/src_ibegin+1/),count=(/src_ni/))
@@ -159,6 +165,8 @@ PROGRAM test_remap_omp
     dst_ni=div ;
     dst_ibegin= remain * (div+1) + (rank-remain) * div ;
   ENDIF
+
+  if(dst_ni .LE. 0) CALL MPI_ABORT()
 
   ALLOCATE(dst_lon(dst_ni))
   ALLOCATE(dst_lat(dst_ni))

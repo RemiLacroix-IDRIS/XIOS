@@ -56,7 +56,7 @@ namespace xios
     if (!field->default_value.isEmpty()) fieldData = field->default_value;
     #ifdef _usingEP
     SuperClass::type = ONE_FILE;
-    //printf("SuperClass::type = %d\n", SuperClass::type);
+    printf("SuperClass::type = %d\n", SuperClass::type);
     #endif
     switch (SuperClass::type)
     {

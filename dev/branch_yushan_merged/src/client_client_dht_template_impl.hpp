@@ -103,6 +103,7 @@ void CClientClientDHTTemplate<T,H>::computeIndexInfoMappingLevel(const CArray<si
 {
   int clientRank;
   MPI_Comm_rank(commLevel,&clientRank);
+  ep_lib::MPI_Barrier(commLevel);
   int groupRankBegin = this->getGroupBegin()[level];
   int nbClient = this->getNbInGroup()[level];
   std::vector<size_t> hashedIndex;
@@ -179,6 +180,14 @@ void CClientClientDHTTemplate<T,H>::computeIndexInfoMappingLevel(const CArray<si
                            itRecvNbIndex;
   int currentIndex = 0;
   int nbRecvClient = recvRankClient.size();
+  
+  boost::unordered_map<int, size_t* >::iterator itbIndex = client2ClientIndex.begin(), itIndex,
+                                                iteIndex = client2ClientIndex.end();
+  for (itIndex = itbIndex; itIndex != iteIndex; ++itIndex)
+    sendIndexToClients(itIndex->first, (itIndex->second), sendNbIndexBuff[itIndex->first-groupRankBegin], commLevel, request);
+
+
+
   for (int idx = 0; idx < nbRecvClient; ++idx)
   {
     if (0 != recvNbIndexClientCount[idx])
@@ -188,13 +197,10 @@ void CClientClientDHTTemplate<T,H>::computeIndexInfoMappingLevel(const CArray<si
     currentIndex += recvNbIndexClientCount[idx];
   }
 
-  boost::unordered_map<int, size_t* >::iterator itbIndex = client2ClientIndex.begin(), itIndex,
-                                                iteIndex = client2ClientIndex.end();
-  for (itIndex = itbIndex; itIndex != iteIndex; ++itIndex)
-    sendIndexToClients(itIndex->first, (itIndex->second), sendNbIndexBuff[itIndex->first-groupRankBegin], commLevel, request);
-
+  
   std::vector<ep_lib::MPI_Status> status(request.size());
   MPI_Waitall(request.size(), &request[0], &status[0]);
+  
 
   CArray<size_t,1>* tmpGlobalIndex;
   if (0 != recvNbIndexCount)
@@ -207,6 +213,7 @@ void CClientClientDHTTemplate<T,H>::computeIndexInfoMappingLevel(const CArray<si
   {
     --level;
     computeIndexInfoMappingLevel(*tmpGlobalIndex, this->internalComm_, level);
+      
   }
   else // Now, we are in the last level where necessary mappings are.
     indexToInfoMappingLevel_= (index2InfoMapping_);
@@ -371,6 +378,7 @@ void CClientClientDHTTemplate<T,H>::computeDistributedIndex(const Index2VectorIn
   int clientRank;
   MPI_Comm_rank(commLevel,&clientRank);
   computeSendRecvRank(level, clientRank);
+  ep_lib::MPI_Barrier(commLevel);
 
   int groupRankBegin = this->getGroupBegin()[level];
   int nbClient = this->getNbInGroup()[level];
@@ -665,17 +673,19 @@ void CClientClientDHTTemplate<T,H>::sendRecvOnReturn(const std::vector<int>& sen
   std::vector<ep_lib::MPI_Status> requestStatus(sendNbRank.size()+recvNbRank.size());
 
   int nRequest = 0;
-  for (int idx = 0; idx < recvNbRank.size(); ++idx)
-  {
-    MPI_Irecv(&recvNbElements[0]+idx, 1, MPI_INT,
-              recvNbRank[idx], MPI_DHT_INDEX_1, this->internalComm_, &request[nRequest]);
-    ++nRequest;
-  }
+  
 
   for (int idx = 0; idx < sendNbRank.size(); ++idx)
   {
     MPI_Isend(&sendNbElements[0]+idx, 1, MPI_INT,
               sendNbRank[idx], MPI_DHT_INDEX_1, this->internalComm_, &request[nRequest]);
+    ++nRequest;
+  }
+  
+  for (int idx = 0; idx < recvNbRank.size(); ++idx)
+  {
+    MPI_Irecv(&recvNbElements[0]+idx, 1, MPI_INT,
+              recvNbRank[idx], MPI_DHT_INDEX_1, this->internalComm_, &request[nRequest]);
     ++nRequest;
   }
 
@@ -713,12 +723,7 @@ void CClientClientDHTTemplate<T,H>::sendRecvRank(int level,
   MPI_Comm_rank(this->internalComm_, &my_rank);
   
   int nRequest = 0;
-  for (int idx = 0; idx < recvBuffSize; ++idx)
-  {
-    MPI_Irecv(&recvBuff[0]+2*idx, 2, MPI_INT,
-              recvRank[idx], MPI_DHT_INDEX_0, this->internalComm_, &request[nRequest]);
-    ++nRequest;
-  }
+  
 
   for (int idx = 0; idx < sendBuffSize; ++idx)
   {
@@ -733,6 +738,13 @@ void CClientClientDHTTemplate<T,H>::sendRecvRank(int level,
   {
     MPI_Isend(&sendBuff[idx*2], 2, MPI_INT,
               sendRank[idx], MPI_DHT_INDEX_0, this->internalComm_, &request[nRequest]);
+    ++nRequest;
+  }
+  
+  for (int idx = 0; idx < recvBuffSize; ++idx)
+  {
+    MPI_Irecv(&recvBuff[0]+2*idx, 2, MPI_INT,
+              recvRank[idx], MPI_DHT_INDEX_0, this->internalComm_, &request[nRequest]);
     ++nRequest;
   }
 

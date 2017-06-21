@@ -6,25 +6,46 @@
 
    <field_definition level="1" enabled=".TRUE." default_value="1000">
      <field id="field_A_srf"  operation="average" freq_op="3600s" grid_ref="grid_A"/>
+     <field id="field_B_srf"  operation="average" freq_op="3600s" grid_ref="grid_A"/>
      <field id="field_A_expand"  operation="average" grid_ref="grid_dst" field_ref="field_A_srf"/>
    </field_definition>
 
    <file_definition type="one_file" par_access="collective" output_freq="1h" output_level="10" enabled=".TRUE." >
      <file id="output" name="output">
-        <field field_ref="field_A_expand" name="field"/>
+<!--        <field field_ref="field_A_expand" name="field"/> -->
+        <field field_ref="field_A_srf" name="field_A"/>
+        <field field_ref="field_A_srf" name="field_rect" grid_ref="grid_rect"/>
+ <!--       <field field_ref="field_A_srf" name="field_curv" grid_ref="grid_curv"/> -->
      </file>
+
+ <!--    <file id="output_src_curvilinear" name="output_src_curvilinear" mode="read" >
+          <field id="src_field_curvilinear" name="field_A" grid_ref="src_grid_curvilinear_read" operation="instant"/>
+     </file>  -->
+ 
    </file_definition>
 
    <axis_definition>
      <axis id="axis_srf" positive="up"/>
+      <axis id="src_axis_curvilinear_read" positive="down" />
    </axis_definition>
 
    <domain_definition>
-     <domain id="domain_srf" />     
+     <domain id="domain_srf" />    
+ 
      <domain id="domain_dst" domain_ref="domain_srf" >
        <expand_domain/>
        <compute_connectivity_domain id="compute" type="node"/>
      </domain>
+
+     <domain id="dst_domain_regular_pole" ni_glo="90" nj_glo="45" type="rectilinear">
+       <generate_rectilinear_domain id="domain_regular_pole"/>
+       <interpolate_domain write_weight="false" order="1" renormalize="true"/>       
+     </domain>
+
+     <domain id="src_domain_curvilinear_read" type="curvilinear">
+        <generate_rectilinear_domain />
+     </domain>
+
    </domain_definition>
 
    <grid_definition>
@@ -32,10 +53,27 @@
        <domain domain_ref="domain_srf" />
        <axis axis_ref="axis_srf" />
      </grid>
+
      <grid id="grid_dst">
        <domain domain_ref="domain_dst" />
        <axis axis_ref="axis_srf" />
      </grid>
+
+     <grid id="grid_rect">
+       <domain domain_ref="dst_domain_regular_pole" />
+       <axis axis_ref="axis_srf" />
+     </grid>
+
+     <grid id="grid_curv">
+       <domain id="src_domain_curvilinear_read" />
+       <axis axis_ref="axis_srf" />
+     </grid>
+
+     <grid id="src_grid_curvilinear_read">
+        <domain id="src_domain_curvilinear_read"/>
+        <axis axis_ref="src_axis_curvilinear_read" />
+     </grid> 
+
    </grid_definition>
   </context>
 

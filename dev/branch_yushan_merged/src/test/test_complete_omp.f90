@@ -83,6 +83,8 @@ PROGRAM test_complete_omp
     IF (n==rank) exit
     jbegin=jbegin+nj
   ENDDO
+  
+  if((ni.LE.0) .OR. (nj.LE.0)) call MPI_Abort()
 
   iend=ibegin+ni-1 ; jend=jbegin+nj-1
 
