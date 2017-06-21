@@ -81,7 +81,7 @@ namespace xios
         traceOff();
         ep_lib::MPI_Iprobe(rank,20,interComm,&flag,&status);
         traceOn();
-        if (flag==true)
+        if (flag)
         {
           it=buffers.find(rank);
           if (it==buffers.end()) // Receive the buffer size and allocate the buffer

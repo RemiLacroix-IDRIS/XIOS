@@ -51,7 +51,7 @@ PROGRAM test_remap_omp
   CALL MPI_COMM_SIZE(MPI_COMM_WORLD,size,ierr)
   if(rank < size-2) then
 
-  !$omp parallel default(private) firstprivate(dtime)
+  !$omp parallel default(firstprivate) firstprivate(dtime)
 
 !!! XIOS Initialization (get the local communicator)
 
@@ -231,18 +231,18 @@ PROGRAM test_remap_omp
     CALL xios_update_calendar(ts)
     CALL xios_send_field("src_field_2D",src_field_2D)
     
-    DO i=1,src_ni
-      src_field_2D_clone(i) = src_field_2D(i)
-      IF ((23.5 * ts < src_lat(i)) .AND. (src_lat(i) < 65.5 *ts) .AND. (0 < src_lon(i)) .AND. (src_lon(i) < 30*ts)) THEN      
-        src_field_2D_clone(i) = missing_value    
-      ENDIF
-    ENDDO
+    !DO i=1,src_ni
+    !  src_field_2D_clone(i) = src_field_2D(i)
+    !  IF ((23.5 * ts < src_lat(i)) .AND. (src_lat(i) < 65.5 *ts) .AND. (0 < src_lon(i)) .AND. (src_lon(i) < 30*ts)) THEN      
+    !    src_field_2D_clone(i) = missing_value    
+    !  ENDIF
+    !ENDDO
 
-    CALL xios_send_field("src_field_2D_clone",src_field_2D_clone)
-    CALL xios_send_field("src_field_3D",src_field_3D)
-    CALL xios_send_field("src_field_3D_clone",src_field_3D)
-    CALL xios_send_field("src_field_4D",src_field_4D)
-    CALL xios_send_field("src_field_3D_pression",src_field_pression)
+    !CALL xios_send_field("src_field_2D_clone",src_field_2D_clone)
+    !CALL xios_send_field("src_field_3D",src_field_3D)
+    !CALL xios_send_field("src_field_3D_clone",src_field_3D)
+    !CALL xios_send_field("src_field_4D",src_field_4D)
+    !CALL xios_send_field("src_field_3D_pression",src_field_pression)
     CALL xios_send_field("tmp_field_0",tmp_field_0)
     CALL xios_send_field("tmp_field_1",tmp_field_1)
     CALL xios_send_field("tmp_field_2",tmp_field_2)
@@ -257,7 +257,7 @@ PROGRAM test_remap_omp
   
   CALL xios_finalize()
   
-  print *, "Client : xios_finalize "
+  print *, "Client : xios_finalize ", rank
 
   !$omp barrier
 
