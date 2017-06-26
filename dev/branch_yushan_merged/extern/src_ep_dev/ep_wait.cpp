@@ -56,6 +56,7 @@ namespace ep_lib
       }
 
       int count;
+      request->type = 3;
       MPI_Get_count(status, request->ep_datatype, &count);
       MPI_Mrecv(request->buf, count, request->ep_datatype, &message, status);
       status->ep_datatype = request->ep_datatype;
@@ -115,6 +116,7 @@ namespace ep_lib
 
     while(finished < count)
     {
+
       for(int i=0; i<count; i++)
       {
         if(finished_index[i] == false) // this request has not been tested.
@@ -130,6 +132,15 @@ namespace ep_lib
           }
           else // irecv
           {
+            // parcours pending list
+            // find request in waitall
+                Message_Check(array_of_requests[i].comm);
+               // improbe + mrecv
+               // erase element in pending list
+ //             finished++;
+ //             finished_index[i] = true;
+            
+
             int flag = false;
             MPI_Message message;
 

@@ -101,7 +101,7 @@ namespace ep_lib
     }
 
     
-    Message_Check(comm);
+    //Message_Check(comm);
 
     #pragma omp flush
 

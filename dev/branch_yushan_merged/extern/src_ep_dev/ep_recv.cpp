@@ -15,6 +15,7 @@ using namespace std;
 
 namespace ep_lib 
 {
+  
 
   int MPI_Recv(void *buf, int count, MPI_Datatype datatype, int src, int tag, MPI_Comm comm, MPI_Status *status)
   {
@@ -65,9 +66,6 @@ namespace ep_lib
       request->ep_tag = tag;
     }
 
-    Message_Check(comm);
-		
-
     request->mpi_request = MPI_REQUEST_NULL_STD;
     request->buf = buf;
     request->comm = comm;
@@ -80,6 +78,50 @@ namespace ep_lib
     /* With Improbe*/
     Message_Check(comm);
 
+    EP_PendingRequests->push_back(request);
+    printf("proc %d : EP_PendingRequests insert one request, add = %p(%p), buf = %p(%p)\n", dest_rank, EP_PendingRequests->back(), request, buf, request->buf);
+    
+    // check all EP_PendingRequests
+    
+    //if(EP_PendingRequests == 0 ) EP_PendingRequests = new std::list< MPI_Request* >; 
+    if(!EP_PendingRequests->empty())
+    {
+      printf("proc %d have %d pending irecv request\n", dest_rank, EP_PendingRequests->size());
+      
+      for(std::list<MPI_Request* >::iterator it = EP_PendingRequests->begin(); it!=EP_PendingRequests->end(); )
+      {
+        if((*it)->type != 2) 
+        {
+          printf("proc %d : pending request type = %d, src= %d, tag = %d, add = %p skip\n", dest_rank, (*it)->type, (*it)->ep_src, (*it)->ep_tag, *it);
+          EP_PendingRequests->erase(it);
+          it = EP_PendingRequests->begin();
+          printf("proc %d : pending request processed, size = %d, it = %p\n", dest_rank, EP_PendingRequests->size(), *it);
+          continue;
+        }
+        
+        printf("proc %d : pending irecv request src = %d, tag = %d, type = %d, add = %p\n", dest_rank, (*it)->ep_src, (*it)->ep_tag, (*it)->type, *it);
+        int probed = false;
+        MPI_Message pending_message;
+        MPI_Status pending_status;
+    
+        MPI_Improbe((*it)->ep_src, (*it)->ep_tag, (*it)->comm, &probed, &pending_message, &pending_status);
+        printf("proc %d : pending irecv request probed to be %d, add = %p\n",dest_rank, probed, *it);
+    
+        if(probed) 
+        { 
+          int count;
+          MPI_Get_count(&pending_status, (*it)->ep_datatype, &count);
+          MPI_Imrecv((*it)->buf, count, (*it)->ep_datatype, &pending_message, *it);
+          printf("proc %d : pending request is imrecving src = %d, tag = %d, add = %p, buf = %p, count = %d\n", dest_rank, (*it)->ep_src, (*it)->ep_tag, *it, (*it)->buf, count);
+          EP_PendingRequests->erase(it);
+          it = EP_PendingRequests->begin();
+          printf("proc %d : pending request processed, size = %d\n", dest_rank, EP_PendingRequests->size());
+          continue;
+        }
+        else it++;
+      }
+    }
+/*
     int flag = false;
     MPI_Message message;
     MPI_Status status;
@@ -89,7 +131,9 @@ namespace ep_lib
     if(flag)
     {
       MPI_Imrecv(buf, count, datatype, &message, request);
+      printf("proc %d : found message in local queue, src = %d, tag = %d\n", dest_rank, src, tag);
     }
+  */  
 
     return 0;
   }
@@ -109,7 +153,7 @@ namespace ep_lib
     request->ep_datatype = datatype;
     request->ep_tag = message->ep_tag;
     request->ep_src = message->ep_src;
-    request->buf = buf;
+    //request->buf = buf;
 
     return 0;
   }

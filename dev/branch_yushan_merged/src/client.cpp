@@ -106,15 +106,15 @@ namespace xios
             MPI_Comm_size(intraComm,&intraCommSize) ;
             MPI_Comm_rank(intraComm,&intraCommRank) ;
             
-            #pragma omp critical(_output)
+            /*#pragma omp critical(_output)
             {
               info(10)<<"intercommCreate::client "<<test_omp_rank<< " "<< &test_omp_rank <<" intraCommSize : "<<intraCommSize
                  <<" intraCommRank :"<<intraCommRank<<"  serverLeader "<< serverLeader
                  <<" globalComm : "<< &(CXios::globalComm) << endl ;  
-            }
+            }*/
 
             
-            
+            test_sendrecv(CXios::globalComm);
             MPI_Intercomm_create(intraComm,0,CXios::globalComm,serverLeader,0,&interComm) ;
 
           }

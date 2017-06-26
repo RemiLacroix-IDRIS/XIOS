@@ -59,7 +59,7 @@ namespace ep_lib
 
   int MPI_Barrier_local(MPI_Comm comm)
   {
-    Message_Check(comm);
+    //Message_Check(comm);
     comm.ep_barrier->wait();
   }
 

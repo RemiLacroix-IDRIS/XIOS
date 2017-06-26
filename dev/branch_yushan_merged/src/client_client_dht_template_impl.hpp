@@ -11,6 +11,7 @@
 #include "mpi_tag.hpp"
 #ifdef _usingEP
 #include "ep_declaration.hpp"
+#include "ep_lib.hpp"
 #endif
 
 

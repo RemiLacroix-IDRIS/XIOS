@@ -39,7 +39,7 @@
           <field field_ref="tmp_field_0" name="field_regular_0" enabled=".TRUE."/>
           <field field_ref="dst_field_regular" name="field_regular" enabled=".TRUE."/>
           <field field_ref="dst_field_regular_pole_0" name="field_regular_pole_0" enabled=".TRUE." />
-          <field field_ref="dst_field_regular_pole_1" name="field_regular_pole_1" enabled=".FALSE." />
+          <field field_ref="dst_field_regular_pole_1" name="field_regular_pole_1" enabled=".TRUE." />
        </file>
        <file id="output_dst_curvilinear" name="output_dst_curvilinear" enabled=".TRUE." >
           <field field_ref="tmp_field_1" operation="instant"/>

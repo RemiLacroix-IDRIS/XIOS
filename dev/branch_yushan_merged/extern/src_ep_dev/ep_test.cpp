@@ -19,6 +19,7 @@ namespace ep_lib {
     Debug("MPI_Test with EP");
 
     *flag = false;
+    
 
     if(request->type == 1)      // isend
     {
@@ -45,9 +46,11 @@ namespace ep_lib {
       MPI_Improbe(request->ep_src, request->ep_tag, request->comm, flag, &message, status);
       if(*flag)
       {
+        
         int count;
         MPI_Get_count(status, request->ep_datatype, &count);
         MPI_Imrecv(request->buf, count, request->ep_datatype, &message, request);
+        printf("in ep_test, found message src = %d, tag = %d, type = %d\n", request->ep_src, request->ep_tag, request->type);
         MPI_Test(request, flag, status);
       }
       return 0;

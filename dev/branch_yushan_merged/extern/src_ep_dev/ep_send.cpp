@@ -100,6 +100,7 @@ namespace ep_lib {
     request->mpi_request = mpi_request;
     request->type = 1; 		// used in wait
     request->comm = comm;
+    request->buf = const_cast<void*>(buf);
 
     Message_Check(comm);
 

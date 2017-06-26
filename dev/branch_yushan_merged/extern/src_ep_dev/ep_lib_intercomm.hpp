@@ -49,6 +49,9 @@ namespace ep_lib
   int MPI_Comm_remote_size(MPI_Comm comm, int *size);
 
   int MPI_Comm_test_inter(MPI_Comm comm, int *flag);
+
+  int test_sendrecv(MPI_Comm comm);
+
 }
 
 

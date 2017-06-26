@@ -489,6 +489,8 @@ namespace ep_lib
   #pragma omp threadprivate(fc_comm_map_ptr)
             //    <MPI_Fint,thread_num>   EP_Comm
 
+  static std::list< MPI_Request* > * EP_PendingRequests = new std::list< MPI_Request* >;
+  #pragma omp threadprivate(EP_PendingRequests)
 }
 
 
