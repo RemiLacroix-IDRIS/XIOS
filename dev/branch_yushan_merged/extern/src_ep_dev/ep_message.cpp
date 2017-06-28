@@ -78,7 +78,7 @@ namespace ep_lib
         msg_block->ep_src  = get_ep_rank(comm, src_loc,  src_mpi);        //printf("myRank = %d, msg_block->ep_src = %d\n",  myRank, msg_block->ep_src);
         int dest_mpi = comm.ep_comm_ptr->size_rank_info[2].first;
         int ep_dest = get_ep_rank(comm, dest_loc, dest_mpi);
-        printf("myRank = %d, probed one message, ep_src = %d, ep_dest = %d, tag = %d, message = %d\n", myRank, msg_block->ep_src, ep_dest, msg_block->ep_tag, msg_block->mpi_message);
+        //printf("myRank = %d, probed one message, ep_src = %d, ep_dest = %d, tag = %d, message = %d\n", myRank, msg_block->ep_src, ep_dest, msg_block->ep_tag, msg_block->mpi_message);
         msg_block->mpi_status = new ::MPI_Status(status);
 
         MPI_Comm* ptr_comm_list = comm.ep_comm_ptr->comm_list;
@@ -89,10 +89,10 @@ namespace ep_lib
         {
           #pragma omp flush
           ptr_comm_target->ep_comm_ptr->message_queue->push_back(*msg_block);  
-          printf("myRank = %d, push_back OK, ep_src = %d, ep_tag = %d, dest = %d(%d)\n", myRank, 
-                                                                                             ptr_comm_target->ep_comm_ptr->message_queue->back().ep_src,
-                                                                                             ptr_comm_target->ep_comm_ptr->message_queue->back().ep_tag,
-                                                                                             ep_dest, dest_loc);
+          //printf("myRank = %d, push_back OK, ep_src = %d, ep_tag = %d, dest = %d(%d)\n", myRank, 
+          //                                                                                   ptr_comm_target->ep_comm_ptr->message_queue->back().ep_src,
+          //                                                                                   ptr_comm_target->ep_comm_ptr->message_queue->back().ep_tag,
+          //                                                                                   ep_dest, dest_loc);
     
           #pragma omp flush
         }

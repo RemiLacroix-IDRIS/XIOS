@@ -8,8 +8,7 @@ using namespace std;
 
 
 namespace ep_lib
-{
-
+{ 
 
   int tag_combine(int real_tag, int src, int dest)
   {
@@ -367,6 +366,61 @@ namespace ep_lib
     else printf("Unable to open file\n");
 
   }
+
+  int test_sendrecv(MPI_Comm comm)
+  {
+    int myRank;
+    MPI_Comm_rank(comm, &myRank);
+    bool amClient = false;
+    bool amServer = false;
+    if(myRank<=3) amClient = true;
+    else amServer = true;
+
+    if(amServer)
+    {
+      int send_buf[4];
+      MPI_Request send_request[8];
+      MPI_Status send_status[8];
+
+      
+      
+      for(int j=0; j<4; j++)  // 4 buffers
+      {
+        for(int i=0; i<2; i++)
+        {
+          send_buf[j] = (myRank+1)*100 + j;
+          MPI_Isend(&send_buf[j], 1, MPI_INT, i*2, 9999, comm, &send_request[i*4+j]);
+        }
+      }
+      
+
+      MPI_Waitall(8, send_request, send_status);
+    }
+
+
+    if(amClient&&myRank%2==0) // Clients leaders
+    {
+      int recv_buf[8];
+      MPI_Request recv_request[8];
+      MPI_Status recv_status[8];
+
+      for(int i=0; i<2; i++)  // 2 servers
+      {
+        for(int j=0; j<4; j++)
+        {
+          MPI_Irecv(&recv_buf[i*4+j], 1, MPI_INT, i+4, 9999, comm, &recv_request[i*4+j]);
+        }
+      }
+
+      MPI_Waitall(8, recv_request, recv_status);
+      printf("============ client %d, recv_buf = %d, %d, %d, %d, %d, %d, %d, %d ================\n", 
+              myRank, recv_buf[0], recv_buf[1], recv_buf[2], recv_buf[3], recv_buf[4], recv_buf[5], recv_buf[6], recv_buf[7]);
+    }
+
+    MPI_Barrier(comm);
+
+  }
+
 }
 
 

@@ -452,6 +452,8 @@ namespace ep_lib
       #elif _openmpi
       MPI_Request(void* request): mpi_request(request) {}
       #endif
+
+      std::list< MPI_Request* > * pending_ptr;
   };
 
   
@@ -489,7 +491,7 @@ namespace ep_lib
   #pragma omp threadprivate(fc_comm_map_ptr)
             //    <MPI_Fint,thread_num>   EP_Comm
 
-  static std::list< MPI_Request* > * EP_PendingRequests = new std::list< MPI_Request* >;
+  static std::list< MPI_Request* > * EP_PendingRequests = 0;
   #pragma omp threadprivate(EP_PendingRequests)
 }
 
