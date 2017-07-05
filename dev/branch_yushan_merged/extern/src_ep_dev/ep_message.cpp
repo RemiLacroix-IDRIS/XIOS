@@ -11,6 +11,9 @@
 
 using namespace std;
 
+extern std::list< ep_lib::MPI_Request* > * EP_PendingRequests;
+#pragma omp threadprivate(EP_PendingRequests)
+
 namespace ep_lib
 {
 
@@ -247,7 +250,7 @@ namespace ep_lib
         {
           #pragma omp flush
           ptr_comm_target->ep_comm_ptr->message_queue->push_back(*msg_block);
-          printf("probed one message, ep_src = %d, tag = %d, mpi_status = %p (%p), message = %d\n", msg_block->ep_src, msg_block->ep_tag, msg_block->mpi_status, &status, msg_block->mpi_message);
+          //printf("probed one message, ep_src = %d, tag = %d, mpi_status = %p (%p), message = %d\n", msg_block->ep_src, msg_block->ep_tag, msg_block->mpi_status, &status, msg_block->mpi_message);
           #pragma omp flush
         }
         
@@ -258,6 +261,37 @@ namespace ep_lib
     }
 
     return MPI_SUCCESS;
+  }
+
+  int Request_Check()
+  {
+    MPI_Status status;
+    MPI_Message message;
+    int probed = false;
+    int recv_count = 0;
+    std::list<MPI_Request* >::iterator it;
+    
+    for(it = EP_PendingRequests->begin(); it!=EP_PendingRequests->end(); it++)
+    { 
+      Message_Check((*it)->comm);
+    }
+
+
+    for(it = EP_PendingRequests->begin(); it!=EP_PendingRequests->end(); )
+    {
+      MPI_Improbe((*it)->ep_src, (*it)->ep_tag, (*it)->comm, &probed, &message, &status);
+      if(probed)
+      {
+        MPI_Get_count(&status, (*it)->ep_datatype, &recv_count);
+        MPI_Imrecv((*it)->buf, recv_count, (*it)->ep_datatype, &message, *it);
+        (*it)->type = 3;
+        //printf("request add = %p, mpi_request=%d\n", *it, (*it)->mpi_request);
+        EP_PendingRequests->erase(it);
+        it = EP_PendingRequests->begin();
+        continue;
+      }
+      it++;
+    }
   }
 
 }

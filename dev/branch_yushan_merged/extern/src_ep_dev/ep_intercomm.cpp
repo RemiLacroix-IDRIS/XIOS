@@ -42,8 +42,9 @@ namespace ep_lib
       MPI_Request req_s, req_r;
       MPI_Isend(&leader_ranks[0], 3, MPI_INT_STD, remote_leader, tag, peer_comm, &req_s);
       MPI_Status status;
-      MPI_Irecv(&leader_ranks[3], 3, MPI_INT_STD, remote_leader, tag, peer_comm, &req_r);
       MPI_Wait(&req_s, &status);
+      
+      MPI_Irecv(&leader_ranks[3], 3, MPI_INT_STD, remote_leader, tag, peer_comm, &req_r);
       MPI_Wait(&req_r, &status);
     }
 

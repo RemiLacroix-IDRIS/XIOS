@@ -114,7 +114,7 @@ namespace xios
             }
 
             
-            test_sendrecv(CXios::globalComm);
+            //test_sendrecv(CXios::globalComm);
             MPI_Intercomm_create(intraComm,0,CXios::globalComm,serverLeader,0,&interComm) ;
 
           }

@@ -12,6 +12,8 @@
 
 using namespace std;
 
+extern std::list< ep_lib::MPI_Request* > * EP_PendingRequests;
+#pragma omp threadprivate(EP_PendingRequests)
 
 namespace ep_lib 
 {
@@ -53,6 +55,8 @@ namespace ep_lib
     Debug("MPI_Irecv with EP");
     int dest_rank;
     MPI_Comm_rank(comm, &dest_rank);
+    int world_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD_STD, &world_rank);
 
     if(!comm.is_ep)
     {
@@ -82,53 +86,50 @@ namespace ep_lib
 
     if(EP_PendingRequests == 0 ) 
     {
-      EP_PendingRequests = new std::list< MPI_Request* >; 
-      printf("proc %d : EP_PendingRequests allocated, add = %p\n", dest_rank, EP_PendingRequests);  
+      EP_PendingRequests = new std::list< MPI_Request* >;
+      //printf("proc %d(%d) : EP_PendingRequests allocated, add = %p\n", dest_rank, world_rank, EP_PendingRequests);  
     }
 
-    request->pending_ptr = EP_PendingRequests;
-    printf("proc %d : &EP_PendingRequests add = %p, ptr = %p\n", dest_rank, EP_PendingRequests, request->pending_ptr);  
-    
+
     EP_PendingRequests->push_back(request);
-    //printf("proc %d : EP_PendingRequests insert one request, src = %d, tag = %d, size = %d\n", dest_rank, request->ep_src, request->ep_tag, EP_PendingRequests->size());
-    
-    // check all EP_PendingRequests
-    
-    //printf("proc %d have %d pending irecv request\n", dest_rank, EP_PendingRequests->size());
-      
-    for(std::list<MPI_Request* >::iterator it = EP_PendingRequests->begin(); it!=EP_PendingRequests->end(); )
-    {
-      if((*it)->type == 3) 
-      {
-        //printf("proc %d : pending request type = %d, src= %d, tag = %d    skip\n", dest_rank, (*it)->type, (*it)->ep_src, (*it)->ep_tag);
-        EP_PendingRequests->erase(it);
-        it = EP_PendingRequests->begin();
-        //printf("proc %d : pending request processed, size = %d\n", dest_rank, EP_PendingRequests->size());
-        continue;
-      }
-        
-      //printf("proc %d : pending irecv request src = %d, tag = %d, type = %d\n", dest_rank, (*it)->ep_src, (*it)->ep_tag, (*it)->type);
-      int probed = false;
-      MPI_Message pending_message;
-      MPI_Status pending_status;
-    
-      MPI_Improbe((*it)->ep_src, (*it)->ep_tag, (*it)->comm, &probed, &pending_message, &pending_status);
-      //printf("proc %d : pending irecv request probed to be %d, src = %d, tag = %d\n",dest_rank, probed, (*it)->ep_src, (*it)->ep_tag);
-    
-      if(probed) 
-      { 
-        int count;
-        MPI_Get_count(&pending_status, (*it)->ep_datatype, &count);
-        MPI_Imrecv((*it)->buf, count, (*it)->ep_datatype, &pending_message, *it);
-        //printf("proc %d : pending request is imrecving src = %d, tag = %d, count = %d\n", dest_rank, (*it)->ep_src, (*it)->ep_tag, count);
-        EP_PendingRequests->erase(it);
-        it = EP_PendingRequests->begin();
-        //printf("proc %d : pending request processed, size = %d\n", dest_rank, EP_PendingRequests->size());
-        continue;
-      }
 
-      it++;
-    }
+    Request_Check();
+    //printf("proc %d(%d) : EP_PendingRequests insert one request, src = %d(%d), tag = %d(%d), size = %d; request add = %p\n", 
+    //        dest_rank, world_rank, EP_PendingRequests->back()->ep_src, request->ep_src, 
+    //        EP_PendingRequests->back()->ep_tag, request->ep_tag, 
+    //        EP_PendingRequests->size(), request);
+    
+    // check all EP_PendingRequests      
+    //for(std::list<MPI_Request* >::iterator it = EP_PendingRequests->begin(); it!=EP_PendingRequests->end(); )
+    //{
+    //if((*it)->type == 3) 
+    //{
+    //    EP_PendingRequests->erase(it);
+   //     it = EP_PendingRequests->begin();
+    //    continue;
+     // }
+        
+      //int probed = false;
+      //MPI_Message pending_message;
+      //MPI_Status pending_status;
+    
+      //MPI_Improbe((*it)->ep_src, (*it)->ep_tag, (*it)->comm, &probed, &pending_message, &pending_status);
+    
+      //if(probed) 
+      //{ 
+        //int count;
+        //MPI_Get_count(&pending_status, (*it)->ep_datatype, &count);
+        //MPI_Imrecv((*it)->buf, count, (*it)->ep_datatype, &pending_message, *it);
+
+        //EP_PendingRequests->erase(it);
+        //if(EP_PendingRequests->empty()) return 0;
+        
+        //it = EP_PendingRequests->begin();
+        //continue;
+     // }
+
+      //it++;
+   // }
     
     return 0;
   }
@@ -148,7 +149,6 @@ namespace ep_lib
     request->ep_datatype = datatype;
     request->ep_tag = message->ep_tag;
     request->ep_src = message->ep_src;
-    //request->buf = buf;
 
     return 0;
   }
@@ -174,5 +174,6 @@ namespace ep_lib
   }
 
 }
+
 
 

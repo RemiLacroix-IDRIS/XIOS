@@ -46,7 +46,7 @@ PROGRAM test_omp
     CALL MPI_COMM_SIZE(MPI_COMM_WORLD,size,ierr)
     if(rank < size-2) then
 
-    !$omp parallel default(private)
+    !$omp parallel default(firstprivate)
   
     CALL xios_initialize(id,return_comm=comm)
   

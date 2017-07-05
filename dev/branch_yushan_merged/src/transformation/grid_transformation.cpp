@@ -473,6 +473,7 @@ void CGridTransformation::computeTransformationMapping(const SourceDestinationIn
 
   // Sending global index of grid source to corresponding process as well as the corresponding mask
   std::vector<ep_lib::MPI_Request> requests;
+  requests.reserve(2*recvRankSizeMap.size()+2*globaIndexWeightFromSrcToDst.size());
   std::vector<ep_lib::MPI_Status> status;
   boost::unordered_map<int, unsigned char* > recvMaskDst;
   boost::unordered_map<int, unsigned long* > recvGlobalIndexSrc;
@@ -533,6 +534,7 @@ void CGridTransformation::computeTransformationMapping(const SourceDestinationIn
   // Okie, now use the mask to identify which index source we need to send, then also signal the destination which masked index we will return
   std::vector<ep_lib::MPI_Request>().swap(requests);
   std::vector<ep_lib::MPI_Status>().swap(status);
+  requests.reserve(sendRankSizeMap.size()+recvRankSizeMap.size());
   // Okie, on destination side, we will wait for information of masked index of source
   for (std::map<int,int>::const_iterator itSend = sendRankSizeMap.begin(); itSend != sendRankSizeMap.end(); ++itSend)
   {

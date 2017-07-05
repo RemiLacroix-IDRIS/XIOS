@@ -61,6 +61,7 @@ namespace ep_lib
   int get_ep_rank_intercomm(MPI_Comm comm, int ep_rank_loc, int mpi_rank);
 
   int Message_Check(MPI_Comm comm);
+  int Request_Check();
 
   int MPI_Recv  (void *buf, int count, MPI_Datatype datatype, int src, int tag, MPI_Comm comm, MPI_Status *status);
   int MPI_Irecv (void *buf, int count, MPI_Datatype datatype, int src, int tag, MPI_Comm comm, MPI_Request *request);

@@ -92,7 +92,7 @@ namespace xios
              info(50)<<"intercommCreate::server "<<rank<<" intraCommSize : "<<intraCommSize
                      <<" intraCommRank :"<<intraCommRank<<"  clientLeader "<< clientLeader<<endl ;
 
-             test_sendrecv(CXios::globalComm);
+            // test_sendrecv(CXios::globalComm);
              MPI_Intercomm_create(intraComm,0,CXios::globalComm,clientLeader,0,&newComm) ;
              interComm.push_back(newComm) ;
            }

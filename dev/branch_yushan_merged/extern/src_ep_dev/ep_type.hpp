@@ -453,7 +453,17 @@ namespace ep_lib
       MPI_Request(void* request): mpi_request(request) {}
       #endif
 
-      std::list< MPI_Request* > * pending_ptr;
+
+    bool operator == (MPI_Request right)
+    {
+      //bool a = mpi_request == right.mpi_request;
+      bool b = type == right.type;
+      bool c = buf == right.buf;
+      bool d = ep_src == right.ep_src;
+      bool e = ep_tag == right.ep_tag;
+      bool f = ep_datatype == right.ep_datatype;
+      return b&&c&&d&&e&&f;
+    }
   };
 
   
@@ -491,10 +501,10 @@ namespace ep_lib
   #pragma omp threadprivate(fc_comm_map_ptr)
             //    <MPI_Fint,thread_num>   EP_Comm
 
-  static std::list< MPI_Request* > * EP_PendingRequests = 0;
-  #pragma omp threadprivate(EP_PendingRequests)
+  //static std::list<MPI_Request * > *EP_PendingRequests = 0; 
 }
 
 
 
 #endif // EP_TYPE_HPP_INCLUDED
+

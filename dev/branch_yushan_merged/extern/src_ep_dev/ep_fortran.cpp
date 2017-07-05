@@ -30,7 +30,7 @@ namespace ep_lib
       if(it == fc_comm_map.end())
       {
         fc_comm_map.insert(std::make_pair( std::make_pair( fint, omp_get_thread_num()) , comm));
-        //printf("EP_Comm_c2f : MAP insert: %d, %d, %p\n", fint, omp_get_thread_num(), comm.ep_comm_ptr);
+        //printf("EP_Comm_c2f : MAP %p insert: %d, %d, %p\n", &fc_comm_map, fint, omp_get_thread_num(), comm.ep_comm_ptr);
       }
     }
     
@@ -53,7 +53,7 @@ namespace ep_lib
     {
       MPI_Comm comm_ptr;
       comm_ptr = it->second;
-      //printf("EP_Comm_f2c : MAP find: %d, %d, %p\n", it->first.first, it->first.second, comm_ptr.ep_comm_ptr);
+      //printf("EP_Comm_f2c : MAP %p find: %d, %d, %p\n", &fc_comm_map, it->first.first, it->first.second, comm_ptr.ep_comm_ptr);
       return  comm_ptr;
     }
        

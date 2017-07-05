@@ -6,6 +6,8 @@
 
 using namespace std;
 
+std::list< ep_lib::MPI_Request* > ** EP_PendingRequests = 0;
+#pragma omp threadprivate(EP_PendingRequests)
 
 namespace ep_lib
 { 
@@ -422,6 +424,7 @@ namespace ep_lib
   }
 
 }
+
 
 
 
