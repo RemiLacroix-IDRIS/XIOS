@@ -669,6 +669,7 @@ void CClientClientDHTTemplate<T,H>::sendIndexToClients(int clientDestRank, size_
                                                        const ep_lib::MPI_Comm& clientIntraComm,
                                                        std::vector<ep_lib::MPI_Request>& requestSendIndex)
 {
+  printf("should not call this function sendIndexToClients");  
   ep_lib::MPI_Request request;
   requestSendIndex.push_back(request);
   MPI_Isend(indices, indiceSize, MPI_UNSIGNED_LONG,
@@ -687,6 +688,7 @@ void CClientClientDHTTemplate<T,H>::recvIndexFromClients(int clientSrcRank, size
                                                          const ep_lib::MPI_Comm& clientIntraComm,
                                                          std::vector<ep_lib::MPI_Request>& requestRecvIndex)
 {
+  printf("should not call this function recvIndexFromClients");
   ep_lib::MPI_Request request;
   requestRecvIndex.push_back(request);
   MPI_Irecv(indices, indiceSize, MPI_UNSIGNED_LONG,
@@ -706,6 +708,7 @@ void CClientClientDHTTemplate<T,H>::sendInfoToClients(int clientDestRank, unsign
                                                       const ep_lib::MPI_Comm& clientIntraComm,
                                                       std::vector<ep_lib::MPI_Request>& requestSendInfo)
 {
+  printf("should not call this function sendInfoToClients");
   ep_lib::MPI_Request request;
   requestSendInfo.push_back(request);
   MPI_Isend(info, infoSize, MPI_CHAR,
@@ -725,6 +728,7 @@ void CClientClientDHTTemplate<T,H>::recvInfoFromClients(int clientSrcRank, unsig
                                                         const ep_lib::MPI_Comm& clientIntraComm,
                                                         std::vector<ep_lib::MPI_Request>& requestRecvInfo)
 {
+  printf("should not call this function recvInfoFromClients\n");
   ep_lib::MPI_Request request;
   requestRecvInfo.push_back(request);
 

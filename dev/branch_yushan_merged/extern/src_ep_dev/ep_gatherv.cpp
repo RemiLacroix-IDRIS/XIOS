@@ -536,7 +536,7 @@ namespace ep_lib
       if(recv_plus_displs[j*num_ep] < displs[j*num_ep+1] ||
          recv_plus_displs[j*num_ep + num_ep -1] < displs[j*num_ep + num_ep -2])  
       {  
-        Debug("Call special implementation of mpi_allgatherv.\n");
+        //printf("proc %d/%d Call special implementation of mpi_allgatherv.\n", ep_rank, ep_size);
         return MPI_Allgatherv_special(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, comm);
       }
 
@@ -545,7 +545,7 @@ namespace ep_lib
         if(recv_plus_displs[j*num_ep+i] < displs[j*num_ep+i+1] || 
            recv_plus_displs[j*num_ep+i] < displs[j*num_ep+i-1])
         {
-          Debug("Call special implementation of mpi_allgatherv.\n");
+          //printf("proc %d/%d Call special implementation of mpi_allgatherv.\n", ep_rank, ep_size);
           return MPI_Allgatherv_special(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, comm);
         }
       }

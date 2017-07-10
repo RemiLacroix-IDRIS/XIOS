@@ -152,9 +152,14 @@ namespace xios
         if (0 != itSend->second.numElements())
           sendBuff[idxSendBuff] = new double[itSend->second.numElements()];
       }
+      
+      const CGridTransformation::RecvIndexGridDestinationMap& localIndexToReceive = *itListRecv;
+      CGridTransformation::RecvIndexGridDestinationMap::const_iterator itbRecv = localIndexToReceive.begin(), itRecv,
+                                                                       iteRecv = localIndexToReceive.end();
 
       idxSendBuff = 0;
-      std::vector<ep_lib::MPI_Request> sendRecvRequest;
+      std::vector<ep_lib::MPI_Request> sendRecvRequest(localIndexToSend.size()+localIndexToReceive.size());
+      int position = 0;
       for (itSend = itbSend; itSend != iteSend; ++itSend, ++idxSendBuff)
       {
         int destRank = itSend->first;
@@ -164,14 +169,12 @@ namespace xios
         {
           sendBuff[idxSendBuff][idx] = dataCurrentSrc(localIndex_p(idx));
         }
-        sendRecvRequest.push_back(ep_lib::MPI_Request());
-        MPI_Isend(sendBuff[idxSendBuff], countSize, MPI_DOUBLE, destRank, 12, client->intraComm, &sendRecvRequest.back());
+        MPI_Isend(sendBuff[idxSendBuff], countSize, MPI_DOUBLE, destRank, 12, client->intraComm, &sendRecvRequest[position]);
+        position++;
       }
 
       // Receiving data on destination fields
-      const CGridTransformation::RecvIndexGridDestinationMap& localIndexToReceive = *itListRecv;
-      CGridTransformation::RecvIndexGridDestinationMap::const_iterator itbRecv = localIndexToReceive.begin(), itRecv,
-                                                                       iteRecv = localIndexToReceive.end();
+      
       int recvBuffSize = 0;
       for (itRecv = itbRecv; itRecv != iteRecv; ++itRecv) recvBuffSize += itRecv->second.size(); //(recvBuffSize < itRecv->second.size())
                                                                        //? itRecv->second.size() : recvBuffSize;
@@ -182,8 +185,9 @@ namespace xios
       {
         int srcRank = itRecv->first;
         int countSize = itRecv->second.size();
-        sendRecvRequest.push_back(ep_lib::MPI_Request());
-        MPI_Irecv(recvBuff + currentBuff, countSize, MPI_DOUBLE, srcRank, 12, client->intraComm, &sendRecvRequest.back());
+        
+        MPI_Irecv(recvBuff + currentBuff, countSize, MPI_DOUBLE, srcRank, 12, client->intraComm, &sendRecvRequest[position]);
+        position++;
         currentBuff += countSize;
       }
       std::vector<ep_lib::MPI_Status> status(sendRecvRequest.size());

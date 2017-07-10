@@ -14,8 +14,9 @@
      <file id="output" name="output">
 <!--        <field field_ref="field_A_expand" name="field"/> -->
         <field field_ref="field_A_srf" name="field_A"/>
-        <field field_ref="field_A_srf" name="field_rect" grid_ref="grid_rect"/>
-        <field field_ref="field_A_srf" name="field_rect2" grid_ref="grid_rect2"/>
+        <field field_ref="field_A_srf" name="field_rect" grid_ref="grid_rect" enabled=".FALSE." />
+        <field field_ref="field_A_srf" name="field_rect2" grid_ref="grid_rect2" enabled=".TRUE." />
+        <field field_ref="field_A_srf" name="field_rect3" grid_ref="grid_rect3" enabled=".TRUE."/>
       <!--  <field field_ref="field_A_srf" name="field_curv" grid_ref="grid_curv"/> -->
      </file>
 
@@ -43,10 +44,17 @@
        <interpolate_domain write_weight="false" order="1" renormalize="true"/>       
      </domain>
 
-     <domain id="dst_domain_regular_pole2" ni_glo="90" nj_glo="90" type="rectilinear">
+     <domain id="dst_domain_regular_pole2" ni_glo="80" nj_glo="80" type="rectilinear">
        <generate_rectilinear_domain id="domain_regular_pole2"/>
        <interpolate_domain write_weight="false" order="1" renormalize="true"/>       
      </domain>
+
+     <domain id="dst_domain_regular_pole3" ni_glo="80" nj_glo="80" type="rectilinear">
+       <generate_rectilinear_domain id="domain_regular_pole3"/>
+       <interpolate_domain write_weight="false" order="1" renormalize="true"/>       
+       <zoom_domain ibegin="0" ni="65" jbegin="0" nj="65" /> 
+     </domain>
+
 
      <domain id="src_domain_curvilinear_read" type="curvilinear">
         <generate_rectilinear_domain />
@@ -74,6 +82,12 @@
        <domain domain_ref="dst_domain_regular_pole2" />
        <axis axis_ref="axis_srf" />
      </grid>
+
+     <grid id="grid_rect3">
+       <domain domain_ref="dst_domain_regular_pole3" />
+       <axis axis_ref="axis_srf" />
+     </grid>
+
 
      <grid id="grid_curv">
        <domain id="src_domain_curvilinear_read" />

@@ -266,7 +266,7 @@ PROGRAM test_unstruct_omp
 
   CALL xios_finalize()
 
-print *, "Client : xios_finalize "
+print *, mpi_rank, "Client : xios_finalize "
 
   !$omp barrier
 
