@@ -464,7 +464,6 @@ MODULE IDATA
    INTEGER :: f_local_comm
    INTEGER :: f_return_comm
 
-
       IF (PRESENT(local_comm)) THEN
         f_local_comm=local_comm
       ELSE

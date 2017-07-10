@@ -2,7 +2,6 @@
 
 #include <cassert>
 #include <iostream>
-#include <stdio.h>
 #include "elt.hpp"
 #include "errhandle.hpp"
 
@@ -174,15 +173,7 @@ double airbar(int N, const Coord *x, const Coord *c, double *d, const Coord& pol
 		t[1] = x[i];
 		t[2] = x[ii];
                 double sc=scalarprod(crossprod(t[1] - t[0], t[2] - t[0]), t[0]) ;
-		//assert(sc >= -1e-10); // Error: tri a l'env (wrong orientation)
-                if(sc < -1e-10)
-                {
-                  printf("N=%d, sc = %f, t[0]=(%f,%f,%f), t[1]=(%f,%f,%f), t[2]=(%f,%f,%f)\n", N, sc,
-                                                                                         t[0].x, t[0].y, t[0].z, 
-                                                                                         t[1].x, t[1].y, t[1].z,
-                                                                                         t[2].x, t[2].y, t[2].z);
-                  assert(sc >= -1e-10);
-                }
+		assert(sc >= -1e-10); // Error: tri a l'env (wrong orientation)
 		double area_gc = triarea(t[0], t[1], t[2]);
 		double area_sc_gc_moon = 0;
 		if (d[i]) /* handle small circle case */

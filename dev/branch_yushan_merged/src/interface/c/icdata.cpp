@@ -118,9 +118,7 @@ extern "C"
      CTimer::get("XIOS").resume();
      CTimer::get("XIOS close definition").resume();
      CContext* context = CContext::getCurrent();
-     
      context->closeDefinition();
-     
      CTimer::get("XIOS close definition").suspend();
      CTimer::get("XIOS").suspend();
    }
@@ -129,9 +127,6 @@ extern "C"
    {
      CTimer::get("XIOS").resume();
      CTimer::get("XIOS context finalize").resume();
-     
-     
-     
      CContext* context = CContext::getCurrent();
      context->finalize();
      CTimer::get("XIOS context finalize").suspend();

@@ -14,12 +14,6 @@
 
 namespace sphereRemap {
 
-extern CRemapGrid srcGrid;
-#pragma omp threadprivate(srcGrid)
-
-extern CRemapGrid tgtGrid;
-#pragma omp threadprivate(tgtGrid)
-
 /* A subdivition of an array into N sub-arays
    can be represented by the length of the N arrays
    or by the offsets when each of the N arrays starts.
@@ -274,10 +268,9 @@ int Mapper::remap(Elt *elements, int nbElements, int order, bool renormalize, bo
     }
 
     MPI_Status *status = new MPI_Status[4*mpiSize];
-    
-    MPI_Waitall(nbRecvRequest, recvRequest, status);
+
     MPI_Waitall(nbSendRequest, sendRequest, status);
-    
+    MPI_Waitall(nbRecvRequest, recvRequest, status);
 
     /* for all indices that have been received from requesting ranks: pack values and gradients, then send */
     nbSendRequest = 0;
@@ -628,7 +621,7 @@ void Mapper::buildMeshTopology()
 
     MPI_Waitall(nbRecvRequest, recvRequest, status);
     MPI_Waitall(nbSendRequest, sendRequest, status);
- 
+
     int nbNeighbourNodes = 0;
     for (int rank = 0; rank < mpiSize; rank++)
         nbNeighbourNodes += nbRecvNode[rank];
@@ -698,13 +691,6 @@ void Mapper::buildMeshTopology()
             set_neighbour(*elt, *elt2);
         }
 
-        /*
-           for (int i = 0; i < elt->n; i++)
-           {
-           if (elt->neighbour[i] == NOT_FOUND)
-           error_exit("neighbour not found");
-           }
-           */
     }
 }
 
@@ -809,11 +795,10 @@ void Mapper::computeIntersection(Elt *elements, int nbElements)
             nbRecvRequest++;
         }
     }
- 
+
     MPI_Waitall(nbRecvRequest, recvRequest, status);
     MPI_Waitall(nbSendRequest, sendRequest, status);
-    
-    
+
     char **sendBuffer2 = new char*[mpiSize];
     char **recvBuffer2 = new char*[mpiSize];
 
@@ -837,10 +822,9 @@ void Mapper::computeIntersection(Elt *elements, int nbElements)
                 {
                     Elt *elt2 = (Elt *) ((*it)->data);
                     /* recvElt is target, elt2 is source */
-                    //					intersect(&recvElt[j], elt2);
-                    intersect_ym(&recvElt[j], elt2);
+                    intersect(&recvElt[j], elt2);
+                    //intersect_ym(&recvElt[j], elt2);
                 }
-
                 if (recvElt[j].is.size() > 0) sentMessageSize[rank] += packIntersectionSize(recvElt[j]);
 
                 // here recvNode goes out of scope
@@ -859,7 +843,6 @@ void Mapper::computeIntersection(Elt *elements, int nbElements)
                 }
             }
             delete [] recvElt;
-
         }
     }
     delete [] pos;
@@ -897,8 +880,6 @@ void Mapper::computeIntersection(Elt *elements, int nbElements)
     
     MPI_Waitall(nbRecvRequest, recvRequest, status);
     MPI_Waitall(nbSendRequest, sendRequest, status);
-   
-   
 
     delete [] sendRequest;
     delete [] recvRequest;

@@ -13,6 +13,9 @@
 #include "message.hpp"
 #include "type.hpp"
 #include "xios_spl.hpp"
+#include "timer.hpp"
+#include "memtrack.hpp"
+
 
 namespace xios {
 
@@ -277,7 +280,10 @@ namespace xios {
 
    void CContext::setClientServerBuffer()
    {
-     size_t minBufferSize = CXios::minBufferSize;
+     // Estimated minimum event size for small events (10 is an arbitrary constant just for safety)
+     const size_t minEventSize = CEventClient::headerSize + getIdServer().size() + 10 * sizeof(int);
+     // Ensure there is at least some room for 20 of such events in the buffers
+     size_t minBufferSize = std::max(CXios::minBufferSize, 20 * minEventSize);
 #define DECLARE_NODE(Name_, name_)    \
      if (minBufferSize < sizeof(C##Name_##Definition)) minBufferSize = sizeof(C##Name_##Definition);
 #define DECLARE_NODE_PAR(Name_, name_)
@@ -285,6 +291,7 @@ namespace xios {
 #undef DECLARE_NODE
 #undef DECLARE_NODE_PAR
 
+     // Compute the buffer sizes needed to send the attributes and data corresponding to fields
      std::map<int, StdSize> maxEventSize;
      std::map<int, StdSize> bufferSize = getAttributesBufferSize(maxEventSize);
      std::map<int, StdSize> dataBufferSize = getDataBufferSize(maxEventSize);
@@ -293,6 +300,7 @@ namespace xios {
      for (it = dataBufferSize.begin(); it != ite; ++it)
        if (it->second > bufferSize[it->first]) bufferSize[it->first] = it->second;
 
+     // Apply the buffer size factor and check that we are above the minimum buffer size
      ite = bufferSize.end();
      for (it = bufferSize.begin(); it != ite; ++it)
      {
@@ -300,16 +308,18 @@ namespace xios {
        if (it->second < minBufferSize) it->second = minBufferSize;
      }
 
-     // We consider that the minimum buffer size is also the minimum event size
-     ite = maxEventSize.end();
-     for (it = maxEventSize.begin(); it != ite; ++it)
-       if (it->second < minBufferSize) it->second = minBufferSize;
-
+     // Leaders will have to send some control events so ensure there is some room for those in the buffers
      if (client->isServerLeader())
      {
        const std::list<int>& ranks = client->getRanksServerLeader();
        for (std::list<int>::const_iterator itRank = ranks.begin(), itRankEnd = ranks.end(); itRank != itRankEnd; ++itRank)
-         if (!bufferSize.count(*itRank)) bufferSize[*itRank] = maxEventSize[*itRank] = minBufferSize;
+       {
+         if (!bufferSize.count(*itRank))
+         {
+           bufferSize[*itRank] = minBufferSize;
+           maxEventSize[*itRank] = minEventSize;
+         }
+       }
      }
 
      client->setBufferSize(bufferSize, maxEventSize);
@@ -400,6 +410,7 @@ namespace xios {
    */
    void CContext::closeDefinition(void)
    {
+     CTimer::get("Context : close definition").resume() ;
      // There is nothing client need to send to server
      if (hasClient)
      {
@@ -453,6 +464,7 @@ namespace xios {
 
       startPrefetchingOfEnabledReadModeFiles();
     }
+    CTimer::get("Context : close definition").suspend() ;
    }
 
    void CContext::findAllEnabledFields(void)
@@ -1205,9 +1217,15 @@ namespace xios {
    //! Update calendar in each time step
    void CContext::updateCalendar(int step)
    {
+      #pragma omp critical (_output)
+      {info(50) << "updateCalendar : before : " << calendar->getCurrentDate() << endl;}
       calendar->update(step);
-
-
+      #pragma omp critical (_output)
+      {info(50) << "updateCalendar : after : " << calendar->getCurrentDate() << endl;}
+#ifdef XIOS_MEMTRACK_LIGHT
+      #pragma omp critical (_output)
+      {info(50) << " Current memory used by XIOS : "<<  MemTrack::getCurrentMemorySize()*1.0/(1024*1024)<<" Mbyte, at timestep "<<step<<" of context "<<this->getId()<<endl ;}
+#endif
       if (hasClient)
       {
         checkPrefetchingOfEnabledReadModeFiles();
@@ -1254,7 +1272,6 @@ namespace xios {
     bool hasctxt = CContext::has(id);
     CContext* context = CObjectFactory::CreateObject<CContext>(id).get();
     getRoot();
-    //if (!hasctxt) CGroupFactory::AddChild(root, context->getShared());
     if (!hasctxt) CGroupFactory::AddChild(*root_ptr, context->getShared());
 
 #define DECLARE_NODE(Name_, name_) \

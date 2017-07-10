@@ -13,7 +13,8 @@ struct CRemapGrid
 
 Coord readPole(std::istream&);
 
-
+extern CRemapGrid srcGrid;
+extern CRemapGrid tgtGrid;
 
 }
 

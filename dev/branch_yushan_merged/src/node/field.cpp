@@ -25,7 +25,7 @@
 
 namespace xios{
 
-   /// ////////////////////// Dfinitions ////////////////////// ///
+   /// ////////////////////// Définitions ////////////////////// ///
 
    CField::CField(void)
       : CObjectTemplate<CField>(), CFieldAttributes()
@@ -124,7 +124,7 @@ namespace xios{
 
   void CField::sendUpdateData(const CArray<double,1>& data)
   {
-    CTimer::get("XIOS Send Data").resume();
+    CTimer::get("Field : send data").resume();
 
     CContext* context = CContext::getCurrent();
     CContextClient* client = context->client;
@@ -176,7 +176,7 @@ namespace xios{
       client->sendEvent(event);
     }
 
-    CTimer::get("XIOS Send Data").suspend();
+    CTimer::get("Field : send data").suspend();
   }
 
   void CField::recvUpdateData(CEventServer& event)
@@ -186,7 +186,7 @@ namespace xios{
 
     list<CEventServer::SSubEvent>::iterator it;
     string fieldId;
-
+    CTimer::get("Field : recv data").resume();
     for (it = event.subEvents.begin(); it != event.subEvents.end(); ++it)
     {
       int rank = it->rank;
@@ -196,6 +196,7 @@ namespace xios{
       buffers.push_back(buffer);
     }
     get(fieldId)->recvUpdateData(ranks,buffers);
+    CTimer::get("Field : recv data").suspend();
   }
 
   void  CField::recvUpdateData(vector<int>& ranks, vector<CBufferIn*>& buffers)
@@ -793,6 +794,9 @@ namespace xios{
    {
      if (!areAllReferenceSolved) solveAllReferenceEnabledField(false);
 
+     const bool detectMissingValues = (!detect_missing_value.isEmpty() && !default_value.isEmpty() && detect_missing_value == true);
+     const double defaultValue  = detectMissingValues ? default_value : (!default_value.isEmpty() ? default_value : 0.0);
+
      // Start by building a filter which can provide the field's instant data
      if (!instantDataFilter)
      {
@@ -809,9 +813,7 @@ namespace xios{
 
            if (grid && grid != gridRef && grid->hasTransform())
            {
-             bool hasMissingValue = (!detect_missing_value.isEmpty() && !default_value.isEmpty() && detect_missing_value == true);
-             double defaultValue  = hasMissingValue ? default_value : (!default_value.isEmpty() ? default_value : 0.0);
-             std::pair<boost::shared_ptr<CFilter>, boost::shared_ptr<CFilter> > filters = CSpatialTransformFilter::buildFilterGraph(gc, gridRef, grid, hasMissingValue, defaultValue);
+             std::pair<boost::shared_ptr<CFilter>, boost::shared_ptr<CFilter> > filters = CSpatialTransformFilter::buildFilterGraph(gc, gridRef, grid, detectMissingValues, defaultValue);
 
              filter->connectOutput(filters.first, 0);
              filter = filters.second;
@@ -827,13 +829,14 @@ namespace xios{
        else if (file && !file->mode.isEmpty() && file->mode == CFile::mode_attr::read)
          instantDataFilter = serverSourceFilter = boost::shared_ptr<CSourceFilter>(new CSourceFilter(gc, grid,
                                                                                                      freq_offset.isEmpty() ? NoneDu : freq_offset,
-                                                                                                     true));
+                                                                                                     true,
+                                                                                                     detectMissingValues, defaultValue));
        else // The data might be passed from the model
        {
-          bool ignoreMissingValue = (!detect_missing_value.isEmpty() && !default_value.isEmpty() && detect_missing_value == true);
-          double defaultValue  = ignoreMissingValue ? default_value : (!default_value.isEmpty() ? default_value : 0.0);
+          if (check_if_active.isEmpty()) check_if_active = false;
           instantDataFilter = clientSourceFilter = boost::shared_ptr<CSourceFilter>(new CSourceFilter(gc, grid, NoneDu, false,
-                                                                                                      ignoreMissingValue, defaultValue));       }
+                                                                                                      detectMissingValues, defaultValue));
+       }
      }
 
      // If the field data is to be read by the client or/and written to a file
@@ -841,7 +844,8 @@ namespace xios{
      {
        if (!read_access.isEmpty() && read_access)
        {
-         storeFilter = boost::shared_ptr<CStoreFilter>(new CStoreFilter(gc, CContext::getCurrent(), grid));
+         storeFilter = boost::shared_ptr<CStoreFilter>(new CStoreFilter(gc, CContext::getCurrent(), grid,
+                                                                        detectMissingValues, defaultValue));
          instantDataFilter->connectOutput(storeFilter, 0);
        }
 
@@ -902,12 +906,16 @@ namespace xios{
 
      if (!selfReferenceFilter)
      {
+       const bool detectMissingValues = (!detect_missing_value.isEmpty() && !default_value.isEmpty() && detect_missing_value == true);
+       const double defaultValue  = detectMissingValues ? default_value : (!default_value.isEmpty() ? default_value : 0.0);
+
        if (file && !file->mode.isEmpty() && file->mode == CFile::mode_attr::read)
        {
          if (!serverSourceFilter)
            serverSourceFilter = boost::shared_ptr<CSourceFilter>(new CSourceFilter(gc, grid,
                                                                                    freq_offset.isEmpty() ? NoneDu : freq_offset,
-                                                                                   true));
+                                                                                   true,
+                                                                                   detectMissingValues, defaultValue));
 
          selfReferenceFilter = serverSourceFilter;
        }
@@ -921,10 +929,9 @@ namespace xios{
        {
          if (!clientSourceFilter)
          {
-           bool ignoreMissingValue = (!detect_missing_value.isEmpty() && !default_value.isEmpty() && detect_missing_value == true);
-           double defaultValue  = ignoreMissingValue ? default_value : (!default_value.isEmpty() ? default_value : 0.0); 
+           if (check_if_active.isEmpty()) check_if_active = false;
            clientSourceFilter = boost::shared_ptr<CSourceFilter>(new CSourceFilter(gc, grid, NoneDu, false,
-                                                                                   ignoreMissingValue, defaultValue));
+                                                                                   detectMissingValues, defaultValue));
          }
 
          selfReferenceFilter = clientSourceFilter;
@@ -958,12 +965,12 @@ namespace xios{
        if (freq_offset.isEmpty())
          freq_offset.setValue(NoneDu);
 
-       const bool ignoreMissingValue = (!detect_missing_value.isEmpty() && !default_value.isEmpty() && detect_missing_value == true);
-
+       const bool detectMissingValues = (!detect_missing_value.isEmpty() && !default_value.isEmpty() && detect_missing_value == true);
+       
        boost::shared_ptr<CTemporalFilter> temporalFilter(new CTemporalFilter(gc, operation,
                                                                              CContext::getCurrent()->getCalendar()->getInitDate(),
                                                                              freq_op, freq_offset, outFreq,
-                                                                             ignoreMissingValue, ignoreMissingValue ? default_value : 0.0));
+                                                                             detectMissingValues, detectMissingValues ? default_value : 0.0));
        instantDataFilter->connectOutput(temporalFilter, 0);
 
        it = temporalDataFilters.insert(std::make_pair(outFreq, temporalFilter)).first;
@@ -998,12 +1005,12 @@ namespace xios{
        if (freq_op.isEmpty()) freq_op.setValue(TimeStep);
        if (freq_offset.isEmpty()) freq_offset.setValue(NoneDu);
 
-       const bool ignoreMissingValue = (!detect_missing_value.isEmpty() && !default_value.isEmpty() && detect_missing_value == true);
+       const bool detectMissingValues = (!detect_missing_value.isEmpty() && !default_value.isEmpty() && detect_missing_value == true);
 
        boost::shared_ptr<CTemporalFilter> temporalFilter(new CTemporalFilter(gc, operation,
                                                                              CContext::getCurrent()->getCalendar()->getInitDate(),
                                                                              freq_op, freq_offset, outFreq,
-                                                                             ignoreMissingValue, ignoreMissingValue ? default_value : 0.0));
+                                                                             detectMissingValues, detectMissingValues ? default_value : 0.0));
        selfReferenceFilter->connectOutput(temporalFilter, 0);
        return temporalFilter ;
      }

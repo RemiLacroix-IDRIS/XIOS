@@ -2,9 +2,9 @@
 #include "mpi.hpp"
 #include <string>
 #include <map>
-#include "tracer.hpp"
 #include <iostream>
 #include <sstream>
+#include "tracer.hpp"
 
 namespace xios
 {
@@ -68,4 +68,11 @@ namespace xios
     return it->second;
   }
 
+  string CTimer::getAllCumulatedTime(void)
+  {
+    std::ostringstream strOut ;
+    for(std::map<std::string,CTimer>::iterator it=allTimer.begin();it!=allTimer.end();++it)
+      strOut<<"Timer : "<<it->first<<"    -->   cumulated time : "<<it->second.getCumulatedTime()<<std::endl ;
+    return strOut.str() ;
+  }
 }

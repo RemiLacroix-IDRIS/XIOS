@@ -2,7 +2,7 @@
 
 namespace sphereRemap {
 
-const Coord ORIGIN(0.0, 0.0, 0.0);
+extern const Coord ORIGIN(0.0, 0.0, 0.0);
 
 std::ostream& operator<<(std::ostream& os, const Coord& c) {
     return os << "(" << c.x << ", " << c.y << ", " << c.z << ")";

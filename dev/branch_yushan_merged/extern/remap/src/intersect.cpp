@@ -16,12 +16,6 @@ namespace sphereRemap {
 
 using namespace std;
 
-extern CRemapGrid srcGrid;
-#pragma omp threadprivate(srcGrid)
-
-extern CRemapGrid tgtGrid;
-#pragma omp threadprivate(tgtGrid)
-
 /** returns index of edge of a that is shared with b,
     or NOT_FOUND if a and b do not share an edge */
 int neighbour_idx(const Elt& a, const Elt& b)
@@ -61,23 +55,9 @@ bool insertNeighbour( Elt& a, const Elt& b, bool insert )
   {
     for (int j = 0; j < b.n; j++)
     {
-      // share a full edge ? be carefull at the orientation
-      
-      //if(squaredist(a.vertex[i], b.vertex[j]) > 1e-10*1e-10 ||
-      //   squaredist(a.vertex[(i+1)%a.n], b.vertex[(j+1)%b.n]) > 1e-10*1e-10 )
-      //{      
-        //printf("A : squaredist(a.vertex[%d], b.vertex[%d]) = %.10e  %d\n", 
-        //        i, j, squaredist(a.vertex[i], b.vertex[j]), 
-        //        squaredist(a.vertex[i], b.vertex[j]) > 1e-10*1e-10 ? true : false);
-        //printf("B : squaredist(a.vertex[%d], b.vertex[%d]) = %.10e  %d\n", 
-        //        (i+1)%a.n, (j+1)%b.n, squaredist(a.vertex[(i+1)%a.n], b.vertex[(j+1)%b.n]),
-        //        squaredist(a.vertex[(i+1)%a.n], b.vertex[(j+1)%b.n]) > 1e-10*1e-10 ? true : false);
-
-        assert(squaredist(a.vertex[ i       ], b.vertex[ j       ]) > 1e-10*1e-10 ||
-               squaredist(a.vertex[(i+1)%a.n], b.vertex[(j+1)%b.n]) > 1e-10*1e-10);
-        
-      //}
-
+// share a full edge ? be carefull at the orientation
+      assert(squaredist(a.vertex[ i       ], b.vertex[ j       ]) > 1e-10*1e-10 ||
+             squaredist(a.vertex[(i+1)%a.n], b.vertex[(j+1)%b.n]) > 1e-10*1e-10);
       if (   squaredist(a.vertex[ i       ], b.vertex[ j           ]) < 1e-10*1e-10 &&
              squaredist(a.vertex[(i+1)%a.n], b.vertex[(j+b.n-1)%b.n]) < 1e-10*1e-10)
       {

@@ -471,12 +471,7 @@ NodePtr split(NodePtr thIs)
 	p->child.resize(MAX_NODE_SZ/2);
 	q->child.resize(MAX_NODE_SZ/2 + 1);
 	assert(thIs->child.size() == MAX_NODE_SZ+1);
-        if(thIs->closest(thIs->child, FARTHEST) == 0) 
-          thIs->tree->ref = thIs->closest(thIs->child, FARTHEST); // farthest from centre
-          
-        thIs->tree->ref = thIs->closest(thIs->child, FARTHEST); // farthest from centre
-        
-          
+	thIs->tree->ref = thIs->closest(thIs->child, FARTHEST); // farthest from centre
 	std::sort(thIs->child.begin(), thIs->child.end(), compareDist);
 	for (int i = 0; i < MAX_NODE_SZ+1; i++)
 		assert(thIs->child[i]->parent == thIs);

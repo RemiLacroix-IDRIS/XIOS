@@ -1046,7 +1046,7 @@ bool ClipperBase::AddPath(const Path &pg, PolyType PolyTyp, bool Closed)
   if ((Closed && highI < 2) || (!Closed && highI < 1)) return false;
 
   //create a new edge array ...
-  TEdge *edges = new TEdge[highI+1];
+  TEdge *edges = new TEdge [highI +1];
 
   bool IsFlat = true;
   //1. Basic (first) edge initialization ...

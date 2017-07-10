@@ -6,7 +6,7 @@
 //mpi.hpp
 namespace xios
 {
-      /// ////////////////////// Dfinitions ////////////////////// ///
+      /// ////////////////////// Définitions ////////////////////// ///
 
       CDataOutput::~CDataOutput(void)
       { /* Ne rien faire de plus */ }
