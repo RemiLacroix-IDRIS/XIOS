@@ -104,7 +104,7 @@ void CClientClientDHTTemplate<T,H>::computeIndexInfoMappingLevel(const CArray<si
 {
   int clientRank;
   MPI_Comm_rank(commLevel,&clientRank);
-  ep_lib::MPI_Barrier(commLevel);
+  //ep_lib::MPI_Barrier(commLevel);
   int groupRankBegin = this->getGroupBegin()[level];
   int nbClient = this->getNbInGroup()[level];
   std::vector<size_t> hashedIndex;
@@ -433,7 +433,7 @@ void CClientClientDHTTemplate<T,H>::computeDistributedIndex(const Index2VectorIn
   int clientRank;
   MPI_Comm_rank(commLevel,&clientRank);
   computeSendRecvRank(level, clientRank);
-  ep_lib::MPI_Barrier(commLevel);
+  //ep_lib::MPI_Barrier(commLevel);
 
   int groupRankBegin = this->getGroupBegin()[level];
   int nbClient = this->getNbInGroup()[level];

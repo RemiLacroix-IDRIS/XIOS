@@ -14,7 +14,7 @@
      <file id="output" name="output">
 <!--        <field field_ref="field_A_expand" name="field"/> -->
         <field field_ref="field_A_srf" name="field_A"/>
-        <field field_ref="field_A_srf" name="field_rect" grid_ref="grid_rect" enabled=".FALSE." />
+        <field field_ref="field_A_srf" name="field_rect" grid_ref="grid_rect" enabled=".TRUE." />
         <field field_ref="field_A_srf" name="field_rect2" grid_ref="grid_rect2" enabled=".TRUE." />
         <field field_ref="field_A_srf" name="field_rect3" grid_ref="grid_rect3" enabled=".TRUE."/>
       <!--  <field field_ref="field_A_srf" name="field_curv" grid_ref="grid_curv"/> -->
@@ -39,7 +39,7 @@
        <compute_connectivity_domain id="compute" type="node"/>
      </domain>
 
-     <domain id="dst_domain_regular_pole" ni_glo="90" nj_glo="45" type="rectilinear">
+     <domain id="dst_domain_regular_pole" ni_glo="80" nj_glo="40" type="rectilinear">
        <generate_rectilinear_domain id="domain_regular_pole"/>
        <interpolate_domain write_weight="false" order="1" renormalize="true"/>       
      </domain>
@@ -52,7 +52,7 @@
      <domain id="dst_domain_regular_pole3" ni_glo="80" nj_glo="80" type="rectilinear">
        <generate_rectilinear_domain id="domain_regular_pole3"/>
        <interpolate_domain write_weight="false" order="1" renormalize="true"/>       
-       <zoom_domain ibegin="0" ni="65" jbegin="0" nj="65" /> 
+       <zoom_domain ibegin="0" ni="70" jbegin="0" nj="70" /> 
      </domain>
 
 

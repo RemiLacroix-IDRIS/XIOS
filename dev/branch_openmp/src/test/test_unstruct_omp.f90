@@ -54,7 +54,7 @@ PROGRAM test_unstruct_omp
   CALL MPI_COMM_SIZE(MPI_COMM_WORLD,mpi_size,ierr)
   if(mpi_rank < mpi_size-2) then
 
-  !$omp parallel default(private) firstprivate(dtime)
+  !$omp parallel default(firstprivate) firstprivate(dtime)
 
   CALL xios_initialize(id,return_comm=comm)
   CALL MPI_COMM_RANK(comm,mpi_rank,ierr)
@@ -78,6 +78,14 @@ PROGRAM test_unstruct_omp
   ALLOCATE(i_index_glo(ncell_glo))
   ALLOCATE(field_A_glo(ncell_glo,llm))
   ALLOCATE(mask_glo(ncell_glo))
+
+  lon_glo(:) = 0
+  lat_glo(:) = 0
+  bounds_lon_glo(:,:) = 0
+  bounds_lat_glo(:,:) = 0
+  i_index_glo(:) = 0
+  field_A_glo(:,:) = 0
+  mask_glo(:) = 0
 
   ind=0
   DO j=1,nlat
@@ -180,6 +188,16 @@ PROGRAM test_unstruct_omp
   ALLOCATE(field_A_srf(ncell,llm))
   ALLOCATE(mask(ncell))
   ALLOCATE(n_local(ncell))
+ 
+  i_index(:)=0
+  lon(:)=0
+  lat(:)=0
+  bounds_lon(:,:)=0
+  bounds_lat(:,:)=0
+  field_A_srf(:,:)=0
+  mask(:)=0
+  n_local(:)=0
+
   ncell=0
   data_n_index=0
   DO ind=1,ncell_glo
@@ -202,6 +220,10 @@ PROGRAM test_unstruct_omp
 
   ALLOCATE(field_A_compressed(data_n_index,llm))
   ALLOCATE(data_i_index(data_n_index))
+  field_A_compressed(:,:)=0
+  data_i_index(:)=0
+
+
   data_n_index=0
   DO ind=1,ncell
     IF (mask(ind)) THEN

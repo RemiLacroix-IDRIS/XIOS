@@ -69,7 +69,7 @@ namespace ep_lib
       copy(send_buf, send_buf+count, recv_buf + displs[0]);
     }
 
-    for(int j=0; j<count; j+=BUFFER_SIZE)
+    for(int j=0; count!=0? j<count: j<count+1; j+=BUFFER_SIZE)
     {
       for(int k=1; k<num_ep; k++)
       {
@@ -77,7 +77,7 @@ namespace ep_lib
         {
           #pragma omp critical (write_to_buffer)
           {
-            copy(send_buf+j, send_buf + min(BUFFER_SIZE, count-j) , buffer);
+            if(count!=0) copy(send_buf+j, send_buf + min(BUFFER_SIZE, count-j) , buffer);
             #pragma omp flush
           }
         }
@@ -113,7 +113,7 @@ namespace ep_lib
       copy(send_buf, send_buf+count, recv_buf + displs[0]);
     }
 
-    for(int j=0; j<count; j+=BUFFER_SIZE)
+    for(int j=0; count!=0? j<count: j<count+1; j+=BUFFER_SIZE)
     {
       for(int k=1; k<num_ep; k++)
       {
@@ -121,7 +121,7 @@ namespace ep_lib
         {
           #pragma omp critical (write_to_buffer)
           {
-            copy(send_buf+j, send_buf + min(BUFFER_SIZE, count-j) , buffer);
+            if(count!=0) copy(send_buf+j, send_buf + min(BUFFER_SIZE, count-j) , buffer);
             #pragma omp flush
           }
         }
@@ -157,7 +157,7 @@ namespace ep_lib
       copy(send_buf, send_buf+count, recv_buf + displs[0]);
     }
 
-    for(int j=0; j<count; j+=BUFFER_SIZE)
+    for(int j=0; count!=0? j<count: j<count+1; j+=BUFFER_SIZE)
     {
       for(int k=1; k<num_ep; k++)
       {
@@ -165,7 +165,7 @@ namespace ep_lib
         {
           #pragma omp critical (write_to_buffer)
           {
-            copy(send_buf+j, send_buf + min(BUFFER_SIZE, count-j) , buffer);
+            if(count!=0) copy(send_buf+j, send_buf + min(BUFFER_SIZE, count-j) , buffer);
             #pragma omp flush
           }
         }
@@ -201,7 +201,7 @@ namespace ep_lib
       copy(send_buf, send_buf+count, recv_buf + displs[0]);
     }
 
-    for(int j=0; j<count; j+=BUFFER_SIZE)
+    for(int j=0; count!=0? j<count: j<count+1; j+=BUFFER_SIZE)
     {
       for(int k=1; k<num_ep; k++)
       {
@@ -209,7 +209,7 @@ namespace ep_lib
         {
           #pragma omp critical (write_to_buffer)
           {
-            copy(send_buf+j, send_buf + min(BUFFER_SIZE, count-j) , buffer);
+            if(count!=0)copy(send_buf+j, send_buf + min(BUFFER_SIZE, count-j) , buffer);
             #pragma omp flush
           }
         }
@@ -245,7 +245,7 @@ namespace ep_lib
       copy(send_buf, send_buf+count, recv_buf + displs[0]);
     }
 
-    for(int j=0; j<count; j+=BUFFER_SIZE)
+    for(int j=0; count!=0? j<count: j<count+1; j+=BUFFER_SIZE)
     {
       for(int k=1; k<num_ep; k++)
       {
@@ -253,7 +253,7 @@ namespace ep_lib
         {
           #pragma omp critical (write_to_buffer)
           {
-            copy(send_buf+j, send_buf + min(BUFFER_SIZE, count-j) , buffer);
+            if(count!=0) copy(send_buf+j, send_buf + min(BUFFER_SIZE, count-j) , buffer);
             #pragma omp flush
           }
         }
@@ -289,7 +289,7 @@ namespace ep_lib
       copy(send_buf, send_buf+count, recv_buf + displs[0]);
     }
 
-    for(int j=0; j<count; j+=BUFFER_SIZE)
+    for(int j=0; count!=0? j<count: j<count+1; j+=BUFFER_SIZE)
     {
       for(int k=1; k<num_ep; k++)
       {
@@ -297,7 +297,7 @@ namespace ep_lib
         {
           #pragma omp critical (write_to_buffer)
           {
-            copy(send_buf+j, send_buf + min(BUFFER_SIZE, count-j) , buffer);
+            if(count!=0) copy(send_buf+j, send_buf + min(BUFFER_SIZE, count-j) , buffer);
             #pragma omp flush
           }
         }
@@ -519,14 +519,7 @@ namespace ep_lib
     ep_size = comm.ep_comm_ptr->size_rank_info[0].second;
     num_ep = comm.ep_comm_ptr->size_rank_info[1].second;
     mpi_size = comm.ep_comm_ptr->size_rank_info[2].second;
-
-    //printf("size of recvbuf = %lu\n", sizeof(recvbuf));
-    //printf("size of (char*)recvbuf = %lu\n", sizeof((char*)recvbuf));
     
-    if(ep_size == mpi_size) 
-      return ::MPI_Allgatherv(sendbuf, sendcount, static_cast< ::MPI_Datatype>(datatype), recvbuf, recvcounts, displs,
-                              static_cast< ::MPI_Datatype>(datatype), static_cast< ::MPI_Comm>(comm.mpi_comm));
-   
 
     int recv_plus_displs[ep_size];
     for(int i=0; i<ep_size; i++) recv_plus_displs[i] = recvcounts[i] + displs[i];
