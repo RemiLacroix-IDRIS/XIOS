@@ -520,16 +520,23 @@ namespace ep_lib
     num_ep = comm.ep_comm_ptr->size_rank_info[1].second;
     mpi_size = comm.ep_comm_ptr->size_rank_info[2].second;
     
+    if(ep_size == mpi_size)  // needed by servers
+      return ::MPI_Allgatherv(sendbuf, sendcount, static_cast< ::MPI_Datatype>(datatype), recvbuf, recvcounts, displs,
+                              static_cast< ::MPI_Datatype>(datatype), static_cast< ::MPI_Comm>(comm.mpi_comm));
 
     int recv_plus_displs[ep_size];
     for(int i=0; i<ep_size; i++) recv_plus_displs[i] = recvcounts[i] + displs[i];
+
 
     for(int j=0; j<mpi_size; j++)
     {
       if(recv_plus_displs[j*num_ep] < displs[j*num_ep+1] ||
          recv_plus_displs[j*num_ep + num_ep -1] < displs[j*num_ep + num_ep -2])  
       {  
-        //printf("proc %d/%d Call special implementation of mpi_allgatherv.\n", ep_rank, ep_size);
+        printf("proc %d/%d Call special implementation of mpi_allgatherv.\n", ep_rank, ep_size);
+        for(int k=0; k<ep_size; k++)
+          printf("recv_plus_displs[%d] = %d\t displs[%d] = %d\n", k, recv_plus_displs[k], k, displs[k]);
+
         return MPI_Allgatherv_special(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, comm);
       }
 
@@ -538,7 +545,7 @@ namespace ep_lib
         if(recv_plus_displs[j*num_ep+i] < displs[j*num_ep+i+1] || 
            recv_plus_displs[j*num_ep+i] < displs[j*num_ep+i-1])
         {
-          //printf("proc %d/%d Call special implementation of mpi_allgatherv.\n", ep_rank, ep_size);
+          printf("proc %d/%d Call special implementation of mpi_allgatherv.\n", ep_rank, ep_size);
           return MPI_Allgatherv_special(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, comm);
         }
       }
