@@ -87,50 +87,13 @@ namespace ep_lib
     if(EP_PendingRequests == 0 ) 
     {
       EP_PendingRequests = new std::list< MPI_Request* >;
-      //printf("proc %d(%d) : EP_PendingRequests allocated, add = %p\n", dest_rank, world_rank, EP_PendingRequests);  
     }
 
 
     EP_PendingRequests->push_back(request);
 
     Request_Check();
-    //printf("proc %d(%d) : EP_PendingRequests insert one request, src = %d(%d), tag = %d(%d), size = %d; request add = %p\n", 
-    //        dest_rank, world_rank, EP_PendingRequests->back()->ep_src, request->ep_src, 
-    //        EP_PendingRequests->back()->ep_tag, request->ep_tag, 
-    //        EP_PendingRequests->size(), request);
-    
-    // check all EP_PendingRequests      
-    //for(std::list<MPI_Request* >::iterator it = EP_PendingRequests->begin(); it!=EP_PendingRequests->end(); )
-    //{
-    //if((*it)->type == 3) 
-    //{
-    //    EP_PendingRequests->erase(it);
-   //     it = EP_PendingRequests->begin();
-    //    continue;
-     // }
-        
-      //int probed = false;
-      //MPI_Message pending_message;
-      //MPI_Status pending_status;
-    
-      //MPI_Improbe((*it)->ep_src, (*it)->ep_tag, (*it)->comm, &probed, &pending_message, &pending_status);
-    
-      //if(probed) 
-      //{ 
-        //int count;
-        //MPI_Get_count(&pending_status, (*it)->ep_datatype, &count);
-        //MPI_Imrecv((*it)->buf, count, (*it)->ep_datatype, &pending_message, *it);
 
-        //EP_PendingRequests->erase(it);
-        //if(EP_PendingRequests->empty()) return 0;
-        
-        //it = EP_PendingRequests->begin();
-        //continue;
-     // }
-
-      //it++;
-   // }
-    
     return 0;
   }
 

@@ -40,20 +40,10 @@ namespace ep_lib {
 
     if(request->type == 2)   // irecv message not probed
     {
-      Message_Check(request->comm);
+      Request_Check();
+      
       #pragma omp flush
-      MPI_Message message;
-      MPI_Improbe(request->ep_src, request->ep_tag, request->comm, flag, &message, status);
-      if(*flag)
-      {
-        
-        int count;
-        MPI_Get_count(status, request->ep_datatype, &count);
-        MPI_Imrecv(request->buf, count, request->ep_datatype, &message, request);
-        printf("in ep_test, found message src = %d, tag = %d, type = %d\n", request->ep_src, request->ep_tag, request->type);
-        MPI_Test(request, flag, status);
-      }
-      return 0;
+      
     }
 
     if(request->type == 3)  // imrecv
@@ -61,17 +51,8 @@ namespace ep_lib {
       ::MPI_Request *mpi_request = static_cast< ::MPI_Request* >(&(request->mpi_request));
       ::MPI_Status mpi_status;
       
-      ::MPI_Errhandler_set(MPI_COMM_WORLD_STD, MPI_ERRORS_RETURN);
-      int error_code = ::MPI_Test(mpi_request, flag, &mpi_status);
-      if (error_code != MPI_SUCCESS) {
+      ::MPI_Test(mpi_request, flag, &mpi_status);
       
-         char error_string[BUFSIZ];
-         int length_of_error_string, error_class;
-      
-         ::MPI_Error_class(error_code, &error_class);
-         ::MPI_Error_string(error_class, error_string, &length_of_error_string);
-         printf("%s\n", error_string);
-      }
       
       if(*flag)
       {
@@ -82,13 +63,7 @@ namespace ep_lib {
         //int count;
         //MPI_Get_count(status, request->ep_datatype, &count);
         //check_sum_recv(request->buf, count, request->ep_datatype, request->ep_src, request->ep_tag, request->comm, 2);
-      }
-
-      status->ep_src = request->ep_src;
-      status->ep_tag = request->ep_tag;
-      status->ep_datatype = request->ep_datatype;
-
-      
+      }  
 
       return 0;
     }

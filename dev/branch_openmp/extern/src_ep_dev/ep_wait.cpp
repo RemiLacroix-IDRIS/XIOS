@@ -58,8 +58,6 @@ namespace ep_lib
     ::MPI_Request* mpi_request = new ::MPI_Request[count];
     ::MPI_Status* mpi_status = new ::MPI_Status[count];
 
-    //if(EP_PendingRequests != 0) printf("pending size = %d, add = %p\n", EP_PendingRequests->size(), EP_PendingRequests);
-
     while(std::accumulate(finished.begin(), finished.end(), 0) < count)
     {
       

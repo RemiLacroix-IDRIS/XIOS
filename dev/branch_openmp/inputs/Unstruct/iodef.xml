@@ -52,7 +52,7 @@
      <domain id="dst_domain_regular_pole3" ni_glo="80" nj_glo="80" type="rectilinear">
        <generate_rectilinear_domain id="domain_regular_pole3"/>
        <interpolate_domain write_weight="false" order="1" renormalize="true"/>       
-       <zoom_domain ibegin="0" ni="70" jbegin="0" nj="70" /> 
+       <zoom_domain ibegin="0" ni="40" jbegin="0" nj="40" /> 
      </domain>
 
 

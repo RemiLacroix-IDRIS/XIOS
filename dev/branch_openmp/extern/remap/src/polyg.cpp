@@ -6,6 +6,7 @@
 #include "errhandle.hpp"
 
 #include "polyg.hpp"
+#include <stdio.h>
 
 namespace sphereRemap {
 
@@ -44,15 +45,18 @@ void normals(Coord *x, int n, Coord *a)
 
 Coord barycentre(const Coord *x, int n)
 {
+
 	if (n == 0) return ORIGIN;
 	Coord bc = ORIGIN;
 	for (int i = 0; i < n; i++)
+	{
 		bc = bc + x[i];
+	}	
 	/* both distances can be equal down to roundoff when norm(bc) < mashineepsilon 
 	   which can occur when weighted with tiny area */
-
-	assert(squaredist(bc, proj(bc)) <= squaredist(bc, proj(bc * (-1.0))));
-	//if (squaredist(bc, proj(bc)) > squaredist(bc, proj(bc * (-1.0)))) return proj(bc * (-1.0));
+  
+	
+  //assert(squaredist(bc, proj(bc)) <= squaredist(bc, proj(bc * (-1.0))));	
 
 	return proj(bc);
 }
@@ -172,9 +176,10 @@ double airbar(int N, const Coord *x, const Coord *c, double *d, const Coord& pol
 		int ii = (i + 1) % N;
 		t[1] = x[i];
 		t[2] = x[ii];
-                double sc=scalarprod(crossprod(t[1] - t[0], t[2] - t[0]), t[0]) ;
+    double sc=scalarprod(crossprod(t[1] - t[0], t[2] - t[0]), t[0]) ;
 		assert(sc >= -1e-10); // Error: tri a l'env (wrong orientation)
 		double area_gc = triarea(t[0], t[1], t[2]);
+		if(area_gc<=0) printf("area_gc = %e\n", area_gc);
 		double area_sc_gc_moon = 0;
 		if (d[i]) /* handle small circle case */
 		{
@@ -182,10 +187,12 @@ double airbar(int N, const Coord *x, const Coord *c, double *d, const Coord& pol
 			double mext = scalarprod(m, c[i]) - d[i];
 			char sgl = (mext > 0) ? -1 : 1;
 			area_sc_gc_moon = sgl * alun(arcdist(t[1], t[2]), fabs(scalarprod(t[1], pole)));
+			//if(area_sc_gc_moon<=0) printf("area_sc_gc_moon = %e\n", area_sc_gc_moon);
 			gg_exact = gg_exact + sc_gc_moon_normalintegral(t[1], t[2], pole);
 		}
 		area += area_gc + area_sc_gc_moon; /* for "spherical circle segment" sum triangular part (at) and "small moon" and => account for small circle */
 		g[i] = barycentre(t, 3) * (area_gc + area_sc_gc_moon);
+		//printf("g[%d] = (%e,%e,%e) * (%e+%e) = (%e,%e,%e) norm = %e\n", i, barycentre(t, 3).x, barycentre(t, 3).y, barycentre(t, 3).z, area_gc,  area_sc_gc_moon, g[i].x, g[i].y, g[i].z, norm(g[i]));
 	}
 	gg = barycentre(g, N);
 	gg_exact = proj(gg_exact);

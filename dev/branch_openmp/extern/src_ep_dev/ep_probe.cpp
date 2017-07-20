@@ -29,11 +29,6 @@ namespace ep_lib
 
     #pragma omp flush
 
-    
-    //printf("iprobe, message queue size = %lu, queue = %p\n", comm.ep_comm_ptr->message_queue->size(), comm.ep_comm_ptr->message_queue);
-
-    #pragma omp flush
-
     #pragma omp critical (_query)
     if(!comm.ep_comm_ptr->message_queue->empty())
     {
@@ -45,8 +40,6 @@ namespace ep_lib
         if(src_matched && tag_matched)        
         {
           Debug("find message\n");
-          // printf("iprobe, find in local message queue %p, src = %d, tag = %d\n", comm.ep_comm_ptr->message_queue, it->ep_src, it->ep_tag);
-
           *flag = true;
 
           ::MPI_Status mpi_status = *(static_cast< ::MPI_Status *>(it->mpi_status));
@@ -130,7 +123,6 @@ namespace ep_lib
 
           #pragma omp critical (_query2)
           {              
-            //printf("local message erased. src = %d, dest = %d, tag = %d\n", it->ep_src, it->ep_dest, it->ep_tag);     
             delete it->mpi_status;
             comm.ep_comm_ptr->message_queue->erase(it);
             #pragma omp flush

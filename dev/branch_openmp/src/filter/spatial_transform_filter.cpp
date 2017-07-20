@@ -52,6 +52,7 @@ namespace xios
   {
     CSpatialTransformFilterEngine* spaceFilter = static_cast<CSpatialTransformFilterEngine*>(engine);
     CDataPacketPtr outputPacket = spaceFilter->applyFilter(data, outputDefaultValue);
+    printf("spalceFilter applied\n");
     if (outputPacket)
       onOutputReady(outputPacket);
   }
@@ -121,7 +122,9 @@ namespace xios
     bool ignoreMissingValue = false; 
     double defaultValue = std::numeric_limits<double>::quiet_NaN();
     if (0 != dataDest.numElements()) ignoreMissingValue = NumTraits<double>::isnan(dataDest(0));
-
+    
+    const std::list<CGridTransformation::SendingIndexGridSourceMap> *listLocalIndexSend_ptr = & (gridTransformation->getLocalIndexToSendFromGridSource());
+    
     const std::list<CGridTransformation::SendingIndexGridSourceMap>& listLocalIndexSend = gridTransformation->getLocalIndexToSendFromGridSource();
     const std::list<CGridTransformation::RecvIndexGridDestinationMap>& listLocalIndexToReceive = gridTransformation->getLocalIndexToReceiveOnGridDest();
     const std::list<size_t>& listNbLocalIndexToReceive = gridTransformation->getNbLocalIndexToReceiveOnGridDest();
@@ -130,8 +133,8 @@ namespace xios
 
     CArray<double,1> dataCurrentDest(dataSrc.copy());
 
-    std::list<CGridTransformation::SendingIndexGridSourceMap>::const_iterator itListSend  = listLocalIndexSend.begin(),
-                                                                              iteListSend = listLocalIndexSend.end();
+    std::list<CGridTransformation::SendingIndexGridSourceMap>::const_iterator itListSend  = listLocalIndexSend_ptr->begin(),
+                                                                              iteListSend = listLocalIndexSend_ptr->end();
     std::list<CGridTransformation::RecvIndexGridDestinationMap>::const_iterator itListRecv = listLocalIndexToReceive.begin();
     std::list<size_t>::const_iterator itNbListRecv = listNbLocalIndexToReceive.begin();
     std::list<std::vector<bool> >::const_iterator itLocalMaskIndexOnDest = listLocalIndexMaskOnDest.begin();
@@ -185,7 +188,6 @@ namespace xios
       {
         int srcRank = itRecv->first;
         int countSize = itRecv->second.size();
-        
         MPI_Irecv(recvBuff + currentBuff, countSize, MPI_DOUBLE, srcRank, 12, client->intraComm, &sendRecvRequest[position]);
         position++;
         currentBuff += countSize;

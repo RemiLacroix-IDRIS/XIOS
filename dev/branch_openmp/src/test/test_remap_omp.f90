@@ -221,19 +221,19 @@ PROGRAM test_remap_omp
 
   CALL xios_close_context_definition()
 
-!  CALL xios_get_domain_attr("src_domain_regular_read", ni=src_tmp_ni, nj=src_tmp_nj)
-!  ALLOCATE(tmp_field_0(src_tmp_ni*src_tmp_nj))
+  CALL xios_get_domain_attr("src_domain_regular_read", ni=src_tmp_ni, nj=src_tmp_nj)
+  ALLOCATE(tmp_field_0(src_tmp_ni*src_tmp_nj))
 
-!  CALL xios_get_axis_attr("src_axis_curvilinear_read", n=src_tmp_n)
-!  CALL xios_get_domain_attr("src_domain_curvilinear_read", ni=src_tmp_ni, nj=src_tmp_nj)
-!  ALLOCATE(tmp_field_1(src_tmp_ni*src_tmp_nj*src_tmp_n))
+  CALL xios_get_axis_attr("src_axis_curvilinear_read", n=src_tmp_n)
+  CALL xios_get_domain_attr("src_domain_curvilinear_read", ni=src_tmp_ni, nj=src_tmp_nj)
+  ALLOCATE(tmp_field_1(src_tmp_ni*src_tmp_nj*src_tmp_n))
 
-!  CALL xios_get_domain_attr("src_domain_unstructured_read", ni=src_tmp_ni, nj=src_tmp_nj)
-!  ALLOCATE(tmp_field_2(src_tmp_ni*src_tmp_nj))
+  CALL xios_get_domain_attr("src_domain_unstructured_read", ni=src_tmp_ni, nj=src_tmp_nj)
+  ALLOCATE(tmp_field_2(src_tmp_ni*src_tmp_nj))
   
-!  CALL xios_recv_field("src_field_regular", tmp_field_0)
-!  CALL xios_recv_field("src_field_curvilinear", tmp_field_1)
-!  CALL xios_recv_field("src_field_unstructured", tmp_field_2)
+  CALL xios_recv_field("src_field_regular", tmp_field_0)
+  CALL xios_recv_field("src_field_curvilinear", tmp_field_1)
+  CALL xios_recv_field("src_field_unstructured", tmp_field_2)
 
   DO ts=1,10
     CALL xios_update_calendar(ts)
@@ -251,9 +251,9 @@ PROGRAM test_remap_omp
     CALL xios_send_field("src_field_3D_clone",src_field_3D)
     CALL xios_send_field("src_field_4D",src_field_4D)
     CALL xios_send_field("src_field_3D_pression",src_field_pression)
- !   CALL xios_send_field("tmp_field_0",tmp_field_0)
- !   CALL xios_send_field("tmp_field_1",tmp_field_1)
- !   CALL xios_send_field("tmp_field_2",tmp_field_2)
+    CALL xios_send_field("tmp_field_0",tmp_field_0)
+    CALL xios_send_field("tmp_field_1",tmp_field_1)
+    CALL xios_send_field("tmp_field_2",tmp_field_2)
     CALL wait_us(5000) ;
    ENDDO
   
@@ -261,7 +261,7 @@ PROGRAM test_remap_omp
 
   DEALLOCATE(src_lon, src_lat, src_boundslon,src_boundslat, src_field_2D)
   DEALLOCATE(dst_lon, dst_lat, dst_boundslon,dst_boundslat)
-  !DEALLOCATE(tmp_field_0, tmp_field_1, tmp_field_2)
+  DEALLOCATE(tmp_field_0, tmp_field_1, tmp_field_2)
   
   CALL xios_finalize()
   
@@ -288,7 +288,6 @@ PROGRAM test_remap_omp
   CALL MPI_FINALIZE(ierr)
 
 END PROGRAM test_remap_omp
-
 
 
 
