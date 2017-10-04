@@ -76,8 +76,8 @@ namespace xios
          static T* get(const T* ptr) ;
          static T* get(const string& contextId, const string& id) ;
          T* get(void) ;
-         shared_ptr<T> getShared(void) ;
-         static shared_ptr<T> getShared(const T* ptr) ;
+         boost::shared_ptr<T> getShared(void) ;
+         static boost::shared_ptr<T> getShared(const T* ptr) ;
 
          static T* create(const string& id=string("")) ;
          static const vector<T*> getAll() ;

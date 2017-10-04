@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <assert.h>
 #include <math.h>
+#include <string.h>
 
 #ifdef _Debug
 #define Debug(x) std::cout << x << std::endl
@@ -246,12 +247,7 @@ namespace ep_lib
 
   struct BUFFER
   {
-    double *buf_double;
-    float  *buf_float;
-    int    *buf_int;
-    long    *buf_long;
-    unsigned long    *buf_ulong;
-    char    *buf_char;
+    void * void_buffer[12];
   };
 
 
@@ -275,6 +271,7 @@ namespace ep_lib
     EP_Comm ep_comm_ptr;
 
     MPI_Comm *mem_bridge;
+
 
     #ifdef _intelmpi
     int mpi_bridge;

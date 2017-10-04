@@ -20,7 +20,7 @@
 namespace xios {
 
   //shared_ptr<CContextGroup> CContext::root;
-  shared_ptr<CContextGroup> * CContext::root_ptr = 0;
+  boost::shared_ptr<CContextGroup> * CContext::root_ptr = 0;
 
    /// ////////////////////// Dfinitions ////////////////////// ///
 
@@ -62,7 +62,7 @@ namespace xios {
       //static shared_ptr<CContextGroup> *root_ptr;
       if(root_ptr == 0) //root_ptr = new shared_ptr<CContextGroup>;
       // if (root_ptr->get()==NULL) 
-      root_ptr = new shared_ptr<CContextGroup>(new CContextGroup(xml::CXMLNode::GetRootName()));
+      root_ptr = new boost::shared_ptr<CContextGroup>(new CContextGroup(xml::CXMLNode::GetRootName()));
       return root_ptr->get();
    }
 

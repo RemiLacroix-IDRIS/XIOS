@@ -1,6 +1,6 @@
 #ifndef EP_DECLARATION_HPP_INCLUDED
 #define EP_DECLARATION_HPP_INCLUDED
-
+/*
 extern ::MPI_Datatype MPI_INT_STD;
 extern ::MPI_Datatype MPI_FLOAT_STD;
 extern ::MPI_Datatype MPI_DOUBLE_STD;
@@ -19,7 +19,7 @@ extern ::MPI_Comm MPI_COMM_NULL_STD;
 extern ::MPI_Status MPI_STATUS_IGNORE_STD;
 extern ::MPI_Request MPI_REQUEST_NULL_STD;
 extern ::MPI_Info MPI_INFO_NULL_STD;
-
+*/
 #undef MPI_INT
 #undef MPI_FLOAT
 #undef MPI_DOUBLE
@@ -36,10 +36,8 @@ extern ::MPI_Info MPI_INFO_NULL_STD;
 #undef MPI_COMM_NULL
 
 #undef MPI_REQUEST_NULL
-
-
-
 #undef MPI_STATUS_IGNORE
+#undef MPI_INFO_NULL
 
 extern ep_lib::MPI_Datatype MPI_INT;
 extern ep_lib::MPI_Datatype MPI_FLOAT;
@@ -58,7 +56,8 @@ extern ep_lib::MPI_Comm MPI_COMM_NULL;
 
 extern ep_lib::MPI_Status MPI_STATUS_IGNORE;
 extern ep_lib::MPI_Request MPI_REQUEST_NULL;
-//extern ep_lib::MPI_Info MPI_INFO_NULL;
+extern ep_lib::MPI_Info MPI_INFO_NULL;
+
 
 #endif // EP_DECLARATION_HPP_INCLUDED
 

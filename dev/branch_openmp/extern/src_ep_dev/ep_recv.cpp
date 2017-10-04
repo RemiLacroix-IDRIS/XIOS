@@ -55,8 +55,7 @@ namespace ep_lib
     Debug("MPI_Irecv with EP");
     int dest_rank;
     MPI_Comm_rank(comm, &dest_rank);
-    int world_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD_STD, &world_rank);
+    
 
     if(!comm.is_ep)
     {
@@ -70,7 +69,7 @@ namespace ep_lib
       request->ep_tag = tag;
     }
 
-    request->mpi_request = MPI_REQUEST_NULL_STD;
+    request->mpi_request = MPI_REQUEST_NULL.mpi_request;
     request->buf = buf;
     request->comm = comm;
     request->type = 2;

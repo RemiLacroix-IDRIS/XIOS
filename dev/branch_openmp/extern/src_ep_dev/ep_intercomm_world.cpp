@@ -79,7 +79,7 @@ namespace ep_lib
       send_buf[1] = rank_in_local_parent;
       send_buf[2] = num_ep;
 
-      ::MPI_Allgather(send_buf.data(), 3, MPI_INT_STD, recv_buf.data(), 3, MPI_INT_STD, local_mpi_comm);
+      ::MPI_Allgather(send_buf.data(), 3, static_cast< ::MPI_Datatype> (MPI_INT), recv_buf.data(), 3, static_cast< ::MPI_Datatype> (MPI_INT), local_mpi_comm);
 
       for(int i=0; i<size_info[0]; i++)
       {
@@ -98,16 +98,16 @@ namespace ep_lib
         send_buf[0] = size_info[0];
         send_buf[1] = local_ep_size;
 
-        ::MPI_Send(send_buf.data(), 2, MPI_INT_STD, mpi_remote_leader, tag, peer_comm);
+        ::MPI_Send(send_buf.data(), 2, static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm);
 
-        ::MPI_Recv(recv_buf.data(), 2, MPI_INT_STD, mpi_remote_leader, tag, peer_comm, &mpi_status);
+        ::MPI_Recv(recv_buf.data(), 2, static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm, &mpi_status);
 
         recv_buf[2] = rank_in_world;
         recv_buf[3] = mpi_remote_leader;
 
       }
 
-      ::MPI_Bcast(recv_buf.data(), 4, MPI_INT_STD, local_comm.rank_map->at(local_leader).second, local_mpi_comm);
+      ::MPI_Bcast(recv_buf.data(), 4, static_cast< ::MPI_Datatype> (MPI_INT), local_comm.rank_map->at(local_leader).second, local_mpi_comm);
 
       size_info[1] = recv_buf[0];
       remote_ep_size = recv_buf[1];
@@ -131,13 +131,13 @@ namespace ep_lib
         std::copy ( rank_info[1].data(), rank_info[1].data() + size_info[0], send_buf.begin() + size_info[0] );
         std::copy ( ep_info[0].data(),   ep_info[0].data()   + size_info[0], send_buf.begin() + 2*size_info[0] );
 
-        ::MPI_Send(send_buf.data(), 3*size_info[0], MPI_INT_STD, mpi_remote_leader, tag, peer_comm);
+        ::MPI_Send(send_buf.data(), 3*size_info[0], static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm);
 
-        ::MPI_Recv(recv_buf.data(), 3*size_info[1], MPI_INT_STD, mpi_remote_leader, tag, peer_comm, &mpi_status);
+        ::MPI_Recv(recv_buf.data(), 3*size_info[1], static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm, &mpi_status);
 
       }
 
-      ::MPI_Bcast(recv_buf.data(), 3*size_info[1], MPI_INT_STD, local_comm.rank_map->at(local_leader).second, local_mpi_comm);
+      ::MPI_Bcast(recv_buf.data(), 3*size_info[1], static_cast< ::MPI_Datatype> (MPI_INT), local_comm.rank_map->at(local_leader).second, local_mpi_comm);
 
       std::copy ( recv_buf.data(), recv_buf.data() + size_info[1], rank_info[2].begin() );
       std::copy ( recv_buf.data() + size_info[1], recv_buf.data() + 2*size_info[1], rank_info[3].begin()  );
@@ -258,12 +258,12 @@ namespace ep_lib
         size_info[2] = new_ep_info[0].size();
         ::MPI_Status mpi_status;
 
-        ::MPI_Send(&size_info[2], 1, MPI_INT_STD, mpi_remote_leader, tag, peer_comm);
+        ::MPI_Send(&size_info[2], 1, static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm);
 
-        ::MPI_Recv(&size_info[3], 1, MPI_INT_STD, mpi_remote_leader, tag, peer_comm, &mpi_status);
+        ::MPI_Recv(&size_info[3], 1, static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm, &mpi_status);
       }
 
-      ::MPI_Bcast(&size_info[2], 2, MPI_INT_STD, local_comm.rank_map->at(local_leader).second, local_mpi_comm);
+      ::MPI_Bcast(&size_info[2], 2, static_cast< ::MPI_Datatype> (MPI_INT), local_comm.rank_map->at(local_leader).second, local_mpi_comm);
 
       new_rank_info[2].resize(size_info[3]);
       new_rank_info[3].resize(size_info[3]);
@@ -280,12 +280,12 @@ namespace ep_lib
         std::copy ( new_rank_info[1].data(), new_rank_info[1].data() + size_info[2], send_buf.begin() + size_info[2] );
         std::copy ( new_ep_info[0].data(),   new_ep_info[0].data()   + size_info[0], send_buf.begin() + 2*size_info[2] );
 
-        ::MPI_Send(send_buf.data(), 3*size_info[2], MPI_INT_STD, mpi_remote_leader, tag, peer_comm);
-        ::MPI_Recv(recv_buf.data(), 3*size_info[3], MPI_INT_STD, mpi_remote_leader, tag, peer_comm, &mpi_status);
+        ::MPI_Send(send_buf.data(), 3*size_info[2], static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm);
+        ::MPI_Recv(recv_buf.data(), 3*size_info[3], static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm, &mpi_status);
 
       }
 
-      ::MPI_Bcast(recv_buf.data(),   3*size_info[3], MPI_INT_STD, local_comm.rank_map->at(local_leader).second, local_mpi_comm);
+      ::MPI_Bcast(recv_buf.data(),   3*size_info[3], static_cast< ::MPI_Datatype> (MPI_INT), local_comm.rank_map->at(local_leader).second, local_mpi_comm);
 
       std::copy ( recv_buf.data(), recv_buf.data() + size_info[3], new_rank_info[2].begin() );
       std::copy ( recv_buf.data() + size_info[3], recv_buf.data() + 2*size_info[3], new_rank_info[3].begin()  );
@@ -317,9 +317,9 @@ namespace ep_lib
         ::MPI_Comm_rank(new_comm, &leader_info[2]);
       }
 
-      ::MPI_Bcast(&leader_info[2], 1, MPI_INT_STD, local_comm.rank_map->at(local_leader).second, local_mpi_comm);
+      ::MPI_Bcast(&leader_info[2], 1, static_cast< ::MPI_Datatype> (MPI_INT), local_comm.rank_map->at(local_leader).second, local_mpi_comm);
 
-      if(new_comm != MPI_COMM_NULL_STD)
+      if(new_comm != static_cast< ::MPI_Comm>(MPI_COMM_NULL.mpi_comm))
       {
         ::MPI_Barrier(new_comm);
 
@@ -361,7 +361,7 @@ namespace ep_lib
       std::copy(leader_info, leader_info+4, bcast_buf.begin()+4);
     }
 
-    MPI_Bcast(bcast_buf.data(), 8, MPI_INT_STD, local_leader, local_comm);
+    MPI_Bcast(bcast_buf.data(), 8, static_cast< ::MPI_Datatype> (MPI_INT), local_leader, local_comm);
 
     if(!is_local_leader)
     {
@@ -386,7 +386,7 @@ namespace ep_lib
       std::copy(offset.data(), offset.data()+size_info[0], bcast_buf.begin()+size_info[2]+size_info[1]+1);
     }
 
-    MPI_Bcast(bcast_buf.data(), size_info[2]+size_info[1]+size_info[0]+1, MPI_INT_STD, local_leader, local_comm);
+    MPI_Bcast(bcast_buf.data(), size_info[2]+size_info[1]+size_info[0]+1, static_cast< ::MPI_Datatype> (MPI_INT), local_leader, local_comm);
 
     if(!is_local_leader)
     {
@@ -423,7 +423,20 @@ namespace ep_lib
       }
     }
 
-    MPI_Barrier_local(local_comm);
+    MPI_Barrier(local_comm);
+
+    if(is_local_leader)
+    {
+      int local_flag = true;
+      int remote_flag = false;
+      ::MPI_Status mpi_status;
+      
+      ::MPI_Send(&local_flag, 1, static_cast< ::MPI_Datatype>(MPI_INT), mpi_remote_leader, tag, peer_comm);
+
+      ::MPI_Recv(&remote_flag, 1, static_cast< ::MPI_Datatype>(MPI_INT), mpi_remote_leader, tag, peer_comm, &mpi_status);
+    }
+
+    MPI_Barrier(local_comm);
 
     if(is_proc_master)
     {
@@ -449,7 +462,7 @@ namespace ep_lib
     intercomm_num_ep = newintercomm->ep_comm_ptr->size_rank_info[1].second;
     intercomm_mpi_size = newintercomm->ep_comm_ptr->size_rank_info[2].second;
 
-    MPI_Bcast(&remote_ep_size, 1, MPI_INT_STD, local_leader, local_comm);
+    MPI_Bcast(&remote_ep_size, 1, static_cast< ::MPI_Datatype> (MPI_INT), local_leader, local_comm);
 
     int my_rank_map_elem[2];
 
@@ -465,7 +478,7 @@ namespace ep_lib
     (*newintercomm).ep_comm_ptr->intercomm->local_rank_map = new RANK_MAP;
     (*newintercomm).ep_comm_ptr->intercomm->local_rank_map->resize(local_ep_size);
 
-    MPI_Allgather(my_rank_map_elem, 2, MPI_INT_STD, (*newintercomm).ep_comm_ptr->intercomm->local_rank_map->data(), 2, MPI_INT_STD, local_comm);
+    MPI_Allgather2(my_rank_map_elem, 2, MPI_INT, (*newintercomm).ep_comm_ptr->intercomm->local_rank_map->data(), 2, MPI_INT, local_comm);
 
     (*newintercomm).ep_comm_ptr->intercomm->remote_rank_map = new RANK_MAP;
     (*newintercomm).ep_comm_ptr->intercomm->remote_rank_map->resize(remote_ep_size);
@@ -480,17 +493,17 @@ namespace ep_lib
     {
       ::MPI_Status status;
 
-      ::MPI_Send((*newintercomm).ep_comm_ptr->intercomm->local_rank_map->data(), 2*local_ep_size, MPI_INT_STD, mpi_remote_leader, tag, peer_comm);
+      ::MPI_Send((*newintercomm).ep_comm_ptr->intercomm->local_rank_map->data(), 2*local_ep_size, static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm);
 
-      ::MPI_Recv((*newintercomm).ep_comm_ptr->intercomm->remote_rank_map->data(), 2*remote_ep_size, MPI_INT_STD, mpi_remote_leader, tag, peer_comm, &status);
+      ::MPI_Recv((*newintercomm).ep_comm_ptr->intercomm->remote_rank_map->data(), 2*remote_ep_size, static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm, &status);
 
-      ::MPI_Send(&local_intercomm_size, 1, MPI_INT_STD, mpi_remote_leader, tag, peer_comm);
+      ::MPI_Send(&local_intercomm_size, 1, static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm);
 
-      ::MPI_Recv(&remote_intercomm_size, 1, MPI_INT_STD, mpi_remote_leader, tag, peer_comm, &status);
+      ::MPI_Recv(&remote_intercomm_size, 1, static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm, &status);
     }
 
-    MPI_Bcast((*newintercomm).ep_comm_ptr->intercomm->remote_rank_map->data(), 2*remote_ep_size, MPI_INT_STD, local_leader, local_comm);
-    MPI_Bcast(&remote_intercomm_size, 1, MPI_INT_STD, 0, *newintercomm);
+    MPI_Bcast((*newintercomm).ep_comm_ptr->intercomm->remote_rank_map->data(), 2*remote_ep_size, static_cast< ::MPI_Datatype> (MPI_INT), local_leader, local_comm);
+    MPI_Bcast(&remote_intercomm_size, 1, static_cast< ::MPI_Datatype> (MPI_INT), 0, *newintercomm);
 
 
     (*newintercomm).ep_comm_ptr->intercomm->intercomm_rank_map = new RANK_MAP;
@@ -505,12 +518,12 @@ namespace ep_lib
     {
       ::MPI_Status status;
 
-      ::MPI_Send((*newintercomm).rank_map->data(), 2*local_intercomm_size, MPI_INT_STD, mpi_remote_leader, tag, peer_comm);
+      ::MPI_Send((*newintercomm).rank_map->data(), 2*local_intercomm_size, static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm);
 
-      ::MPI_Recv((*newintercomm).ep_comm_ptr->intercomm->intercomm_rank_map->data(), 2*remote_intercomm_size, MPI_INT_STD, mpi_remote_leader, tag, peer_comm, &status);
+      ::MPI_Recv((*newintercomm).ep_comm_ptr->intercomm->intercomm_rank_map->data(), 2*remote_intercomm_size, static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm, &status);
     }
 
-    MPI_Bcast((*newintercomm).ep_comm_ptr->intercomm->intercomm_rank_map->data(), 2*remote_intercomm_size, MPI_INT_STD, 0, *newintercomm);
+    MPI_Bcast((*newintercomm).ep_comm_ptr->intercomm->intercomm_rank_map->data(), 2*remote_intercomm_size, static_cast< ::MPI_Datatype> (MPI_INT), 0, *newintercomm);
 
     (*newintercomm).ep_comm_ptr->intercomm->local_comm = &(local_comm.ep_comm_ptr->comm_list[ep_rank_loc]);
     (*newintercomm).ep_comm_ptr->intercomm->intercomm_tag = local_comm.ep_comm_ptr->comm_label;
@@ -589,7 +602,7 @@ namespace ep_lib
       send_buf[1] = rank_in_local_parent;
       send_buf[2] = num_ep;
 
-      ::MPI_Allgather(send_buf.data(), 3, MPI_INT_STD, recv_buf.data(), 3, MPI_INT_STD, local_mpi_comm);
+      ::MPI_Allgather(send_buf.data(), 3, static_cast< ::MPI_Datatype> (MPI_INT), recv_buf.data(), 3, static_cast< ::MPI_Datatype> (MPI_INT), local_mpi_comm);
 
       for(int i=0; i<size_info[0]; i++)
       {
@@ -609,16 +622,16 @@ namespace ep_lib
         send_buf[0] = size_info[0];
         send_buf[1] = local_ep_size;
 
-        ::MPI_Send(send_buf.data(), 2, MPI_INT_STD, mpi_remote_leader, tag, peer_comm);
+        ::MPI_Send(send_buf.data(), 2, static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm);
 
-        ::MPI_Recv(recv_buf.data(), 2, MPI_INT_STD, mpi_remote_leader, tag, peer_comm, &mpi_status);
+        ::MPI_Recv(recv_buf.data(), 2, static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm, &mpi_status);
 
         recv_buf[2] = rank_in_world;
         recv_buf[3] = mpi_remote_leader;
 
       }
 
-      ::MPI_Bcast(recv_buf.data(), 4, MPI_INT_STD, local_comm.rank_map->at(local_leader).second, local_mpi_comm);
+      ::MPI_Bcast(recv_buf.data(), 4, static_cast< ::MPI_Datatype> (MPI_INT), local_comm.rank_map->at(local_leader).second, local_mpi_comm);
 
       size_info[1] = recv_buf[0];
       remote_ep_size = recv_buf[1];
@@ -642,13 +655,13 @@ namespace ep_lib
         std::copy ( rank_info[1].data(), rank_info[1].data() + size_info[0], send_buf.begin() + size_info[0] );
         std::copy ( ep_info[0].data(),   ep_info[0].data()   + size_info[0], send_buf.begin() + 2*size_info[0] );
 
-        ::MPI_Send(send_buf.data(), 3*size_info[0], MPI_INT_STD, mpi_remote_leader, tag, peer_comm);
+        ::MPI_Send(send_buf.data(), 3*size_info[0], static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm);
 
-        ::MPI_Recv(recv_buf.data(), 3*size_info[1], MPI_INT_STD, mpi_remote_leader, tag, peer_comm, &mpi_status);
+        ::MPI_Recv(recv_buf.data(), 3*size_info[1], static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm, &mpi_status);
 
       }
 
-      ::MPI_Bcast(recv_buf.data(), 3*size_info[1], MPI_INT_STD, local_comm.rank_map->at(local_leader).second, local_mpi_comm);
+      ::MPI_Bcast(recv_buf.data(), 3*size_info[1], static_cast< ::MPI_Datatype> (MPI_INT), local_comm.rank_map->at(local_leader).second, local_mpi_comm);
 
       std::copy ( recv_buf.data(), recv_buf.data() + size_info[1], rank_info[2].begin() );
       std::copy ( recv_buf.data() + size_info[1], recv_buf.data() + 2*size_info[1], rank_info[3].begin()  );
@@ -769,12 +782,12 @@ namespace ep_lib
         size_info[2] = new_ep_info[0].size();
         ::MPI_Status mpi_status;
 
-        ::MPI_Send(&size_info[2], 1, MPI_INT_STD, mpi_remote_leader, tag, peer_comm);
+        ::MPI_Send(&size_info[2], 1, static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm);
 
-        ::MPI_Recv(&size_info[3], 1, MPI_INT_STD, mpi_remote_leader, tag, peer_comm, &mpi_status);
+        ::MPI_Recv(&size_info[3], 1, static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm, &mpi_status);
       }
 
-      ::MPI_Bcast(&size_info[2], 2, MPI_INT_STD, local_comm.rank_map->at(local_leader).second, local_mpi_comm);
+      ::MPI_Bcast(&size_info[2], 2, static_cast< ::MPI_Datatype> (MPI_INT), local_comm.rank_map->at(local_leader).second, local_mpi_comm);
 
       new_rank_info[2].resize(size_info[3]);
       new_rank_info[3].resize(size_info[3]);
@@ -791,12 +804,12 @@ namespace ep_lib
         std::copy ( new_rank_info[1].data(), new_rank_info[1].data() + size_info[2], send_buf.begin() + size_info[2] );
         std::copy ( new_ep_info[0].data(),   new_ep_info[0].data()   + size_info[0], send_buf.begin() + 2*size_info[2] );
 
-        ::MPI_Send(send_buf.data(), 3*size_info[2], MPI_INT_STD, mpi_remote_leader, tag, peer_comm);
+        ::MPI_Send(send_buf.data(), 3*size_info[2], static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm);
 
-        ::MPI_Recv(recv_buf.data(), 3*size_info[3], MPI_INT_STD, mpi_remote_leader, tag, peer_comm, &mpi_status);
+        ::MPI_Recv(recv_buf.data(), 3*size_info[3], static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm, &mpi_status);
       }
 
-      ::MPI_Bcast(recv_buf.data(),   3*size_info[3], MPI_INT_STD, local_comm.rank_map->at(local_leader).second, local_mpi_comm);
+      ::MPI_Bcast(recv_buf.data(),   3*size_info[3], static_cast< ::MPI_Datatype> (MPI_INT), local_comm.rank_map->at(local_leader).second, local_mpi_comm);
 
       std::copy ( recv_buf.data(), recv_buf.data() + size_info[3], new_rank_info[2].begin() );
       std::copy ( recv_buf.data() + size_info[3], recv_buf.data() + 2*size_info[3], new_rank_info[3].begin()  );
@@ -828,9 +841,9 @@ namespace ep_lib
         ::MPI_Comm_rank(new_comm, &leader_info[2]);
       }
 
-      ::MPI_Bcast(&leader_info[2], 1, MPI_INT_STD, local_comm.rank_map->at(local_leader).second, local_mpi_comm);
+      ::MPI_Bcast(&leader_info[2], 1, static_cast< ::MPI_Datatype> (MPI_INT), local_comm.rank_map->at(local_leader).second, local_mpi_comm);
 
-      if(new_comm != MPI_COMM_NULL_STD)
+      if(new_comm != static_cast< ::MPI_Comm >(MPI_COMM_NULL.mpi_comm))
       {
         ::MPI_Barrier(new_comm);
 
@@ -856,14 +869,12 @@ namespace ep_lib
 
         #pragma omp critical (write_to_tag_list)
         tag_list.push_back(make_pair( make_pair(tag, min(leader_info[0], leader_info[1])) , ep_intercomm));
+        
 
       }
 
 
     }
-
-
-    MPI_Barrier_local(local_comm);
 
 
     vector<int> bcast_buf(8);
@@ -875,7 +886,7 @@ namespace ep_lib
 
 
 
-    MPI_Bcast(bcast_buf.data(), 8, MPI_INT_STD, local_leader, local_comm);
+    MPI_Bcast(bcast_buf.data(), 8, static_cast< ::MPI_Datatype> (MPI_INT), local_leader, local_comm);
 
 
     if(!is_local_leader)
@@ -903,7 +914,7 @@ namespace ep_lib
       std::copy(offset.data(), offset.data()+size_info[0], bcast_buf.begin()+size_info[2]+size_info[1]+1);
     }
 
-    MPI_Bcast(bcast_buf.data(), size_info[2]+size_info[1]+size_info[0]+1, MPI_INT_STD, local_leader, local_comm);
+    MPI_Bcast(bcast_buf.data(), size_info[2]+size_info[1]+size_info[0]+1, static_cast< ::MPI_Datatype> (MPI_INT), local_leader, local_comm);
 
 
     if(!is_local_leader)
@@ -918,10 +929,6 @@ namespace ep_lib
     int my_position = offset[rank_in_local_parent]+ep_rank_loc;
 
 
-    MPI_Barrier_local(local_comm);
-    #pragma omp flush
-
-
     #pragma omp critical (read_from_tag_list)
     {
       bool found = false;
@@ -934,14 +941,26 @@ namespace ep_lib
             *newintercomm =  iter->second[my_position];
 
             found = true;
-            //tag_list.erase(iter);
             break;
           }
         }
       }
     }
 
-    MPI_Barrier_local(local_comm);
+    MPI_Barrier(local_comm);
+
+    if(is_local_leader)
+    {
+      int local_flag = true;
+      int remote_flag = false;
+      ::MPI_Status mpi_status;
+      
+      ::MPI_Send(&local_flag, 1, static_cast< ::MPI_Datatype>(MPI_INT), mpi_remote_leader, tag, peer_comm);
+
+      ::MPI_Recv(&remote_flag, 1, static_cast< ::MPI_Datatype>(MPI_INT), mpi_remote_leader, tag, peer_comm, &mpi_status);
+    }
+
+    MPI_Barrier(local_comm);
 
     if(is_proc_master)
     {
@@ -966,7 +985,7 @@ namespace ep_lib
     intercomm_mpi_size = newintercomm->ep_comm_ptr->size_rank_info[2].second;
 
 
-    MPI_Bcast(&remote_ep_size, 1, MPI_INT_STD, local_leader, local_comm);
+    MPI_Bcast(&remote_ep_size, 1, static_cast< ::MPI_Datatype> (MPI_INT), local_leader, local_comm);
 
     int my_rank_map_elem[2];
 
@@ -982,8 +1001,8 @@ namespace ep_lib
     (*newintercomm).ep_comm_ptr->intercomm->local_rank_map = new RANK_MAP;
     (*newintercomm).ep_comm_ptr->intercomm->local_rank_map->resize(local_ep_size);
 
-    MPI_Allgather(my_rank_map_elem, 2, MPI_INT_STD, (*newintercomm).ep_comm_ptr->intercomm->local_rank_map->data(), 2, MPI_INT_STD, local_comm);
-
+    MPI_Allgather(my_rank_map_elem, 2, MPI_INT, (*newintercomm).ep_comm_ptr->intercomm->local_rank_map->data(), 2, MPI_INT, local_comm);
+   
     (*newintercomm).ep_comm_ptr->intercomm->remote_rank_map = new RANK_MAP;
     (*newintercomm).ep_comm_ptr->intercomm->remote_rank_map->resize(remote_ep_size);
 
@@ -995,17 +1014,17 @@ namespace ep_lib
     {
       ::MPI_Status status;
 
-      ::MPI_Send((*newintercomm).ep_comm_ptr->intercomm->local_rank_map->data(), 2*local_ep_size, MPI_INT_STD, mpi_remote_leader, tag, peer_comm);
+      ::MPI_Send((*newintercomm).ep_comm_ptr->intercomm->local_rank_map->data(), 2*local_ep_size, static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm);
 
-      ::MPI_Recv((*newintercomm).ep_comm_ptr->intercomm->remote_rank_map->data(), 2*remote_ep_size, MPI_INT_STD, mpi_remote_leader, tag, peer_comm, &status);
+      ::MPI_Recv((*newintercomm).ep_comm_ptr->intercomm->remote_rank_map->data(), 2*remote_ep_size, static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm, &status);
 
-      ::MPI_Send(&local_intercomm_size, 1, MPI_INT_STD, mpi_remote_leader, tag, peer_comm);
+      ::MPI_Send(&local_intercomm_size, 1, static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm);
 
-      ::MPI_Recv(&remote_intercomm_size, 1, MPI_INT_STD, mpi_remote_leader, tag, peer_comm, &status);
+      ::MPI_Recv(&remote_intercomm_size, 1, static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm, &status);
     }
 
-    MPI_Bcast((*newintercomm).ep_comm_ptr->intercomm->remote_rank_map->data(), 2*remote_ep_size, MPI_INT_STD, local_leader, local_comm);
-    MPI_Bcast(&remote_intercomm_size, 1, MPI_INT_STD, 0, *newintercomm);
+    MPI_Bcast((*newintercomm).ep_comm_ptr->intercomm->remote_rank_map->data(), 2*remote_ep_size, static_cast< ::MPI_Datatype> (MPI_INT), local_leader, local_comm);
+    MPI_Bcast(&remote_intercomm_size, 1, static_cast< ::MPI_Datatype> (MPI_INT), 0, *newintercomm);
 
 
     (*newintercomm).ep_comm_ptr->intercomm->intercomm_rank_map = new RANK_MAP;
@@ -1020,32 +1039,15 @@ namespace ep_lib
     {
       ::MPI_Status status;
 
-      ::MPI_Send((*newintercomm).rank_map->data(), 2*local_intercomm_size, MPI_INT_STD, mpi_remote_leader, tag, peer_comm);
+      ::MPI_Send((*newintercomm).rank_map->data(), 2*local_intercomm_size, static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm);
 
-      ::MPI_Recv((*newintercomm).ep_comm_ptr->intercomm->intercomm_rank_map->data(), 2*remote_intercomm_size, MPI_INT_STD, mpi_remote_leader, tag, peer_comm, &status);
+      ::MPI_Recv((*newintercomm).ep_comm_ptr->intercomm->intercomm_rank_map->data(), 2*remote_intercomm_size, static_cast< ::MPI_Datatype> (MPI_INT), mpi_remote_leader, tag, peer_comm, &status);
     }
 
-    MPI_Bcast((*newintercomm).ep_comm_ptr->intercomm->intercomm_rank_map->data(), 2*remote_intercomm_size, MPI_INT_STD, 0, *newintercomm);
+    MPI_Bcast((*newintercomm).ep_comm_ptr->intercomm->intercomm_rank_map->data(), 2*remote_intercomm_size, static_cast< ::MPI_Datatype> (MPI_INT), 0, *newintercomm);
 
     (*newintercomm).ep_comm_ptr->intercomm->local_comm = &(local_comm.ep_comm_ptr->comm_list[ep_rank_loc]);
     (*newintercomm).ep_comm_ptr->intercomm->intercomm_tag = local_comm.ep_comm_ptr->comm_label;
-
-
-//    for(int i=0; i<local_ep_size; i++)
-//    if(local_comm.ep_comm_ptr->comm_label != 99) printf("ep_rank = %d, remote_rank_map[%d] = (%d,%d)\n", intercomm_ep_rank, i,
-//          (*newintercomm).ep_comm_ptr->intercomm->local_rank_map->at(i).first, (*newintercomm).ep_comm_ptr->intercomm->local_rank_map->at(i).second);
-
-//    for(int i=0; i<remote_intercomm_size; i++)
-//    if(local_comm.ep_comm_ptr->comm_label != 99) printf("ep_rank = %d, intercomm_rank_map[%d] = (%d,%d)\n", intercomm_ep_rank, i,
-//          (*newintercomm).ep_comm_ptr->intercomm->intercomm_rank_map->at(i).first, (*newintercomm).ep_comm_ptr->intercomm->intercomm_rank_map->at(i).second);
-
-//    for(int i=0; i<(*newintercomm).rank_map->size(); i++)
-//    if(local_comm.ep_comm_ptr->comm_label != 99) printf("ep_rank = %d, rank_map[%d] = (%d,%d)\n", intercomm_ep_rank, i,
-//          (*newintercomm).rank_map->at(i).first, (*newintercomm).rank_map->at(i).second);
-
-
-
-
 
     return MPI_SUCCESS;
 

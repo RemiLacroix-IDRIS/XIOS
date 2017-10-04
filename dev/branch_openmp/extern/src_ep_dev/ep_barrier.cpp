@@ -26,7 +26,7 @@ namespace ep_lib
 
       return 0;
     }
-    else if(comm.mpi_comm != MPI_COMM_NULL_STD )
+    else if(comm.mpi_comm != static_cast< ::MPI_Comm>(MPI_COMM_NULL.mpi_comm))
     {
       ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm> (comm.mpi_comm);
       ::MPI_Barrier(mpi_comm);

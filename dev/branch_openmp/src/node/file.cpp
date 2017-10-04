@@ -481,7 +481,7 @@ namespace xios {
 
          if (isOpen) data_out->closeFile();
 
-        data_out = shared_ptr<CDataOutput>(new CNc4DataOutput(this, oss.str(), append, useClassicFormat, useCFConvention,
+        data_out = boost::shared_ptr<CDataOutput>(new CNc4DataOutput(this, oss.str(), append, useClassicFormat, useCFConvention,
                                                               static_cast< ::MPI_Comm >(fileComm.mpi_comm), multifile, isCollective, time_counter_name));
         isOpen = true;
 
@@ -599,13 +599,13 @@ namespace xios {
       //printf("multifile was %d\n", multifile);
       multifile = true;
       if (isOpen) data_out->closeFile();
-      if (time_counter_name.isEmpty()) data_in = shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), static_cast< ::MPI_Comm >(fileComm.mpi_comm), multifile, isCollective));
-      else data_in = shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), static_cast< ::MPI_Comm >(fileComm.mpi_comm), multifile, isCollective, time_counter_name));
+      if (time_counter_name.isEmpty()) data_in = boost::shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), static_cast< ::MPI_Comm >(fileComm.mpi_comm), multifile, isCollective));
+      else data_in = boost::shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), static_cast< ::MPI_Comm >(fileComm.mpi_comm), multifile, isCollective, time_counter_name));
       isOpen = true;
       #else
       if (isOpen) data_out->closeFile();
-      if (time_counter_name.isEmpty()) data_in = shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), static_cast< ::MPI_Comm >(fileComm.mpi_comm), multifile, isCollective));
-      else data_in = shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), static_cast< ::MPI_Comm >(fileComm.mpi_comm), multifile, isCollective, time_counter_name));
+      if (time_counter_name.isEmpty()) data_in = boost::shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), static_cast< ::MPI_Comm >(fileComm.mpi_comm), multifile, isCollective));
+      else data_in = boost::shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), static_cast< ::MPI_Comm >(fileComm.mpi_comm), multifile, isCollective, time_counter_name));
       isOpen = true;
       #endif
 

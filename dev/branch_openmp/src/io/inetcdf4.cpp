@@ -22,7 +22,7 @@ namespace xios
     }
 
     mpi = comm && !multifile;
-    MPI_Info m_info = MPI_INFO_NULL_STD;
+    MPI_Info m_info = MPI_INFO_NULL.mpi_info;
 
     // The file format will be detected automatically by NetCDF, it is safe to always set NC_MPIIO
     // even if Parallel NetCDF ends up being used.

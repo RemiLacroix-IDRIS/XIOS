@@ -207,7 +207,7 @@ namespace xios {
          // Context root
          //static shared_ptr<CContextGroup> root;
 
-         static shared_ptr<CContextGroup> *root_ptr;
+         static boost::shared_ptr<CContextGroup> *root_ptr;
          #pragma omp threadprivate(root_ptr)
 
          // Determine context on client or not

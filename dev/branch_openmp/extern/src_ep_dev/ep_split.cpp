@@ -44,9 +44,6 @@ namespace ep_lib
     num_ep = comm.ep_comm_ptr->size_rank_info[1].second;
     mpi_size = comm.ep_comm_ptr->size_rank_info[2].second;
 
-
-
-
     int num_color = 0;
 
     int color_index;
@@ -58,8 +55,8 @@ namespace ep_lib
     vector<int> all_color(ep_size);
     vector<int> all_color_loc(num_ep);
 
-    MPI_Gather_local(&color, 1, MPI_INT, all_color_loc.data(), comm);
-    MPI_Bcast_local(all_color_loc.data(), num_ep, MPI_INT, comm);
+    MPI_Gather_local(&color, 1, MPI_INT, all_color_loc.data(), 0, comm);
+    MPI_Bcast_local(all_color_loc.data(), num_ep, MPI_INT, 0, comm);
 
 
     MPI_Allgather(&color, 1, MPI_INT, all_color.data(), 1, MPI_INT, comm);
@@ -99,8 +96,8 @@ namespace ep_lib
     vector<int> colored_key_loc[num_color];
     vector<int> key_loc(num_ep);
 
-    MPI_Gather_local(&key, 1, MPI_INT, key_loc.data(), comm);
-    MPI_Bcast_local(key_loc.data(), num_ep, MPI_INT, comm);
+    MPI_Gather_local(&key, 1, MPI_INT, key_loc.data(), 0, comm);
+    MPI_Bcast_local(key_loc.data(), num_ep, MPI_INT, 0, comm);
 
     for(int i=0; i<num_ep; i++)
     {
@@ -166,7 +163,6 @@ namespace ep_lib
       if(color == all_color[j])
       {
         *newcomm = comm.ep_comm_ptr->comm_list->mem_bridge[new_ep_rank_loc];
- //       newcomm = &(comm.ep_comm_ptr->comm_list->mem_bridge[new_ep_rank_loc]);
         (*newcomm).ep_comm_ptr->comm_label = color;
       }
     }

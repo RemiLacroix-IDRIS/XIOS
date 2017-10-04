@@ -8,7 +8,6 @@
 #include "ep_tag.hpp"
 #include "ep_lib_fortran.hpp"
 
-
 namespace ep_lib
 {
 #ifdef _intelmpi
@@ -86,8 +85,13 @@ namespace ep_lib
 
   void check_sum_send(const void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, int type);
   void check_sum_recv(void *buf, int count, MPI_Datatype datatype, int src, int tag, MPI_Comm comm, int type);
+
+  bool valid_type(MPI_Datatype type);
+  bool valid_op(MPI_Op op);
+
 }
 
+//MPI_Datatype to_mpi(ep_lib::MPI_Datatype type);
 
 
 #endif // EP_LIB_HPP_INCLUDED

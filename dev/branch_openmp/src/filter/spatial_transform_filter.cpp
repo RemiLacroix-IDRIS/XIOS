@@ -52,7 +52,6 @@ namespace xios
   {
     CSpatialTransformFilterEngine* spaceFilter = static_cast<CSpatialTransformFilterEngine*>(engine);
     CDataPacketPtr outputPacket = spaceFilter->applyFilter(data, outputDefaultValue);
-    printf("spalceFilter applied\n");
     if (outputPacket)
       onOutputReady(outputPacket);
   }

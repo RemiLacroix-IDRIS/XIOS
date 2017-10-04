@@ -8,6 +8,7 @@
 #include "ep_lib.hpp"
 #include <mpi.h>
 #include "ep_declaration.hpp"
+#include "ep_mpi.hpp"
 
 using namespace std;
 
@@ -19,9 +20,6 @@ namespace ep_lib
 
   int Message_Check(MPI_Comm comm)
   {
-    int myRank;
-    MPI_Comm_rank(comm, &myRank);
-
     if(!comm.is_ep) return 0;
 
     if(comm.is_intercomm)
@@ -37,23 +35,23 @@ namespace ep_lib
     while(flag) // loop until the end of global queue
     {
       Debug("Message probing for intracomm\n");
-      ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm> (comm.mpi_comm);
+      
+
       #ifdef _openmpi
       #pragma omp critical (_mpi_call)
       {
-        ::MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpi_comm, &flag, &status);
+        ::MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, to_mpi_comm(comm.mpi_comm), &flag, &status);
         if(flag)
         {
           Debug("find message in mpi comm \n");
           mpi_source = status.MPI_SOURCE;
           int tag = status.MPI_TAG;
-          ::MPI_Mprobe(mpi_source, tag, mpi_comm, &message, &status);
+          ::MPI_Mprobe(mpi_source, tag, to_mpi_comm(comm.mpi_comm), &message, &status);
 
         }
       }
       #elif _intelmpi
-      #pragma omp critical (_mpi_call)
-      ::MPI_Improbe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpi_comm, &flag, &message, &status); 
+      ::MPI_Improbe(MPI_ANY_SOURCE, MPI_ANY_TAG, to_mpi_comm(comm.mpi_comm), &flag, &message, &status); 
       #endif
       
       if(flag)
@@ -67,8 +65,6 @@ namespace ep_lib
         int src_mpi       = status.MPI_SOURCE;
              
         msg_block->ep_src  = get_ep_rank(comm, src_loc,  src_mpi);       
-        int dest_mpi = comm.ep_comm_ptr->size_rank_info[2].first;
-        int ep_dest = get_ep_rank(comm, dest_loc, dest_mpi);
         msg_block->mpi_status = new ::MPI_Status(status);
 
         MPI_Comm* ptr_comm_list = comm.ep_comm_ptr->comm_list;
@@ -78,8 +74,7 @@ namespace ep_lib
         #pragma omp critical (_query)
         {
           #pragma omp flush
-          ptr_comm_target->ep_comm_ptr->message_queue->push_back(*msg_block);  
-    
+          comm.ep_comm_ptr->comm_list[dest_loc].ep_comm_ptr->message_queue->push_back(*msg_block);      
           #pragma omp flush
         }
         
@@ -109,24 +104,22 @@ namespace ep_lib
     while(flag) // loop until the end of global queue "comm.ep_comm_ptr->intercomm->mpi_inter_comm"
     {
       Debug("Message probing for intracomm\n");
-      ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm> (comm.ep_comm_ptr->intercomm->mpi_inter_comm);  // => mpi_intercomm
-      
+
       #ifdef _openmpi
       #pragma omp critical (_mpi_call)
       {
-        ::MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpi_comm, &flag, &status);
+        ::MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, to_mpi_comm(comm.ep_comm_ptr->intercomm->mpi_inter_comm), &flag, &status);
         if(flag)
         {
           Debug("find message in mpi comm \n");
           mpi_source = status.MPI_SOURCE;
           int tag = status.MPI_TAG;
-          ::MPI_Mprobe(mpi_source, tag, mpi_comm, &message, &status);
+          ::MPI_Mprobe(mpi_source, tag, to_mpi_comm(comm.ep_comm_ptr->intercomm->mpi_inter_comm), &message, &status);
 
         }
       }
       #elif _intelmpi
-      #pragma omp critical (_mpi_call)
-      ::MPI_Improbe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpi_comm, &flag, &message, &status);       
+      ::MPI_Improbe(MPI_ANY_SOURCE, MPI_ANY_TAG, to_mpi_comm(comm.ep_comm_ptr->intercomm->mpi_inter_comm), &flag, &message, &status);       
       #endif
 
       if(flag)
@@ -152,7 +145,7 @@ namespace ep_lib
         #pragma omp critical (_query)
         {
           #pragma omp flush
-          ptr_comm_target->ep_comm_ptr->message_queue->push_back(*msg_block);
+          comm.ep_comm_ptr->comm_list[dest_loc].ep_comm_ptr->message_queue->push_back(*msg_block);
           #pragma omp flush
         }
         
@@ -166,23 +159,22 @@ namespace ep_lib
     while(flag) // loop until the end of global queue "comm.mpi_comm"
     {
       Debug("Message probing for intracomm\n");
-      ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm> (comm.mpi_comm);
+     
       #ifdef _openmpi
       #pragma omp critical (_mpi_call)
       {
-        ::MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpi_comm, &flag, &status);
+        ::MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, to_mpi_comm(comm.mpi_comm), &flag, &status);
         if(flag)
         {
           Debug("find message in mpi comm \n");
           mpi_source = status.MPI_SOURCE;
           int tag = status.MPI_TAG;
-          ::MPI_Mprobe(mpi_source, tag, mpi_comm, &message, &status);
+          ::MPI_Mprobe(mpi_source, tag, to_mpi_comm(comm.mpi_comm), &message, &status);
 
         }
       }
       #elif _intelmpi
-      #pragma omp critical (_mpi_call)
-      ::MPI_Improbe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpi_comm, &flag, &message, &status);       
+      ::MPI_Improbe(MPI_ANY_SOURCE, MPI_ANY_TAG, to_mpi_comm(comm.mpi_comm), &flag, &message, &status);       
       #endif
 
       if(flag)
@@ -195,7 +187,6 @@ namespace ep_lib
         int src_loc       = bitset<8> (status.MPI_TAG >> 8) .to_ulong();
         int dest_loc      = bitset<8> (status.MPI_TAG)	    .to_ulong();
         int src_mpi       = status.MPI_SOURCE;
-        int current_inter = comm.ep_comm_ptr->intercomm->local_rank_map->at(current_ep_rank).first;
         
         msg_block->ep_src  = get_ep_rank_intercomm(comm, src_loc, src_mpi);
         msg_block->mpi_status = new ::MPI_Status(status);
@@ -208,7 +199,7 @@ namespace ep_lib
         #pragma omp critical (_query)
         {
           #pragma omp flush
-          ptr_comm_target->ep_comm_ptr->message_queue->push_back(*msg_block);
+          comm.ep_comm_ptr->comm_list[dest_loc].ep_comm_ptr->message_queue->push_back(*msg_block);
           #pragma omp flush
         }
         

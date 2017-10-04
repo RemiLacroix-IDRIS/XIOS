@@ -64,7 +64,7 @@ namespace ep_lib
     ::MPI_Comm base_comm = (::MPI_Comm)(comm);
     #endif
 
-    if(base_comm != MPI_COMM_NULL_STD)
+    if(base_comm != static_cast< ::MPI_Comm>(MPI_COMM_NULL.mpi_comm))
     {
       if(omp_get_thread_num() == 0)
       {

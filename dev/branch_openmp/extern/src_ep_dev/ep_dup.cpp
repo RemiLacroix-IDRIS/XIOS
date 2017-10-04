@@ -27,7 +27,7 @@ namespace ep_lib
     if(comm.is_intercomm) return MPI_Comm_dup_intercomm(comm, newcomm);
 
     // for intracomm
-    if(comm.mpi_comm == MPI_COMM_NULL_STD) return 0;
+    if(comm.mpi_comm == static_cast< ::MPI_Comm >(MPI_COMM_NULL.mpi_comm)) return 0;
 
 
     int my_rank = comm.ep_comm_ptr->size_rank_info[1].first;
@@ -58,7 +58,7 @@ namespace ep_lib
   int MPI_Comm_dup_intercomm(MPI_Comm comm, MPI_Comm *newcomm)
   {
     
-    if(comm.mpi_comm == MPI_COMM_NULL_STD) return 0;
+    if(comm.mpi_comm == static_cast< ::MPI_Comm >(MPI_COMM_NULL.mpi_comm)) return 0;
 
     int my_rank = comm.ep_comm_ptr->size_rank_info[1].first;
     int num_ep  = comm.ep_comm_ptr->size_rank_info[1].second;

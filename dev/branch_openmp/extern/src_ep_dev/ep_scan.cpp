@@ -8,6 +8,7 @@
 #include "ep_lib.hpp"
 #include <mpi.h>
 #include "ep_declaration.hpp"
+#include "ep_mpi.hpp"
 
 using namespace std;
 
@@ -25,405 +26,227 @@ namespace ep_lib
     return min(a,b);
   }
 
+  template<typename T>
+  void reduce_max(const T * buffer, T* recvbuf, int count)
+  {
+    transform(buffer, buffer+count, recvbuf, recvbuf, max_op<T>);
+  }
+
+  template<typename T>
+  void reduce_min(const T * buffer, T* recvbuf, int count)
+  {
+    transform(buffer, buffer+count, recvbuf, recvbuf, min_op<T>);
+  }
+
+  template<typename T>
+  void reduce_sum(const T * buffer, T* recvbuf, int count)
+  {
+    transform(buffer, buffer+count, recvbuf, recvbuf, std::plus<T>());
+  }
+
 
   int MPI_Scan_local(const void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm)
   {
-    if(datatype == MPI_INT)
+    valid_op(op);
+
+    int ep_rank_loc = comm.ep_comm_ptr->size_rank_info[1].first;
+    int num_ep = comm.ep_comm_ptr->size_rank_info[1].second;
+    int mpi_rank = comm.ep_comm_ptr->size_rank_info[2].first;
+    
+
+    ::MPI_Aint datasize, lb;
+    ::MPI_Type_get_extent(to_mpi_type(datatype), &lb, &datasize);
+
+    if(ep_rank_loc == 0 && mpi_rank != 0)
     {
-      return MPI_Scan_local_int(sendbuf, recvbuf, count, op, comm);
-    }
-    else if(datatype == MPI_FLOAT)
-    {
-      return MPI_Scan_local_float(sendbuf, recvbuf, count, op, comm);
-    }
-    else if(datatype == MPI_DOUBLE)
-    {
-      return MPI_Scan_local_double(sendbuf, recvbuf, count, op, comm);
-    }
-    else if(datatype == MPI_LONG)
-    {
-      return MPI_Scan_local_long(sendbuf, recvbuf, count, op, comm);
-    }
-    else if(datatype == MPI_UNSIGNED_LONG)
-    {
-      return MPI_Scan_local_ulong(sendbuf, recvbuf, count, op, comm);
-    }
-    else if(datatype == MPI_CHAR)
-    {
-      return MPI_Scan_local_char(sendbuf, recvbuf, count, op, comm);
+      if(op == MPI_SUM)
+      {
+        if(datatype == MPI_INT && datasize == sizeof(int))
+          reduce_sum<int>(static_cast<int*>(const_cast<void*>(sendbuf)), static_cast<int*>(recvbuf), count);    
+          
+        else if(datatype == MPI_FLOAT && datasize == sizeof(float))
+          reduce_sum<float>(static_cast<float*>(const_cast<void*>(sendbuf)), static_cast<float*>(recvbuf), count);    
+             
+        else if(datatype == MPI_DOUBLE && datasize == sizeof(double))
+          reduce_sum<double>(static_cast<double*>(const_cast<void*>(sendbuf)), static_cast<double*>(recvbuf), count);
+      
+        else if(datatype == MPI_CHAR && datasize == sizeof(char))
+          reduce_sum<char>(static_cast<char*>(const_cast<void*>(sendbuf)), static_cast<char*>(recvbuf), count);
+      
+        else if(datatype == MPI_LONG && datasize == sizeof(long))
+          reduce_sum<long>(static_cast<long*>(const_cast<void*>(sendbuf)), static_cast<long*>(recvbuf), count);
+            
+        else if(datatype == MPI_UNSIGNED_LONG && datasize == sizeof(unsigned long))
+          reduce_sum<unsigned long>(static_cast<unsigned long*>(const_cast<void*>(sendbuf)), static_cast<unsigned long*>(recvbuf), count);    
+            
+        else printf("datatype Error\n");
+      }
+
+      else if(op == MPI_MAX)
+      {
+        if(datatype == MPI_INT && datasize == sizeof(int))
+          reduce_max<int>(static_cast<int*>(const_cast<void*>(sendbuf)), static_cast<int*>(recvbuf), count);    
+          
+        else if(datatype == MPI_FLOAT && datasize == sizeof(float))
+          reduce_max<float>(static_cast<float*>(const_cast<void*>(sendbuf)), static_cast<float*>(recvbuf), count);    
+             
+        else if(datatype == MPI_DOUBLE && datasize == sizeof(double))
+          reduce_max<double>(static_cast<double*>(const_cast<void*>(sendbuf)), static_cast<double*>(recvbuf), count);
+      
+        else if(datatype == MPI_CHAR && datasize == sizeof(char))
+          reduce_max<char>(static_cast<char*>(const_cast<void*>(sendbuf)), static_cast<char*>(recvbuf), count);
+      
+        else if(datatype == MPI_LONG && datasize == sizeof(long))
+          reduce_max<long>(static_cast<long*>(const_cast<void*>(sendbuf)), static_cast<long*>(recvbuf), count);
+            
+        else if(datatype == MPI_UNSIGNED_LONG && datasize == sizeof(unsigned long))
+          reduce_max<unsigned long>(static_cast<unsigned long*>(const_cast<void*>(sendbuf)), static_cast<unsigned long*>(recvbuf), count);    
+            
+        else printf("datatype Error\n");
+      }
+
+      else //(op == MPI_MIN)
+      {
+        if(datatype == MPI_INT && datasize == sizeof(int))
+          reduce_min<int>(static_cast<int*>(const_cast<void*>(sendbuf)), static_cast<int*>(recvbuf), count);    
+          
+        else if(datatype == MPI_FLOAT && datasize == sizeof(float))
+          reduce_min<float>(static_cast<float*>(const_cast<void*>(sendbuf)), static_cast<float*>(recvbuf), count);    
+             
+        else if(datatype == MPI_DOUBLE && datasize == sizeof(double))
+          reduce_min<double>(static_cast<double*>(const_cast<void*>(sendbuf)), static_cast<double*>(recvbuf), count);
+      
+        else if(datatype == MPI_CHAR && datasize == sizeof(char))
+          reduce_min<char>(static_cast<char*>(const_cast<void*>(sendbuf)), static_cast<char*>(recvbuf), count);
+      
+        else if(datatype == MPI_LONG && datasize == sizeof(long))
+          reduce_min<long>(static_cast<long*>(const_cast<void*>(sendbuf)), static_cast<long*>(recvbuf), count);
+            
+        else if(datatype == MPI_UNSIGNED_LONG && datasize == sizeof(unsigned long))
+          reduce_min<unsigned long>(static_cast<unsigned long*>(const_cast<void*>(sendbuf)), static_cast<unsigned long*>(recvbuf), count);    
+            
+        else printf("datatype Error\n");
+      }
+
+      comm.my_buffer->void_buffer[0] = recvbuf;
     }
     else
     {
-      printf("MPI_Scan Datatype not supported!\n");
-      exit(0);
-    }
-
-  }
-
+      comm.my_buffer->void_buffer[ep_rank_loc] = const_cast<void*>(sendbuf);  
+      memcpy(recvbuf, sendbuf, datasize*count);
+    } 
+      
 
 
+    MPI_Barrier_local(comm);
 
-  int MPI_Scan_local_int(const void *sendbuf, void *recvbuf, int count, MPI_Op op, MPI_Comm comm)
-  {
-    int my_rank = comm.ep_comm_ptr->size_rank_info[1].first;
-    int num_ep  = comm.ep_comm_ptr->size_rank_info[1].second;
+    memcpy(recvbuf, comm.my_buffer->void_buffer[0], datasize*count);
 
-    int *buffer = comm.my_buffer->buf_int;
-    int *send_buf = static_cast<int*>(const_cast<void*>(sendbuf));
-    int *recv_buf = static_cast<int*>(recvbuf);
 
-    for(int j=0; j<count; j+=BUFFER_SIZE)
+    if(op == MPI_SUM)
     {
-      if(my_rank == 0)
+      if(datatype == MPI_INT && datasize == sizeof(int))
       {
+        for(int i=1; i<ep_rank_loc+1; i++)
+          reduce_sum<int>(static_cast<int*>(comm.my_buffer->void_buffer[i]), static_cast<int*>(recvbuf), count);    
+      }
+     
+      else if(datatype == MPI_FLOAT && datasize == sizeof(float))
+      {
+        for(int i=1; i<ep_rank_loc+1; i++)
+          reduce_sum<float>(static_cast<float*>(comm.my_buffer->void_buffer[i]), static_cast<float*>(recvbuf), count);    
+      }
+      
 
-        #pragma omp critical (write_to_buffer)
-        {
-          copy(send_buf+j, send_buf+j+min(BUFFER_SIZE, count-j), buffer);
-          copy(send_buf+j, send_buf+j+min(BUFFER_SIZE, count-j), recv_buf+j);
-          #pragma omp flush
-        }
+      else if(datatype == MPI_DOUBLE && datasize == sizeof(double))
+      {
+        for(int i=1; i<ep_rank_loc+1; i++)
+          reduce_sum<double>(static_cast<double*>(comm.my_buffer->void_buffer[i]), static_cast<double*>(recvbuf), count);
       }
 
-      MPI_Barrier_local(comm);
-
-      for(int k=1; k<num_ep; k++)
+      else if(datatype == MPI_CHAR && datasize == sizeof(char))
       {
-        #pragma omp critical (write_to_buffer)
-        {
-          if(my_rank == k)
-          {
-            #pragma omp flush
-            if(op == MPI_SUM)
-            {
-              transform(buffer, buffer+min(BUFFER_SIZE, count-j), send_buf+j, buffer, std::plus<int>());
-              copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
-            }
-            else if(op == MPI_MAX)
-            {
-              transform(buffer, buffer+min(BUFFER_SIZE, count-j), send_buf+j, buffer, max_op<int>);
-              copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
-            }
-            else if(op == MPI_MIN)
-            {
-              transform(buffer, buffer+min(BUFFER_SIZE, count-j), send_buf+j, buffer, min_op<int>);
-              copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
-            }
-            else
-            {
-              printf("Supported operation: MPI_SUM, MPI_MAX, MPI_MIN\n");
-              exit(1);
-            }
-            #pragma omp flush
-          }
-        }
-
-        MPI_Barrier_local(comm);
+        for(int i=1; i<ep_rank_loc+1; i++)
+          reduce_sum<char>(static_cast<char*>(comm.my_buffer->void_buffer[i]), static_cast<char*>(recvbuf), count);
       }
+
+      else if(datatype == MPI_LONG && datasize == sizeof(long))
+      {
+        for(int i=1; i<ep_rank_loc+1; i++)
+          reduce_sum<long>(static_cast<long*>(comm.my_buffer->void_buffer[i]), static_cast<long*>(recvbuf), count);
+      }
+
+      else if(datatype == MPI_UNSIGNED_LONG && datasize == sizeof(unsigned long))
+      {
+        for(int i=1; i<ep_rank_loc+1; i++)
+          reduce_sum<unsigned long>(static_cast<unsigned long*>(comm.my_buffer->void_buffer[i]), static_cast<unsigned long*>(recvbuf), count);    
+      }
+
+      else printf("datatype Error\n");
+
+      
     }
 
-  }
-
-  int MPI_Scan_local_float(const void *sendbuf, void *recvbuf, int count, MPI_Op op, MPI_Comm comm)
-  {
-    int my_rank = comm.ep_comm_ptr->size_rank_info[1].first;
-    int num_ep  = comm.ep_comm_ptr->size_rank_info[1].second;
-
-    float *buffer = comm.my_buffer->buf_float;
-    float *send_buf = static_cast<float*>(const_cast<void*>(sendbuf));
-    float *recv_buf = static_cast<float*>(recvbuf);
-
-    for(int j=0; j<count; j+=BUFFER_SIZE)
+    else if(op == MPI_MAX)
     {
-      if(my_rank == 0)
-      {
+      if(datatype == MPI_INT && datasize == sizeof(int))
+        for(int i=1; i<ep_rank_loc+1; i++)
+          reduce_max<int>(static_cast<int*>(comm.my_buffer->void_buffer[i]), static_cast<int*>(recvbuf), count);    
 
-        #pragma omp critical (write_to_buffer)
-        {
-          copy(send_buf+j, send_buf+j+min(BUFFER_SIZE, count-j), buffer);
-          copy(send_buf+j, send_buf+j+min(BUFFER_SIZE, count-j), recv_buf+j);
-          #pragma omp flush
-        }
-      }
+      else if(datatype == MPI_FLOAT && datasize == sizeof(float))
+        for(int i=1; i<ep_rank_loc+1; i++)
+          reduce_max<float>(static_cast<float*>(comm.my_buffer->void_buffer[i]), static_cast<float*>(recvbuf), count);    
 
-      MPI_Barrier_local(comm);
+      else if(datatype == MPI_DOUBLE && datasize == sizeof(double))
+        for(int i=1; i<ep_rank_loc+1; i++)
+          reduce_max<double>(static_cast<double*>(comm.my_buffer->void_buffer[i]), static_cast<double*>(recvbuf), count);
 
-      for(int k=1; k<num_ep; k++)
-      {
-        #pragma omp critical (write_to_buffer)
-        {
-          if(my_rank == k)
-          {
-            #pragma omp flush
-            if(op == MPI_SUM)
-            {
-              transform(buffer, buffer+min(BUFFER_SIZE, count-j), send_buf+j, buffer, std::plus<float>());
-              copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
-            }
-            else if(op == MPI_MAX)
-            {
-              transform(buffer, buffer+min(BUFFER_SIZE, count-j), send_buf+j, buffer, max_op<float>);
-              copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
+      else if(datatype == MPI_CHAR && datasize == sizeof(char))
+        for(int i=1; i<ep_rank_loc+1; i++)
+          reduce_max<char>(static_cast<char*>(comm.my_buffer->void_buffer[i]), static_cast<char*>(recvbuf), count);
 
-            }
-            else if(op == MPI_MIN)
-            {
-              transform(buffer, buffer+min(BUFFER_SIZE, count-j), send_buf+j, buffer, min_op<float>);
-              copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
+      else if(datatype == MPI_LONG && datasize == sizeof(long))
+        for(int i=1; i<ep_rank_loc+1; i++)
+          reduce_max<long>(static_cast<long*>(comm.my_buffer->void_buffer[i]), static_cast<long*>(recvbuf), count);
 
-            }
-            else
-            {
-              printf("Supported operation: MPI_SUM, MPI_MAX, MPI_MIN\n");
-              exit(1);
-            }
-            #pragma omp flush
-          }
-        }
-
-        MPI_Barrier_local(comm);
-      }
+      else if(datatype == MPI_UNSIGNED_LONG && datasize == sizeof(unsigned long))
+        for(int i=1; i<ep_rank_loc+1; i++)
+          reduce_max<unsigned long>(static_cast<unsigned long*>(comm.my_buffer->void_buffer[i]), static_cast<unsigned long*>(recvbuf), count);    
+     
+      else printf("datatype Error\n");
     }
-  }
 
-  int MPI_Scan_local_double(const void *sendbuf, void *recvbuf, int count, MPI_Op op, MPI_Comm comm)
-  {
-    int my_rank = comm.ep_comm_ptr->size_rank_info[1].first;
-    int num_ep  = comm.ep_comm_ptr->size_rank_info[1].second;
-
-    double *buffer = comm.my_buffer->buf_double;
-    double *send_buf = static_cast<double*>(const_cast<void*>(sendbuf));
-    double *recv_buf = static_cast<double*>(recvbuf);
-
-    for(int j=0; j<count; j+=BUFFER_SIZE)
+    else //if(op == MPI_MIN)
     {
-      if(my_rank == 0)
-      {
+      if(datatype == MPI_INT && datasize == sizeof(int))
+        for(int i=1; i<ep_rank_loc+1; i++)
+          reduce_min<int>(static_cast<int*>(comm.my_buffer->void_buffer[i]), static_cast<int*>(recvbuf), count);    
 
-        #pragma omp critical (write_to_buffer)
-        {
-          copy(send_buf+j, send_buf+j+min(BUFFER_SIZE, count-j), buffer);
-          copy(send_buf+j, send_buf+j+min(BUFFER_SIZE, count-j), recv_buf+j);
-          #pragma omp flush
-        }
-      }
+      else if(datatype == MPI_FLOAT && datasize == sizeof(float))
+        for(int i=1; i<ep_rank_loc+1; i++)
+          reduce_min<float>(static_cast<float*>(comm.my_buffer->void_buffer[i]), static_cast<float*>(recvbuf), count);    
 
-      MPI_Barrier_local(comm);
+      else if(datatype == MPI_DOUBLE && datasize == sizeof(double))
+        for(int i=1; i<ep_rank_loc+1; i++)
+          reduce_min<double>(static_cast<double*>(comm.my_buffer->void_buffer[i]), static_cast<double*>(recvbuf), count);
 
-      for(int k=1; k<num_ep; k++)
-      {
-        #pragma omp critical (write_to_buffer)
-        {
-          if(my_rank == k)
-          {
-            #pragma omp flush
-            if(op == MPI_SUM)
-            {
-              transform(buffer, buffer+min(BUFFER_SIZE, count-j), send_buf+j, buffer, std::plus<double>());
-              copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
-            }
-            else if(op == MPI_MAX)
-            {
-              transform(buffer, buffer+min(BUFFER_SIZE, count-j), send_buf+j, buffer, max_op<double>);
-              copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
-            }
-            else if(op == MPI_MIN)
-            {
-              transform(buffer, buffer+min(BUFFER_SIZE, count-j), send_buf+j, buffer, min_op<double>);
-              copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
-            }
-            else
-            {
-              printf("Supported operation: MPI_SUM, MPI_MAX, MPI_MIN\n");
-              exit(1);
-            }
-            #pragma omp flush
-          }
-        }
+      else if(datatype == MPI_CHAR && datasize == sizeof(char))
+        for(int i=1; i<ep_rank_loc+1; i++)
+          reduce_min<char>(static_cast<char*>(comm.my_buffer->void_buffer[i]), static_cast<char*>(recvbuf), count);
 
-        MPI_Barrier_local(comm);
-      }
+      else if(datatype == MPI_LONG && datasize == sizeof(long))
+        for(int i=1; i<ep_rank_loc+1; i++)
+          reduce_min<long>(static_cast<long*>(comm.my_buffer->void_buffer[i]), static_cast<long*>(recvbuf), count);
+
+      else if(datatype == MPI_UNSIGNED_LONG && datasize == sizeof(unsigned long))
+        for(int i=1; i<ep_rank_loc+1; i++)
+          reduce_min<unsigned long>(static_cast<unsigned long*>(comm.my_buffer->void_buffer[i]), static_cast<unsigned long*>(recvbuf), count);    
+
+      else printf("datatype Error\n");
     }
-  }
 
-  int MPI_Scan_local_long(const void *sendbuf, void *recvbuf, int count, MPI_Op op, MPI_Comm comm)
-  {
-    int my_rank = comm.ep_comm_ptr->size_rank_info[1].first;
-    int num_ep  = comm.ep_comm_ptr->size_rank_info[1].second;
+    MPI_Barrier_local(comm);
 
-    long *buffer = comm.my_buffer->buf_long;
-    long *send_buf = static_cast<long*>(const_cast<void*>(sendbuf));
-    long *recv_buf = static_cast<long*>(recvbuf);
-
-    for(int j=0; j<count; j+=BUFFER_SIZE)
-    {
-      if(my_rank == 0)
-      {
-
-        #pragma omp critical (write_to_buffer)
-        {
-          copy(send_buf+j, send_buf+j+min(BUFFER_SIZE, count-j), buffer);
-          copy(send_buf+j, send_buf+j+min(BUFFER_SIZE, count-j), recv_buf+j);
-          #pragma omp flush
-        }
-      }
-
-      MPI_Barrier_local(comm);
-
-      for(int k=1; k<num_ep; k++)
-      {
-        #pragma omp critical (write_to_buffer)
-        {
-          if(my_rank == k)
-          {
-            #pragma omp flush
-            if(op == MPI_SUM)
-            {
-              transform(buffer, buffer+min(BUFFER_SIZE, count-j), send_buf+j, buffer, std::plus<long>());
-              copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
-            }
-            else if(op == MPI_MAX)
-            {
-              transform(buffer, buffer+min(BUFFER_SIZE, count-j), send_buf+j, buffer, max_op<long>);
-              copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
-            }
-            else if(op == MPI_MIN)
-            {
-              transform(buffer, buffer+min(BUFFER_SIZE, count-j), send_buf+j, buffer, min_op<long>);
-              copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
-            }
-            else
-            {
-              printf("Supported operation: MPI_SUM, MPI_MAX, MPI_MIN\n");
-              exit(1);
-            }
-            #pragma omp flush
-          }
-        }
-
-        MPI_Barrier_local(comm);
-      }
-    }
-  }
-
-  int MPI_Scan_local_ulong(const void *sendbuf, void *recvbuf, int count, MPI_Op op, MPI_Comm comm)
-  {
-    int my_rank = comm.ep_comm_ptr->size_rank_info[1].first;
-    int num_ep  = comm.ep_comm_ptr->size_rank_info[1].second;
-
-    unsigned long *buffer = comm.my_buffer->buf_ulong;
-    unsigned long *send_buf = static_cast<unsigned long*>(const_cast<void*>(sendbuf));
-    unsigned long *recv_buf = static_cast<unsigned long*>(recvbuf);
-
-    for(int j=0; j<count; j+=BUFFER_SIZE)
-    {
-      if(my_rank == 0)
-      {
-
-        #pragma omp critical (write_to_buffer)
-        {
-          copy(send_buf+j, send_buf+j+min(BUFFER_SIZE, count-j), buffer);
-          copy(send_buf+j, send_buf+j+min(BUFFER_SIZE, count-j), recv_buf+j);
-          #pragma omp flush
-        }
-      }
-
-      MPI_Barrier_local(comm);
-
-      for(int k=1; k<num_ep; k++)
-      {
-        #pragma omp critical (write_to_buffer)
-        {
-          if(my_rank == k)
-          {
-            #pragma omp flush
-            if(op == MPI_SUM)
-            {
-              transform(buffer, buffer+min(BUFFER_SIZE, count-j), send_buf+j, buffer, std::plus<unsigned long>());
-              copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
-            }
-            else if(op == MPI_MAX)
-            {
-              transform(buffer, buffer+min(BUFFER_SIZE, count-j), send_buf+j, buffer, max_op<unsigned long>);
-              copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
-            }
-            else if(op == MPI_MIN)
-            {
-              transform(buffer, buffer+min(BUFFER_SIZE, count-j), send_buf+j, buffer, min_op<unsigned long>);
-              copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
-            }
-            else
-            {
-              printf("Supported operation: MPI_SUM, MPI_MAX, MPI_MIN\n");
-              exit(1);
-            }
-            #pragma omp flush
-          }
-        }
-
-        MPI_Barrier_local(comm);
-      }
-    }
-  }
-
-  int MPI_Scan_local_char(const void *sendbuf, void *recvbuf, int count, MPI_Op op, MPI_Comm comm)
-  {
-    int my_rank = comm.ep_comm_ptr->size_rank_info[1].first;
-    int num_ep  = comm.ep_comm_ptr->size_rank_info[1].second;
-
-    char *buffer = comm.my_buffer->buf_char;
-    char *send_buf = static_cast<char*>(const_cast<void*>(sendbuf));
-    char *recv_buf = static_cast<char*>(recvbuf);
-
-    for(int j=0; j<count; j+=BUFFER_SIZE)
-    {
-      if(my_rank == 0)
-      {
-
-        #pragma omp critical (write_to_buffer)
-        {
-          copy(send_buf+j, send_buf+j+min(BUFFER_SIZE, count-j), buffer);
-          copy(send_buf+j, send_buf+j+min(BUFFER_SIZE, count-j), recv_buf+j);
-          #pragma omp flush
-        }
-      }
-
-      MPI_Barrier_local(comm);
-
-      for(int k=1; k<num_ep; k++)
-      {
-        #pragma omp critical (write_to_buffer)
-        {
-          if(my_rank == k)
-          {
-            #pragma omp flush
-            if(op == MPI_SUM)
-            {
-              transform(buffer, buffer+min(BUFFER_SIZE, count-j), send_buf+j, buffer, std::plus<char>());
-              copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
-            }
-            else if(op == MPI_MAX)
-            {
-              transform(buffer, buffer+min(BUFFER_SIZE, count-j), send_buf+j, buffer, max_op<char>);
-              copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
-            }
-            else if(op == MPI_MIN)
-            {
-              transform(buffer, buffer+min(BUFFER_SIZE, count-j), send_buf+j, buffer, min_op<char>);
-              copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
-            }
-            else
-            {
-              printf("Supported operation: MPI_SUM, MPI_MAX, MPI_MIN\n");
-              exit(1);
-            }
-            #pragma omp flush
-          }
-        }
-
-        MPI_Barrier_local(comm);
-      }
-    }
   }
 
 
@@ -431,316 +254,99 @@ namespace ep_lib
   {
     if(!comm.is_ep)
     {
-
-      ::MPI_Scan(sendbuf, recvbuf, count, static_cast< ::MPI_Datatype>(datatype),
-                 static_cast< ::MPI_Op>(op), static_cast< ::MPI_Comm>(comm.mpi_comm));
-      return 0;
+      return ::MPI_Scan(sendbuf, recvbuf, count, to_mpi_type(datatype), to_mpi_op(op), to_mpi_comm(comm.mpi_comm));
     }
+    
+    valid_type(datatype);
 
-    if(!comm.mpi_comm) return 0;
-
-    int ep_rank, ep_rank_loc, mpi_rank;
-    int ep_size, num_ep, mpi_size;
-
-
-    ep_rank = comm.ep_comm_ptr->size_rank_info[0].first;
-    ep_rank_loc = comm.ep_comm_ptr->size_rank_info[1].first;
-    mpi_rank = comm.ep_comm_ptr->size_rank_info[2].first;
-    ep_size = comm.ep_comm_ptr->size_rank_info[0].second;
-    num_ep = comm.ep_comm_ptr->size_rank_info[1].second;
-    mpi_size = comm.ep_comm_ptr->size_rank_info[2].second;
-
+    int ep_rank = comm.ep_comm_ptr->size_rank_info[0].first;
+    int ep_rank_loc = comm.ep_comm_ptr->size_rank_info[1].first;
+    int mpi_rank = comm.ep_comm_ptr->size_rank_info[2].first;
+    int ep_size = comm.ep_comm_ptr->size_rank_info[0].second;
+    int num_ep = comm.ep_comm_ptr->size_rank_info[1].second;
+    int mpi_size = comm.ep_comm_ptr->size_rank_info[2].second;
 
     ::MPI_Aint datasize, lb;
+    ::MPI_Type_get_extent(to_mpi_type(datatype), &lb, &datasize);
+    
+    void* tmp_sendbuf;
+    tmp_sendbuf = new void*[datasize * count];
 
-    ::MPI_Type_get_extent(static_cast< ::MPI_Datatype>(datatype), &lb, &datasize);
+    int my_src = 0;
+    int my_dst = ep_rank;
 
-    void* local_scan_recvbuf;
-    local_scan_recvbuf = new void*[datasize * count];
+    std::vector<int> my_map(mpi_size, 0);
 
+    for(int i=0; i<comm.rank_map->size(); i++) my_map[comm.rank_map->at(i).second]++;
 
-    // local scan
-    MPI_Scan_local(sendbuf, recvbuf, count, datatype, op, comm);
+    for(int i=0; i<mpi_rank; i++) my_src += my_map[i];
+    my_src += ep_rank_loc;
 
-//     MPI_scan
-    void* local_sum;
-    void* mpi_scan_recvbuf;
+     
+    for(int i=0; i<mpi_size; i++)
+    {
+      if(my_dst < my_map[i])
+      {
+        my_dst = get_ep_rank(comm, my_dst, i); 
+        break;
+      }
+      else
+        my_dst -= my_map[i];
+    }
 
+    //printf("ID = %d : send to %d, recv from %d\n", ep_rank, my_dst, my_src);
+    MPI_Barrier(comm);
 
-    mpi_scan_recvbuf = new void*[datasize*count];
+    if(my_dst == ep_rank && my_src == ep_rank) memcpy(tmp_sendbuf, sendbuf, datasize*count);
+
+    if(ep_rank != my_dst) 
+    {
+      MPI_Request request[2];
+      MPI_Status status[2];
+
+      MPI_Isend(sendbuf,     count, datatype, my_dst, my_dst,  comm, &request[0]);
+    
+      MPI_Irecv(tmp_sendbuf, count, datatype, my_src, ep_rank, comm, &request[1]);
+    
+      MPI_Waitall(2, request, status);
+    }
+    
+
+    void* tmp_recvbuf;
+    tmp_recvbuf = new void*[datasize * count];    
+
+    MPI_Reduce_local(tmp_sendbuf, tmp_recvbuf, count, datatype, op, 0, comm);
 
     if(ep_rank_loc == 0)
+      ::MPI_Exscan(MPI_IN_PLACE, tmp_recvbuf, count, to_mpi_type(datatype), to_mpi_op(op), to_mpi_comm(comm.mpi_comm));
+
+    //printf(" ID=%d : %d  %d \n", ep_rank, static_cast<int*>(tmp_recvbuf)[0], static_cast<int*>(tmp_recvbuf)[1]);
+    
+    MPI_Scan_local(tmp_sendbuf, tmp_recvbuf, count, datatype, op, comm);
+
+    // printf(" ID=%d : after local tmp_sendbuf = %d %d ; tmp_recvbuf = %d  %d \n", ep_rank, static_cast<int*>(tmp_sendbuf)[0], static_cast<int*>(tmp_sendbuf)[1], static_cast<int*>(tmp_recvbuf)[0], static_cast<int*>(tmp_recvbuf)[1]);
+
+
+
+    if(ep_rank != my_src) 
     {
-      local_sum = new void*[datasize*count];
+      MPI_Request request[2];
+      MPI_Status status[2];
+
+      MPI_Isend(tmp_recvbuf, count, datatype, my_src, my_src,  comm, &request[0]);
+    
+      MPI_Irecv(recvbuf,     count, datatype, my_dst, ep_rank, comm, &request[1]);
+    
+      MPI_Waitall(2, request, status);
     }
 
-
-    MPI_Reduce_local(sendbuf, local_sum, count, datatype, op, comm);
-
-    if(ep_rank_loc == 0)
-    {
-      ::MPI_Exscan(local_sum, mpi_scan_recvbuf, count, static_cast< ::MPI_Datatype>(datatype), static_cast< ::MPI_Op>(op), static_cast< ::MPI_Comm>(comm.mpi_comm));
-    }
+    else memcpy(recvbuf, tmp_recvbuf, datasize*count);
+    
 
 
-    if(mpi_rank > 0)
-    {
-      MPI_Bcast_local(mpi_scan_recvbuf, count, datatype, comm);
-    }
 
-
-    if(datatype == MPI_DOUBLE)
-    {
-      double* sum_buf = static_cast<double*>(mpi_scan_recvbuf);
-      double* recv_buf = static_cast<double*>(recvbuf);
-
-      if(mpi_rank != 0)
-      {
-        if(op == MPI_SUM)
-        {
-          for(int i=0; i<count; i++)
-          {
-            recv_buf[i] += sum_buf[i];
-          }
-        }
-        else if (op == MPI_MAX)
-        {
-          for(int i=0; i<count; i++)
-          {
-            recv_buf[i] = max(recv_buf[i], sum_buf[i]);
-          }
-        }
-        else if(op == MPI_MIN)
-        {
-          for(int i=0; i<count; i++)
-          {
-            recv_buf[i] = min(recv_buf[i], sum_buf[i]);
-          }
-        }
-        else
-        {
-          printf("Support operator for MPI_Scan is MPI_SUM, MPI_MAX, and MPI_MIN\n");
-          exit(1);
-        }
-      }
-
-      delete[] static_cast<double*>(mpi_scan_recvbuf);
-      if(ep_rank_loc == 0)
-      {
-        delete[] static_cast<double*>(local_sum);
-      }
-    }
-
-    else if(datatype == MPI_FLOAT)
-    {
-      float* sum_buf = static_cast<float*>(mpi_scan_recvbuf);
-      float* recv_buf = static_cast<float*>(recvbuf);
-
-      if(mpi_rank != 0)
-      {
-        if(op == MPI_SUM)
-        {
-          for(int i=0; i<count; i++)
-          {
-            recv_buf[i] += sum_buf[i];
-          }
-        }
-        else if (op == MPI_MAX)
-        {
-          for(int i=0; i<count; i++)
-          {
-            recv_buf[i] = max(recv_buf[i], sum_buf[i]);
-          }
-        }
-        else if(op == MPI_MIN)
-        {
-          for(int i=0; i<count; i++)
-          {
-            recv_buf[i] = min(recv_buf[i], sum_buf[i]);
-          }
-        }
-        else
-        {
-          printf("Support operator for MPI_Scan is MPI_SUM, MPI_MAX, and MPI_MIN\n");
-          exit(1);
-        }
-      }
-
-      delete[] static_cast<float*>(mpi_scan_recvbuf);
-      if(ep_rank_loc == 0)
-      {
-        delete[] static_cast<float*>(local_sum);
-      }
-    }
-
-    else if(datatype == MPI_INT)
-    {
-      int* sum_buf = static_cast<int*>(mpi_scan_recvbuf);
-      int* recv_buf = static_cast<int*>(recvbuf);
-
-      if(mpi_rank != 0)
-      {
-        if(op == MPI_SUM)
-        {
-          for(int i=0; i<count; i++)
-          {
-            recv_buf[i] += sum_buf[i];
-          }
-        }
-        else if (op == MPI_MAX)
-        {
-          for(int i=0; i<count; i++)
-          {
-            recv_buf[i] = max(recv_buf[i], sum_buf[i]);
-          }
-        }
-        else if(op == MPI_MIN)
-        {
-          for(int i=0; i<count; i++)
-          {
-            recv_buf[i] = min(recv_buf[i], sum_buf[i]);
-          }
-        }
-        else
-        {
-          printf("Support operator for MPI_Scan is MPI_SUM, MPI_MAX, and MPI_MIN\n");
-          exit(1);
-        }
-      }
-
-      delete[] static_cast<int*>(mpi_scan_recvbuf);
-      if(ep_rank_loc == 0)
-      {
-        delete[] static_cast<int*>(local_sum);
-      }
-    }
-
-    else if(datatype == MPI_LONG)
-    {
-      long* sum_buf = static_cast<long*>(mpi_scan_recvbuf);
-      long* recv_buf = static_cast<long*>(recvbuf);
-
-      if(mpi_rank != 0)
-      {
-        if(op == MPI_SUM)
-        {
-          for(int i=0; i<count; i++)
-          {
-            recv_buf[i] += sum_buf[i];
-          }
-        }
-        else if (op == MPI_MAX)
-        {
-          for(int i=0; i<count; i++)
-          {
-            recv_buf[i] = max(recv_buf[i], sum_buf[i]);
-          }
-        }
-        else if(op == MPI_MIN)
-        {
-          for(int i=0; i<count; i++)
-          {
-            recv_buf[i] = min(recv_buf[i], sum_buf[i]);
-          }
-        }
-        else
-        {
-          printf("Support operator for MPI_Scan is MPI_SUM, MPI_MAX, and MPI_MIN\n");
-          exit(1);
-        }
-      }
-
-      delete[] static_cast<long*>(mpi_scan_recvbuf);
-      if(ep_rank_loc == 0)
-      {
-        delete[] static_cast<long*>(local_sum);
-      }
-    }
-
-    else if(datatype == MPI_UNSIGNED_LONG)
-    {
-      unsigned long* sum_buf = static_cast<unsigned long*>(mpi_scan_recvbuf);
-      unsigned long* recv_buf = static_cast<unsigned long*>(recvbuf);
-
-      if(mpi_rank != 0)
-      {
-        if(op == MPI_SUM)
-        {
-          for(int i=0; i<count; i++)
-          {
-            recv_buf[i] += sum_buf[i];
-          }
-        }
-        else if (op == MPI_MAX)
-        {
-          for(int i=0; i<count; i++)
-          {
-            recv_buf[i] = max(recv_buf[i], sum_buf[i]);
-          }
-        }
-        else if(op == MPI_MIN)
-        {
-          for(int i=0; i<count; i++)
-          {
-            recv_buf[i] = min(recv_buf[i], sum_buf[i]);
-          }
-        }
-        else
-        {
-          printf("Support operator for MPI_Scan is MPI_SUM, MPI_MAX, and MPI_MIN\n");
-          exit(1);
-        }
-      }
-
-      delete[] static_cast<unsigned long*>(mpi_scan_recvbuf);
-      if(ep_rank_loc == 0)
-      {
-        delete[] static_cast<unsigned long*>(local_sum);
-      }
-    }
-
-    else if(datatype == MPI_CHAR)
-    {
-      char* sum_buf = static_cast<char*>(mpi_scan_recvbuf);
-      char* recv_buf = static_cast<char*>(recvbuf);
-
-      if(mpi_rank != 0)
-      {
-        if(op == MPI_SUM)
-        {
-          for(int i=0; i<count; i++)
-          {
-            recv_buf[i] += sum_buf[i];
-          }
-        }
-        else if (op == MPI_MAX)
-        {
-          for(int i=0; i<count; i++)
-          {
-            recv_buf[i] = max(recv_buf[i], sum_buf[i]);
-          }
-        }
-        else if(op == MPI_MIN)
-        {
-          for(int i=0; i<count; i++)
-          {
-            recv_buf[i] = min(recv_buf[i], sum_buf[i]);
-          }
-        }
-        else
-        {
-          printf("Support operator for MPI_Scan is MPI_SUM, MPI_MAX, and MPI_MIN\n");
-          exit(1);
-        }
-      }
-
-      delete[] static_cast<char*>(mpi_scan_recvbuf);
-      if(ep_rank_loc == 0)
-      {
-        delete[] static_cast<char*>(local_sum);
-      }
-    }
-
+    delete[] tmp_sendbuf;
+    delete[] tmp_recvbuf;
 
   }
 

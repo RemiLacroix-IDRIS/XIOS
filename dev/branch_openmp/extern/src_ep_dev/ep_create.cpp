@@ -51,7 +51,7 @@ namespace ep_lib {
       out_comm_hdls[idx].ep_comm_ptr->comm_label = 0;
     }
 
-    ::MPI_Allgather(&num_ep, 1, MPI_INT_STD, &recv_num_ep[0], 1, MPI_INT_STD, mpi_base_comm);
+    ::MPI_Allgather(&num_ep, 1, MPI_INT, &recv_num_ep[0], 1, MPI_INT, mpi_base_comm);
 
 
     int sum = 0;  // representing total ep number of process with smaller rank
@@ -62,12 +62,12 @@ namespace ep_lib {
     out_comm_hdls[0].ep_barrier = new OMPbarrier(num_ep);
 
     out_comm_hdls[0].my_buffer = new BUFFER;
-    out_comm_hdls[0].my_buffer->buf_double = new double[BUFFER_SIZE];
-    out_comm_hdls[0].my_buffer->buf_float  = new float[BUFFER_SIZE];
-    out_comm_hdls[0].my_buffer->buf_int    = new int[BUFFER_SIZE];
-    out_comm_hdls[0].my_buffer->buf_long   = new long[BUFFER_SIZE];
-    out_comm_hdls[0].my_buffer->buf_ulong  = new unsigned long[BUFFER_SIZE];
-    out_comm_hdls[0].my_buffer->buf_char   = new char[BUFFER_SIZE];
+    // out_comm_hdls[0].my_buffer->buf_double = new double[BUFFER_SIZE];
+    // out_comm_hdls[0].my_buffer->buf_float  = new float[BUFFER_SIZE];
+    // out_comm_hdls[0].my_buffer->buf_int    = new int[BUFFER_SIZE];
+    // out_comm_hdls[0].my_buffer->buf_long   = new long[BUFFER_SIZE];
+    // out_comm_hdls[0].my_buffer->buf_ulong  = new unsigned long[BUFFER_SIZE];
+    // out_comm_hdls[0].my_buffer->buf_char   = new char[BUFFER_SIZE];
 
     out_comm_hdls[0].rank_map = new RANK_MAP;
     out_comm_hdls[0].rank_map->resize(ep_size);
@@ -134,7 +134,7 @@ namespace ep_lib {
       out_comm_hdls[idx].ep_comm_ptr->comm_label = 0;
     }
 
-    ::MPI_Allgather(&num_ep, 1, MPI_INT_STD, &recv_num_ep[0], 1, MPI_INT_STD, mpi_base_comm);
+    ::MPI_Allgather(&num_ep, 1, MPI_INT, &recv_num_ep[0], 1, MPI_INT, mpi_base_comm);
 
     int sum = 0;  // representing total ep number of process with smaller rank
     for (int i = 0; i < base_rank; ++i) {sum += recv_num_ep[i]; }
@@ -144,12 +144,12 @@ namespace ep_lib {
     out_comm_hdls[0].ep_barrier = new OMPbarrier(num_ep);
 
     out_comm_hdls[0].my_buffer = new BUFFER;
-    out_comm_hdls[0].my_buffer->buf_double = new double[BUFFER_SIZE];
-    out_comm_hdls[0].my_buffer->buf_float  = new float[BUFFER_SIZE];
-    out_comm_hdls[0].my_buffer->buf_int    = new int[BUFFER_SIZE];
-    out_comm_hdls[0].my_buffer->buf_long   = new long[BUFFER_SIZE];
-    out_comm_hdls[0].my_buffer->buf_ulong  = new unsigned long[BUFFER_SIZE];
-    out_comm_hdls[0].my_buffer->buf_char   = new char[BUFFER_SIZE];
+    // out_comm_hdls[0].my_buffer->buf_double = new double[BUFFER_SIZE];
+    // out_comm_hdls[0].my_buffer->buf_float  = new float[BUFFER_SIZE];
+    // out_comm_hdls[0].my_buffer->buf_int    = new int[BUFFER_SIZE];
+    // out_comm_hdls[0].my_buffer->buf_long   = new long[BUFFER_SIZE];
+    // out_comm_hdls[0].my_buffer->buf_ulong  = new unsigned long[BUFFER_SIZE];
+    // out_comm_hdls[0].my_buffer->buf_char   = new char[BUFFER_SIZE];
 
     out_comm_hdls[0].rank_map = new RANK_MAP;
     out_comm_hdls[0].rank_map->resize(ep_size);
@@ -221,7 +221,7 @@ namespace ep_lib {
       out_comm_hdls[idx].ep_comm_ptr->comm_label = 0;
     }
 
-    ::MPI_Allgather(&num_ep, 1, MPI_INT_STD, &recv_num_ep[0], 1, MPI_INT_STD, mpi_base_comm);
+    ::MPI_Allgather(&num_ep, 1, MPI_INT, &recv_num_ep[0], 1, MPI_INT, mpi_base_comm);
 
 
     int sum = 0;  // representing total ep number of process with smaller rank
@@ -232,12 +232,12 @@ namespace ep_lib {
     out_comm_hdls[0].ep_barrier = new OMPbarrier(num_ep);
 
     out_comm_hdls[0].my_buffer = new BUFFER;
-    out_comm_hdls[0].my_buffer->buf_double = new double[BUFFER_SIZE];
-    out_comm_hdls[0].my_buffer->buf_float  = new float[BUFFER_SIZE];
-    out_comm_hdls[0].my_buffer->buf_int    = new int[BUFFER_SIZE];
-    out_comm_hdls[0].my_buffer->buf_long   = new long[BUFFER_SIZE];
-    out_comm_hdls[0].my_buffer->buf_ulong  = new unsigned long[BUFFER_SIZE];
-    out_comm_hdls[0].my_buffer->buf_char   = new char[BUFFER_SIZE];
+    // out_comm_hdls[0].my_buffer->buf_double = new double[BUFFER_SIZE];
+    // out_comm_hdls[0].my_buffer->buf_float  = new float[BUFFER_SIZE];
+    // out_comm_hdls[0].my_buffer->buf_int    = new int[BUFFER_SIZE];
+    // out_comm_hdls[0].my_buffer->buf_long   = new long[BUFFER_SIZE];
+    // out_comm_hdls[0].my_buffer->buf_ulong  = new unsigned long[BUFFER_SIZE];
+    // out_comm_hdls[0].my_buffer->buf_char   = new char[BUFFER_SIZE];
 
     out_comm_hdls[0].rank_map = new RANK_MAP;
     out_comm_hdls[0].rank_map->resize(ep_size);

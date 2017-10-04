@@ -320,13 +320,13 @@ namespace xios
    }
 
    template <typename T>
-   shared_ptr<T> CObjectTemplate<T>::getShared(const T* ptr)
+   boost::shared_ptr<T> CObjectTemplate<T>::getShared(const T* ptr)
    {
      return CObjectFactory::GetObject<T>(ptr);
    }
 
    template <typename T>
-   shared_ptr<T> CObjectTemplate<T>::getShared(void)
+   boost::shared_ptr<T> CObjectTemplate<T>::getShared(void)
    {
      return CObjectFactory::GetObject<T>((T*)this);
    }
@@ -334,10 +334,10 @@ namespace xios
    template <typename T>
    const vector<T*> CObjectTemplate<T>::getAll()
    {
-     const vector< shared_ptr<T> >& shared_vect= CObjectFactory::GetObjectVector<T>();
+     const vector< boost::shared_ptr<T> >& shared_vect= CObjectFactory::GetObjectVector<T>();
      vector<T*> vect;
 
-     typename vector<shared_ptr<T> >::const_iterator it;
+     typename vector<boost::shared_ptr<T> >::const_iterator it;
      for(it=shared_vect.begin();it!=shared_vect.end();++it) vect.push_back(it->get());
      return vect;
    }
@@ -345,10 +345,10 @@ namespace xios
    template <typename T>
    const vector<T*> CObjectTemplate<T>::getAll(const string & id)
    {
-     const vector< shared_ptr<T> >& shared_vect= CObjectFactory::GetObjectVector<T>(id);
+     const vector< boost::shared_ptr<T> >& shared_vect= CObjectFactory::GetObjectVector<T>(id);
      vector<T*> vect;
 
-     typename vector<shared_ptr<T> >::const_iterator it;
+     typename vector<boost::shared_ptr<T> >::const_iterator it;
      for(it=shared_vect.begin();it!=shared_vect.end();++it) vect.push_back(it->get());
      return vect;
    }

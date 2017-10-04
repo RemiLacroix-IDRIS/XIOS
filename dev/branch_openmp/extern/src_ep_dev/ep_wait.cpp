@@ -17,7 +17,7 @@ extern std::list< ep_lib::MPI_Request* > * EP_PendingRequests;
 
 
 namespace ep_lib 
-{	
+{
   
   int MPI_Wait(MPI_Request *request, MPI_Status *status)
   {
@@ -31,11 +31,9 @@ namespace ep_lib
     while(request->type == 2) Request_Check();
 
 
-    ::MPI_Request mpi_request = static_cast< ::MPI_Request >(request->mpi_request);
     ::MPI_Status mpi_status;
-    ::MPI_Wait(&mpi_request, &mpi_status);
+    ::MPI_Wait(&(request->mpi_request), &mpi_status);
       
-    request->mpi_request = mpi_request;
 
     status->mpi_status = &mpi_status;
     status->ep_src = request->ep_src;
