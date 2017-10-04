@@ -62,12 +62,12 @@ namespace ep_lib {
     out_comm_hdls[0].ep_barrier = new OMPbarrier(num_ep);
 
     out_comm_hdls[0].my_buffer = new BUFFER;
-    // out_comm_hdls[0].my_buffer->buf_double = new double[BUFFER_SIZE];
-    // out_comm_hdls[0].my_buffer->buf_float  = new float[BUFFER_SIZE];
-    // out_comm_hdls[0].my_buffer->buf_int    = new int[BUFFER_SIZE];
-    // out_comm_hdls[0].my_buffer->buf_long   = new long[BUFFER_SIZE];
-    // out_comm_hdls[0].my_buffer->buf_ulong  = new unsigned long[BUFFER_SIZE];
-    // out_comm_hdls[0].my_buffer->buf_char   = new char[BUFFER_SIZE];
+    out_comm_hdls[0].my_buffer->buf_double = new double[BUFFER_SIZE];
+    out_comm_hdls[0].my_buffer->buf_float  = new float[BUFFER_SIZE];
+    out_comm_hdls[0].my_buffer->buf_int    = new int[BUFFER_SIZE];
+    out_comm_hdls[0].my_buffer->buf_long   = new long[BUFFER_SIZE];
+    out_comm_hdls[0].my_buffer->buf_ulong  = new unsigned long[BUFFER_SIZE];
+    out_comm_hdls[0].my_buffer->buf_char   = new char[BUFFER_SIZE];
 
     out_comm_hdls[0].rank_map = new RANK_MAP;
     out_comm_hdls[0].rank_map->resize(ep_size);
@@ -144,12 +144,12 @@ namespace ep_lib {
     out_comm_hdls[0].ep_barrier = new OMPbarrier(num_ep);
 
     out_comm_hdls[0].my_buffer = new BUFFER;
-    // out_comm_hdls[0].my_buffer->buf_double = new double[BUFFER_SIZE];
-    // out_comm_hdls[0].my_buffer->buf_float  = new float[BUFFER_SIZE];
-    // out_comm_hdls[0].my_buffer->buf_int    = new int[BUFFER_SIZE];
-    // out_comm_hdls[0].my_buffer->buf_long   = new long[BUFFER_SIZE];
-    // out_comm_hdls[0].my_buffer->buf_ulong  = new unsigned long[BUFFER_SIZE];
-    // out_comm_hdls[0].my_buffer->buf_char   = new char[BUFFER_SIZE];
+    out_comm_hdls[0].my_buffer->buf_double = new double[BUFFER_SIZE];
+    out_comm_hdls[0].my_buffer->buf_float  = new float[BUFFER_SIZE];
+    out_comm_hdls[0].my_buffer->buf_int    = new int[BUFFER_SIZE];
+    out_comm_hdls[0].my_buffer->buf_long   = new long[BUFFER_SIZE];
+    out_comm_hdls[0].my_buffer->buf_ulong  = new unsigned long[BUFFER_SIZE];
+    out_comm_hdls[0].my_buffer->buf_char   = new char[BUFFER_SIZE];
 
     out_comm_hdls[0].rank_map = new RANK_MAP;
     out_comm_hdls[0].rank_map->resize(ep_size);
@@ -232,12 +232,12 @@ namespace ep_lib {
     out_comm_hdls[0].ep_barrier = new OMPbarrier(num_ep);
 
     out_comm_hdls[0].my_buffer = new BUFFER;
-    // out_comm_hdls[0].my_buffer->buf_double = new double[BUFFER_SIZE];
-    // out_comm_hdls[0].my_buffer->buf_float  = new float[BUFFER_SIZE];
-    // out_comm_hdls[0].my_buffer->buf_int    = new int[BUFFER_SIZE];
-    // out_comm_hdls[0].my_buffer->buf_long   = new long[BUFFER_SIZE];
-    // out_comm_hdls[0].my_buffer->buf_ulong  = new unsigned long[BUFFER_SIZE];
-    // out_comm_hdls[0].my_buffer->buf_char   = new char[BUFFER_SIZE];
+    out_comm_hdls[0].my_buffer->buf_double = new double[BUFFER_SIZE];
+    out_comm_hdls[0].my_buffer->buf_float  = new float[BUFFER_SIZE];
+    out_comm_hdls[0].my_buffer->buf_int    = new int[BUFFER_SIZE];
+    out_comm_hdls[0].my_buffer->buf_long   = new long[BUFFER_SIZE];
+    out_comm_hdls[0].my_buffer->buf_ulong  = new unsigned long[BUFFER_SIZE];
+    out_comm_hdls[0].my_buffer->buf_char   = new char[BUFFER_SIZE];
 
     out_comm_hdls[0].rank_map = new RANK_MAP;
     out_comm_hdls[0].rank_map->resize(ep_size);

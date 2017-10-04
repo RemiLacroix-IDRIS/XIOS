@@ -5,6 +5,8 @@
 namespace ep_lib
 {
 
+
+
   int MPI_Comm_free(MPI_Comm *comm)
   {
 
@@ -38,6 +40,15 @@ namespace ep_lib
       {
         Debug("comm is EP, mpi_comm_ptr != NULL\n");
 
+        if(comm->my_buffer != NULL)
+        {
+          if(comm->my_buffer->buf_int != NULL) delete[] comm->my_buffer->buf_int; Debug("buf_int freed\n");
+          if(comm->my_buffer->buf_float != NULL) delete[] comm->my_buffer->buf_float; Debug("buf_float freed\n");
+          if(comm->my_buffer->buf_double != NULL) delete[] comm->my_buffer->buf_double; Debug("buf_double freed\n");
+          if(comm->my_buffer->buf_long != NULL) delete[] comm->my_buffer->buf_long; Debug("buf_long freed\n");
+          if(comm->my_buffer->buf_ulong != NULL) delete[] comm->my_buffer->buf_ulong; Debug("buf_ulong freed\n");
+          if(comm->my_buffer->buf_char != NULL) delete[] comm->my_buffer->buf_char; Debug("buf_char freed\n");
+        }
 
         if(comm->ep_barrier != NULL)
         {
@@ -96,6 +107,15 @@ namespace ep_lib
     {
       Debug("comm is EP, mpi_comm_ptr != NULL\n");
 
+      if(comm->my_buffer != NULL)
+      {
+        if(comm->my_buffer->buf_int != NULL) delete[] comm->my_buffer->buf_int; Debug("buf_int freed\n");
+        if(comm->my_buffer->buf_float != NULL) delete[] comm->my_buffer->buf_float; Debug("buf_float freed\n");
+        if(comm->my_buffer->buf_double != NULL) delete[] comm->my_buffer->buf_double; Debug("buf_double freed\n");
+        if(comm->my_buffer->buf_long != NULL) delete[] comm->my_buffer->buf_long; Debug("buf_long freed\n");
+        if(comm->my_buffer->buf_ulong != NULL) delete[] comm->my_buffer->buf_ulong; Debug("buf_ulong freed\n");
+        if(comm->my_buffer->buf_char != NULL) delete[] comm->my_buffer->buf_char; Debug("buf_char freed\n");
+      }
 
       if(comm->ep_barrier != NULL)
       {

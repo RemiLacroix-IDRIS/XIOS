@@ -61,12 +61,12 @@ namespace ep_lib
     vector<int>local_displs(num_ep, 0);
 
     MPI_Gather_local(&sendcount, 1, MPI_INT, local_recvcounts.data(), 0, comm);
-    for(int i=1; i<num_ep; i++) local_displs[i] = local_displs[i-1] + local_recvcounts[i]; 
+    for(int i=1; i<num_ep; i++) local_displs[i] = local_displs[i-1] + local_recvcounts[i-1]; 
 
 
     if(is_master)
     {
-      local_recvbuf = new void*[datasize * num_ep * count];
+      local_recvbuf = new void*[datasize * std::accumulate(local_recvcounts.begin(), local_recvcounts.end(), 0)];
       tmp_recvbuf = new void*[datasize * std::accumulate(recvcounts, recvcounts+ep_size, 0)];
     }
 
@@ -80,7 +80,7 @@ namespace ep_lib
       std::vector<int>mpi_recvcounts(mpi_size, 0);
       std::vector<int>mpi_displs(mpi_size, 0);
 
-      int local_sendcount = num_ep * count;
+      int local_sendcount = std::accumulate(local_recvcounts.begin(), local_recvcounts.end(), 0);
       MPI_Allgather(&local_sendcount, 1, MPI_INT, mpi_recvcounts.data(), 1, MPI_INT, to_mpi_comm(comm.mpi_comm));
 
       for(int i=1; i<mpi_size; i++)
@@ -98,7 +98,7 @@ namespace ep_lib
       
 
 
-      ::MPI_Allgatherv(local_recvbuf, num_ep * count, to_mpi_type(datatype), tmp_recvbuf, mpi_recvcounts.data(), mpi_displs.data(), to_mpi_type(datatype), to_mpi_comm(comm.mpi_comm));
+      ::MPI_Allgatherv(local_recvbuf, local_sendcount, to_mpi_type(datatype), tmp_recvbuf, mpi_recvcounts.data(), mpi_displs.data(), to_mpi_type(datatype), to_mpi_comm(comm.mpi_comm));
 
       // if(ep_rank == 0)
       // { 

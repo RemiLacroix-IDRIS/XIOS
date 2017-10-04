@@ -179,7 +179,7 @@ double airbar(int N, const Coord *x, const Coord *c, double *d, const Coord& pol
     double sc=scalarprod(crossprod(t[1] - t[0], t[2] - t[0]), t[0]) ;
 		assert(sc >= -1e-10); // Error: tri a l'env (wrong orientation)
 		double area_gc = triarea(t[0], t[1], t[2]);
-		if(area_gc<=0) printf("area_gc = %e\n", area_gc);
+		//if(area_gc<=0) printf("area_gc = %e\n", area_gc);
 		double area_sc_gc_moon = 0;
 		if (d[i]) /* handle small circle case */
 		{

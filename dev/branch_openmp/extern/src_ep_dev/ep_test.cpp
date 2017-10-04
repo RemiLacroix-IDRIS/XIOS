@@ -23,8 +23,9 @@ namespace ep_lib {
 
     if(request->type == 1)      // isend
     {
+      ::MPI_Request mpi_request = static_cast< ::MPI_Request >(request->mpi_request);
       ::MPI_Status mpi_status;
-      ::MPI_Test(&(request->mpi_request), flag, &mpi_status);
+      ::MPI_Test(&mpi_request, flag, &mpi_status);
       
       if(*flag) 
       {
@@ -47,9 +48,10 @@ namespace ep_lib {
 
     if(request->type == 3)  // imrecv
     {
+      ::MPI_Request *mpi_request = static_cast< ::MPI_Request* >(&(request->mpi_request));
       ::MPI_Status mpi_status;
       
-      ::MPI_Test(&(request->mpi_request), flag, &mpi_status);
+      ::MPI_Test(mpi_request, flag, &mpi_status);
       
       
       if(*flag)
@@ -65,7 +67,7 @@ namespace ep_lib {
 
       return 0;
     }
-
+		
   }
 
 

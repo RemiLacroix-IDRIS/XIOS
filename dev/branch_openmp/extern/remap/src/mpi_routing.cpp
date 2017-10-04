@@ -126,8 +126,10 @@ destRanks.push_back(i);
 
 	MPI_Info info_null;
 
-	MPI_Alloc_mem(nbTarget *sizeof(int), info_null, &targetRank);
-	MPI_Alloc_mem(nbSource *sizeof(int), info_null, &sourceRank);
+	// MPI_Alloc_mem(nbTarget *sizeof(int), info_null, &targetRank);
+	// MPI_Alloc_mem(nbSource *sizeof(int), info_null, &sourceRank);
+	MPI_Alloc_mem(nbTarget *sizeof(int), MPI_INFO_NULL, &targetRank);
+	MPI_Alloc_mem(nbSource *sizeof(int), MPI_INFO_NULL, &sourceRank);
 
 	targetRankToIndex = new int[mpiSize];
 	int index = 0;

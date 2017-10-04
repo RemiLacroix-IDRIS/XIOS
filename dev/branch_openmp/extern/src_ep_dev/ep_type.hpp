@@ -247,6 +247,12 @@ namespace ep_lib
 
   struct BUFFER
   {
+    double *buf_double;
+    float  *buf_float;
+    int    *buf_int;
+    long    *buf_long;
+    unsigned long    *buf_ulong;
+    char    *buf_char;
     void * void_buffer[12];
   };
 
