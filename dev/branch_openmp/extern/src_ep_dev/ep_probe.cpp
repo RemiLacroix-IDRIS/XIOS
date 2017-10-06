@@ -1,11 +1,10 @@
 #include "ep_lib.hpp"
 #include <mpi.h>
 #include "ep_declaration.hpp"
+#include "ep_mpi.hpp"
 
 namespace ep_lib
 {
-
-
 
   int MPI_Iprobe(int src, int tag, MPI_Comm comm, int *flag, MPI_Status *status)
   {
@@ -13,9 +12,8 @@ namespace ep_lib
 
     if(!comm.is_ep)
     {
-      ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm >(comm.mpi_comm);
       ::MPI_Status *mpi_status = static_cast< ::MPI_Status* >(status->mpi_status);
-      ::MPI_Iprobe(src<0? MPI_ANY_SOURCE : src, tag<0? MPI_ANY_TAG: tag, mpi_comm, flag, mpi_status);
+      ::MPI_Iprobe(src<0? MPI_ANY_SOURCE : src, tag<0? MPI_ANY_TAG: tag, to_mpi_comm(comm.mpi_comm), flag, mpi_status);
 
       status->mpi_status = mpi_status;
       status->ep_src = src;
@@ -66,21 +64,20 @@ namespace ep_lib
     {
       Debug("calling MPI_Improbe MPI\n");
 
-      ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm>(comm.mpi_comm);
       ::MPI_Status mpi_status;
       ::MPI_Message mpi_message;
 
       #ifdef _openmpi
       #pragma omp critical (_mpi_call)
       {
-        ::MPI_Iprobe(src<0? MPI_ANY_SOURCE : src, tag<0? MPI_ANY_TAG: tag, mpi_comm, flag, &mpi_status);
+        ::MPI_Iprobe(src<0? MPI_ANY_SOURCE : src, tag<0? MPI_ANY_TAG: tag, to_mpi_comm(comm.mpi_comm), flag, &mpi_status);
         if(*flag)
         {
-          ::MPI_Mprobe(src<0? MPI_ANY_SOURCE : src, tag<0? MPI_ANY_TAG: tag, mpi_comm, &mpi_message, &mpi_status);
+          ::MPI_Mprobe(src<0? MPI_ANY_SOURCE : src, tag<0? MPI_ANY_TAG: tag, to_mpi_comm(comm.mpi_comm), &mpi_message, &mpi_status);
         }
       }
       #elif _intelmpi
-    	::MPI_Improbe(src<0? MPI_ANY_SOURCE : src, tag<0? MPI_ANY_TAG: tag, mpi_comm, flag, &mpi_message, &mpi_status);
+    	::MPI_Improbe(src<0? MPI_ANY_SOURCE : src, tag<0? MPI_ANY_TAG: tag, to_mpi_comm(comm.mpi_comm), flag, &mpi_message, &mpi_status);
       #endif
     	
       status->mpi_status = new ::MPI_Status(mpi_status);

@@ -8,389 +8,133 @@
 #include "ep_lib.hpp"
 #include <mpi.h>
 #include "ep_declaration.hpp"
+#include "ep_mpi.hpp"
 
 using namespace std;
 
 namespace ep_lib
 {
 
-  int MPI_Scatter_local2(const void *sendbuf, int count, MPI_Datatype datatype, void *recvbuf, MPI_Comm comm)
+  int MPI_Scatter_local(void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int local_root, MPI_Comm comm)
   {
-    if(datatype == MPI_INT)
-    {
-      Debug("datatype is INT\n");
-      return MPI_Scatter_local_int(sendbuf, count, recvbuf, comm);
-    }
-    else if(datatype == MPI_FLOAT)
-    {
-      Debug("datatype is FLOAT\n");
-      return MPI_Scatter_local_float(sendbuf, count, recvbuf, comm);
-    }
-    else if(datatype == MPI_DOUBLE)
-    {
-      Debug("datatype is DOUBLE\n");
-      return MPI_Scatter_local_double(sendbuf, count, recvbuf, comm);
-    }
-    else if(datatype == MPI_LONG)
-    {
-      Debug("datatype is LONG\n");
-      return MPI_Scatter_local_long(sendbuf, count, recvbuf, comm);
-    }
-    else if(datatype == MPI_UNSIGNED_LONG)
-    {
-      Debug("datatype is uLONG\n");
-      return MPI_Scatter_local_ulong(sendbuf, count, recvbuf, comm);
-    }
-    else if(datatype == MPI_CHAR)
-    {
-      Debug("datatype is CHAR\n");
-      return MPI_Scatter_local_char(sendbuf, count, recvbuf, comm);
-    }
-    else
-    {
-      printf("MPI_Scatter Datatype not supported!\n");
-      exit(0);
-    }
+    assert(valid_type(sendtype) && valid_type(recvtype));
+    assert(recvcount == sendcount);
+
+    ::MPI_Aint datasize, lb;
+    ::MPI_Type_get_extent(to_mpi_type(sendtype), &lb, &datasize);
+
+    int ep_rank_loc = comm.ep_comm_ptr->size_rank_info[1].first;
+    int num_ep = comm.ep_comm_ptr->size_rank_info[1].second;
+
+
+    if(ep_rank_loc == local_root)
+      comm.my_buffer->void_buffer[local_root] = const_cast<void*>(sendbuf);
+
+    MPI_Barrier_local(comm);
+
+    #pragma omp critical (_scatter)      
+    memcpy(recvbuf, comm.my_buffer->void_buffer[local_root]+datasize*ep_rank_loc*sendcount, datasize * recvcount);
+    
+
+    MPI_Barrier_local(comm);
   }
-
-  int MPI_Scatter_local_int(const void *sendbuf, int count, void *recvbuf, MPI_Comm comm)
-  {
-    int my_rank = comm.ep_comm_ptr->size_rank_info[1].first;
-    int num_ep  = comm.ep_comm_ptr->size_rank_info[1].second;
-
-
-    int *buffer = comm.my_buffer->buf_int;
-    int *send_buf = static_cast<int*>(const_cast<void*>(sendbuf));
-    int *recv_buf = static_cast<int*>(recvbuf);
-
-    for(int k=0; k<num_ep; k++)
-    {
-      for(int j=0; j<count; j+=BUFFER_SIZE)
-      {
-        if(my_rank == 0)
-        {
-          #pragma omp critical (write_to_buffer)
-          {
-            copy(send_buf+k*count+j, send_buf+k*count+j+min(BUFFER_SIZE, count-j), buffer);
-            #pragma omp flush
-          }
-        }
-
-        MPI_Barrier_local(comm);
-
-        if(my_rank == k)
-        {
-          #pragma omp critical (read_from_buffer)
-          {
-            #pragma omp flush
-            copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
-          }
-        }
-        MPI_Barrier_local(comm);
-      }
-    }
-  }
-
-  int MPI_Scatter_local_float(const void *sendbuf, int count, void *recvbuf, MPI_Comm comm)
-  {
-    int my_rank = comm.ep_comm_ptr->size_rank_info[1].first;
-    int num_ep  = comm.ep_comm_ptr->size_rank_info[1].second;
-
-    float *buffer = comm.my_buffer->buf_float;
-    float *send_buf = static_cast<float*>(const_cast<void*>(sendbuf));
-    float *recv_buf = static_cast<float*>(recvbuf);
-
-    for(int k=0; k<num_ep; k++)
-    {
-      for(int j=0; j<count; j+=BUFFER_SIZE)
-      {
-        if(my_rank == 0)
-        {
-          #pragma omp critical (write_to_buffer)
-          {
-            copy(send_buf+k*count+j, send_buf+k*count+j+min(BUFFER_SIZE, count-j), buffer);
-            #pragma omp flush
-          }
-        }
-
-        MPI_Barrier_local(comm);
-
-        if(my_rank == k)
-        {
-          #pragma omp critical (read_from_buffer)
-          {
-            #pragma omp flush
-            copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
-          }
-        }
-        MPI_Barrier_local(comm);
-      }
-    }
-  }
-
-  int MPI_Scatter_local_double(const void *sendbuf, int count, void *recvbuf, MPI_Comm comm)
-  {
-    int my_rank = comm.ep_comm_ptr->size_rank_info[1].first;
-    int num_ep  = comm.ep_comm_ptr->size_rank_info[1].second;
-
-    double *buffer = comm.my_buffer->buf_double;
-    double *send_buf = static_cast<double*>(const_cast<void*>(sendbuf));
-    double *recv_buf = static_cast<double*>(recvbuf);
-
-    for(int k=0; k<num_ep; k++)
-    {
-      for(int j=0; j<count; j+=BUFFER_SIZE)
-      {
-        if(my_rank == 0)
-        {
-          #pragma omp critical (write_to_buffer)
-          {
-            copy(send_buf+k*count+j, send_buf+k*count+j+min(BUFFER_SIZE, count-j), buffer);
-            #pragma omp flush
-          }
-        }
-
-        MPI_Barrier_local(comm);
-
-        if(my_rank == k)
-        {
-          #pragma omp critical (read_from_buffer)
-          {
-            #pragma omp flush
-            copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
-          }
-        }
-        MPI_Barrier_local(comm);
-      }
-    }
-  }
-
-  int MPI_Scatter_local_long(const void *sendbuf, int count, void *recvbuf, MPI_Comm comm)
-  {
-    int my_rank = comm.ep_comm_ptr->size_rank_info[1].first;
-    int num_ep  = comm.ep_comm_ptr->size_rank_info[1].second;
-
-    long *buffer = comm.my_buffer->buf_long;
-    long *send_buf = static_cast<long*>(const_cast<void*>(sendbuf));
-    long *recv_buf = static_cast<long*>(recvbuf);
-
-    for(int k=0; k<num_ep; k++)
-    {
-      for(int j=0; j<count; j+=BUFFER_SIZE)
-      {
-        if(my_rank == 0)
-        {
-          #pragma omp critical (write_to_buffer)
-          {
-            copy(send_buf+k*count+j, send_buf+k*count+j+min(BUFFER_SIZE, count-j), buffer);
-            #pragma omp flush
-          }
-        }
-
-        MPI_Barrier_local(comm);
-
-        if(my_rank == k)
-        {
-          #pragma omp critical (read_from_buffer)
-          {
-            #pragma omp flush
-            copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
-          }
-        }
-        MPI_Barrier_local(comm);
-      }
-    }
-  }
-
-
-  int MPI_Scatter_local_ulong(const void *sendbuf, int count, void *recvbuf, MPI_Comm comm)
-  {
-    int my_rank = comm.ep_comm_ptr->size_rank_info[1].first;
-    int num_ep  = comm.ep_comm_ptr->size_rank_info[1].second;
-
-    unsigned long *buffer = comm.my_buffer->buf_ulong;
-    unsigned long *send_buf = static_cast<unsigned long*>(const_cast<void*>(sendbuf));
-    unsigned long *recv_buf = static_cast<unsigned long*>(recvbuf);
-
-    for(int k=0; k<num_ep; k++)
-    {
-      for(int j=0; j<count; j+=BUFFER_SIZE)
-      {
-        if(my_rank == 0)
-        {
-          #pragma omp critical (write_to_buffer)
-          {
-            copy(send_buf+k*count+j, send_buf+k*count+j+min(BUFFER_SIZE, count-j), buffer);
-            #pragma omp flush
-          }
-        }
-
-        MPI_Barrier_local(comm);
-
-        if(my_rank == k)
-        {
-          #pragma omp critical (read_from_buffer)
-          {
-            #pragma omp flush
-            copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
-          }
-        }
-        MPI_Barrier_local(comm);
-      }
-    }
-  }
-
-
-  int MPI_Scatter_local_char(const void *sendbuf, int count, void *recvbuf, MPI_Comm comm)
-  {
-    int my_rank = comm.ep_comm_ptr->size_rank_info[1].first;
-    int num_ep  = comm.ep_comm_ptr->size_rank_info[1].second;
-
-    char *buffer = comm.my_buffer->buf_char;
-    char *send_buf = static_cast<char*>(const_cast<void*>(sendbuf));
-    char *recv_buf = static_cast<char*>(recvbuf);
-
-    for(int k=0; k<num_ep; k++)
-    {
-      for(int j=0; j<count; j+=BUFFER_SIZE)
-      {
-        if(my_rank == 0)
-        {
-          #pragma omp critical (write_to_buffer)
-          {
-            copy(send_buf+k*count+j, send_buf+k*count+j+min(BUFFER_SIZE, count-j), buffer);
-            #pragma omp flush
-          }
-        }
-
-        MPI_Barrier_local(comm);
-
-        if(my_rank == k)
-        {
-          #pragma omp critical (read_from_buffer)
-          {
-            #pragma omp flush
-            copy(buffer, buffer+min(BUFFER_SIZE, count-j), recv_buf+j);
-          }
-        }
-        MPI_Barrier_local(comm);
-      }
-    }
-  }
-
-
-
-
 
   int MPI_Scatter(const void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm)
   {
     if(!comm.is_ep)
     {
-      ::MPI_Scatter(sendbuf, sendcount, static_cast< ::MPI_Datatype>(sendtype), recvbuf, recvcount, static_cast< ::MPI_Datatype>(recvtype),
-                    root, static_cast< ::MPI_Comm>(comm.mpi_comm));
-      return 0;
+      return ::MPI_Scatter(sendbuf, sendcount, to_mpi_type(sendtype), recvbuf, recvcount, to_mpi_type(recvtype), root, to_mpi_comm(comm.mpi_comm));
     }
+   
+    assert(sendcount == recvcount);
 
-    if(!comm.mpi_comm) return 0;
-
-    assert(static_cast< ::MPI_Datatype>(sendtype) == static_cast< ::MPI_Datatype>(recvtype) && sendcount == recvcount);
+    int ep_rank = comm.ep_comm_ptr->size_rank_info[0].first;
+    int ep_rank_loc = comm.ep_comm_ptr->size_rank_info[1].first;
+    int mpi_rank = comm.ep_comm_ptr->size_rank_info[2].first;
+    int ep_size = comm.ep_comm_ptr->size_rank_info[0].second;
+    int num_ep = comm.ep_comm_ptr->size_rank_info[1].second;
+    int mpi_size = comm.ep_comm_ptr->size_rank_info[2].second;
 
     int root_mpi_rank = comm.rank_map->at(root).second;
     int root_ep_loc = comm.rank_map->at(root).first;
 
-    int ep_rank, ep_rank_loc, mpi_rank;
-    int ep_size, num_ep, mpi_size;
-
-    ep_rank = comm.ep_comm_ptr->size_rank_info[0].first;
-    ep_rank_loc = comm.ep_comm_ptr->size_rank_info[1].first;
-    mpi_rank = comm.ep_comm_ptr->size_rank_info[2].first;
-    ep_size = comm.ep_comm_ptr->size_rank_info[0].second;
-    num_ep = comm.ep_comm_ptr->size_rank_info[1].second;
-    mpi_size = comm.ep_comm_ptr->size_rank_info[2].second;
-
+    bool is_master = (ep_rank_loc==0 && mpi_rank != root_mpi_rank ) || ep_rank == root;
+    bool is_root = ep_rank == root;
 
     MPI_Datatype datatype = sendtype;
     int count = sendcount;
 
     ::MPI_Aint datasize, lb;
+    ::MPI_Type_get_extent(to_mpi_type(datatype), &lb, &datasize);
+    
+    void *tmp_sendbuf;
+    if(is_root) tmp_sendbuf = new void*[ep_size * count * datasize];
 
-    ::MPI_Type_get_extent(static_cast< ::MPI_Datatype>(datatype), &lb, &datasize);
+    // reorder tmp_sendbuf
+    std::vector<int>local_ranks(num_ep);
+    std::vector<int>ranks(ep_size);
+
+    if(mpi_rank == root_mpi_rank) MPI_Gather_local(&ep_rank, 1, MPI_INT, local_ranks.data(), root_ep_loc, comm);
+    else                          MPI_Gather_local(&ep_rank, 1, MPI_INT, local_ranks.data(), 0, comm);
 
 
-    void *master_sendbuf;
-    void *local_recvbuf;
+    std::vector<int> recvcounts(mpi_size, 0);
+    std::vector<int> displs(mpi_size, 0);
 
-    if(root_ep_loc!=0 && mpi_rank == root_mpi_rank)
+
+    if(is_master)
     {
-      if(ep_rank_loc == 0) master_sendbuf = new void*[datasize*count*ep_size];
+      for(int i=0; i<ep_size; i++)
+      {
+        recvcounts[comm.rank_map->at(i).second]++;
+      }
 
-      innode_memcpy(root_ep_loc, sendbuf, 0, master_sendbuf, count*ep_size, datatype, comm);
-    }
-
-
-
-    if(ep_rank_loc == 0)
-    {
-      int mpi_sendcnt = count*num_ep;
-      int mpi_scatterv_sendcnt[mpi_size];
-      int displs[mpi_size];
-
-      local_recvbuf = new void*[datasize*mpi_sendcnt];
-
-      ::MPI_Gather(&mpi_sendcnt, 1, MPI_INT, mpi_scatterv_sendcnt, 1, MPI_INT, root_mpi_rank, static_cast< ::MPI_Comm>(comm.mpi_comm));
-
-      displs[0] = 0;
       for(int i=1; i<mpi_size; i++)
-        displs[i] = displs[i-1] + mpi_scatterv_sendcnt[i-1];
+        displs[i] = displs[i-1] + recvcounts[i-1];
 
-
-      if(root_ep_loc!=0)
-      {
-        ::MPI_Scatterv(master_sendbuf, mpi_scatterv_sendcnt, displs, static_cast< ::MPI_Datatype>(datatype),
-                     local_recvbuf, mpi_sendcnt, static_cast< ::MPI_Datatype>(datatype), root_mpi_rank, static_cast< ::MPI_Comm>(comm.mpi_comm));
-      }
-      else
-      {
-        ::MPI_Scatterv(sendbuf, mpi_scatterv_sendcnt, displs, static_cast< ::MPI_Datatype>(datatype),
-                     local_recvbuf, mpi_sendcnt, static_cast< ::MPI_Datatype>(datatype), root_mpi_rank, static_cast< ::MPI_Comm>(comm.mpi_comm));
-      }
+      ::MPI_Gatherv(local_ranks.data(), num_ep, MPI_INT, ranks.data(), recvcounts.data(), displs.data(), MPI_INT, root_mpi_rank, to_mpi_comm(comm.mpi_comm));
     }
 
-    MPI_Scatter_local2(local_recvbuf, count, datatype, recvbuf, comm);
 
-    if(ep_rank_loc == 0)
+
+    // if(is_root) printf("\nranks = %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n", ranks[0], ranks[1], ranks[2], ranks[3], ranks[4], ranks[5], ranks[6], ranks[7], 
+    //                                                                                   ranks[8], ranks[9], ranks[10], ranks[11], ranks[12], ranks[13], ranks[14], ranks[15]);
+
+    if(is_root)
+    for(int i=0; i<ep_size; i++)
     {
-      if(datatype == MPI_INT)
-      {
-        if(root_ep_loc!=0 && mpi_rank == root_mpi_rank) delete[] static_cast<int*>(master_sendbuf);
-        delete[] static_cast<int*>(local_recvbuf);
-      }
-      else if(datatype == MPI_FLOAT)
-      {
-        if(root_ep_loc!=0 && mpi_rank == root_mpi_rank) delete[] static_cast<float*>(master_sendbuf);
-        delete[] static_cast<float*>(local_recvbuf);
-      }
-      else if(datatype == MPI_DOUBLE)
-      {
-        if(root_ep_loc!=0 && mpi_rank == root_mpi_rank) delete[] static_cast<double*>(master_sendbuf);
-        delete[] static_cast<double*>(local_recvbuf);
-      }
-      else if(datatype == MPI_LONG)
-      {
-        if(root_ep_loc!=0 && mpi_rank == root_mpi_rank) delete[] static_cast<long*>(master_sendbuf);
-        delete[] static_cast<long*>(local_recvbuf);
-      }
-      else if(datatype == MPI_UNSIGNED_LONG)
-      {
-        if(root_ep_loc!=0 && mpi_rank == root_mpi_rank) delete[] static_cast<unsigned long*>(master_sendbuf);
-        delete[] static_cast<unsigned long*>(local_recvbuf);
-      }
-      else //if(datatype == MPI_DOUBLE)
-      {
-        if(root_ep_loc!=0 && mpi_rank == root_mpi_rank) delete[] static_cast<char*>(master_sendbuf);
-        delete[] static_cast<char*>(local_recvbuf);
-      }
+      memcpy(tmp_sendbuf + i*datasize*count, sendbuf + ranks[i]*datasize*count, count*datasize);
     }
 
+    // if(is_root) printf("\ntmp_sendbuf = %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n", static_cast<int*>(tmp_sendbuf)[0], static_cast<int*>(tmp_sendbuf)[2], static_cast<int*>(tmp_sendbuf)[4], static_cast<int*>(tmp_sendbuf)[6], 
+    //                                                                           static_cast<int*>(tmp_sendbuf)[8], static_cast<int*>(tmp_sendbuf)[10], static_cast<int*>(tmp_sendbuf)[12], static_cast<int*>(tmp_sendbuf)[14], 
+    //                                                                           static_cast<int*>(tmp_sendbuf)[16], static_cast<int*>(tmp_sendbuf)[18], static_cast<int*>(tmp_sendbuf)[20], static_cast<int*>(tmp_sendbuf)[22], 
+    //                                                                           static_cast<int*>(tmp_sendbuf)[24], static_cast<int*>(tmp_sendbuf)[26], static_cast<int*>(tmp_sendbuf)[28], static_cast<int*>(tmp_sendbuf)[30] );
+
+
+    // MPI_Scatterv from root to masters
+    void* local_recvbuf;
+    if(is_master) local_recvbuf = new void*[datasize * num_ep * count];
+
+
+    if(is_master)
+    {
+      int local_sendcount = num_ep * count;
+      ::MPI_Gather(&local_sendcount, 1, to_mpi_type(MPI_INT), recvcounts.data(), 1, to_mpi_type(MPI_INT), root_mpi_rank, to_mpi_comm(comm.mpi_comm));
+      
+      if(is_root) for(int i=1; i<mpi_size; i++) displs[i] = displs[i-1] + recvcounts[i-1];
+
+      ::MPI_Scatterv(tmp_sendbuf, recvcounts.data(), displs.data(), to_mpi_type(sendtype), local_recvbuf, num_ep*count, to_mpi_type(recvtype), root_mpi_rank, to_mpi_comm(comm.mpi_comm));
+
+      // printf("local_recvbuf = %d %d %d %d\n", static_cast<int*>(local_recvbuf)[0], static_cast<int*>(local_recvbuf)[1], static_cast<int*>(local_recvbuf)[2], static_cast<int*>(local_recvbuf)[3]);
+                                                          // static_cast<int*>(local_recvbuf)[4], static_cast<int*>(local_recvbuf)[5], static_cast<int*>(local_recvbuf)[6], static_cast<int*>(local_recvbuf)[7]);
+    }
+
+    if(mpi_rank == root_mpi_rank) MPI_Scatter_local(local_recvbuf, count, sendtype, recvbuf, recvcount, recvtype, root_ep_loc, comm);
+    else                          MPI_Scatter_local(local_recvbuf, count, sendtype, recvbuf, recvcount, recvtype, 0, comm);
+
+    if(is_root)   delete[] tmp_sendbuf;
+    if(is_master) delete[] local_recvbuf;
   }
+
 }

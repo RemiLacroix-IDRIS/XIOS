@@ -157,6 +157,7 @@ void buildSampleTree(CSampleTree& tree, const vector<Node>& node, const CCascade
 
 	int nrecv; // global number of samples  THIS WILL BE THE NUMBER OF LEAFS IN THE SAMPLE TREE
 	MPI_Allreduce(&n, &nrecv, 1, MPI_INT, MPI_SUM, comm.comm); // => size of sample tree does not depend on keepNodes!
+
 	double ratio = blocSize / (1.0 * nrecv);
 	int nsend = ratio * n + 1; // nsend = n_local_samples / n_global_samples * blocksize + 1 = blocksize/comm.size
 	if (nsend > n) nsend = n;
@@ -193,24 +194,6 @@ void buildSampleTree(CSampleTree& tree, const vector<Node>& node, const CCascade
 	delete[] counts;
 	delete[] displs;
 
-	/* unpack */
-/*
-	randomArray.resize(nrecv);
-	randomizeArray(randomArray);
-	tree.leafs.resize(nrecv);
-	index = 0;
-
-
-  for (int i = 0; i < nrecv; i++)
-	{
-		Coord x = *(Coord *)(&recvBuffer[index]);
-		index += sizeof(Coord)/sizeof(*recvBuffer);
-		double radius = recvBuffer[index++];
-		tree.leafs[randomArray[i]].centre = x;
-		tree.leafs[randomArray[i]].radius = radius;
-
-	}
-*/
 
   randomArray.resize(blocSize);
 	randomizeArray(randomArray);
@@ -245,13 +228,7 @@ void buildSampleTree(CSampleTree& tree, const vector<Node>& node, const CCascade
   {
     cerr << comm.rank << ": PROBLEM: (node assign)" << tree.levelSize[assignLevel] << " != " << comm.group_size << " (keepNodes)" 
          << "   node size : "<<node.size()<<"   bloc size : "<<blocSize<<"  total number of leaf : "<<tree.leafs.size()<<endl ;
-/*
-	MPI_Allreduce(&ok, &allok, 1, MPI_INT, MPI_PROD, communicator);
-	if (!allok) {
-		MPI_Finalize();
-		exit(1);
-	}
-*/
+
     MPI_Abort(MPI_COMM_WORLD,-1) ;
   }
 /*
@@ -322,6 +299,8 @@ void CParallelTree::build(vector<Node>& node, vector<Node>& node2)
   nb1=node.size() ; nb2=node2.size() ;
   nb=nb1+nb2 ;
   MPI_Allreduce(&nb, &nbTot, 1, MPI_LONG, MPI_SUM, communicator) ;
+
+
   int commSize ;
   MPI_Comm_size(communicator,&commSize) ;
   
@@ -344,35 +323,9 @@ void CParallelTree::build(vector<Node>& node, vector<Node>& node2)
   vector<int> randomArray2(node2.size());
   randomizeArray(randomArray2);
 
-/*	
-        int s1,s2 ;
-        
-        if (node.size()< nbSampleNodes/2)
-        { 
-          s1 = node.size() ;
-          s2 = nbSampleNodes-s1 ;
-        }
-        else if (node2.size()< nbSampleNodes/2)
-        {
-          s2 = node.size() ;
-          s1 = nbSampleNodes-s2 ;
-        }
-        else
-        {
-          s1=nbSampleNodes/2 ;
-          s2=nbSampleNodes/2 ;
-        }
-*/
-        for (int i = 0; i <nbSampleNodes1; i++) sampleNodes.push_back(Node(node[randomArray1[i%nb1]].centre,  node[randomArray1[i%nb1]].radius, NULL));
-        for (int i = 0; i <nbSampleNodes2; i++) sampleNodes.push_back(Node(node2[randomArray2[i%nb2]].centre, node2[randomArray2[i%nb2]].radius, NULL));
+  for (int i = 0; i <nbSampleNodes1; i++) sampleNodes.push_back(Node(node[randomArray1[i%nb1]].centre,  node[randomArray1[i%nb1]].radius, NULL));
+  for (int i = 0; i <nbSampleNodes2; i++) sampleNodes.push_back(Node(node2[randomArray2[i%nb2]].centre, node2[randomArray2[i%nb2]].radius, NULL));
 
-/*          
-        for (int i = 0; i < nbSampleNodes/2; i++)
-	{
-          sampleNodes.push_back(Node(node[randomArray1[i]].centre,  node[randomArray1[i]].radius, NULL));
-	  sampleNodes.push_back(Node(node2[randomArray2[i]].centre, node2[randomArray2[i]].radius, NULL));
-	}
-*/
 	CTimer::get("buildParallelSampleTree").resume();
 	//sampleTree.buildParallelSampleTree(sampleNodes, cascade);
 	buildSampleTreeCascade(sampleNodes);

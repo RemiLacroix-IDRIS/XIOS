@@ -72,8 +72,6 @@ namespace ep_lib
 
     MPI_Gatherv_local(sendbuf, count, datatype, local_recvbuf, local_recvcounts.data(), local_displs.data(), 0, comm);
 
-    
-
 
     if(is_master)
     {
@@ -86,27 +84,8 @@ namespace ep_lib
       for(int i=1; i<mpi_size; i++)
         mpi_displs[i] = mpi_displs[i-1] + mpi_recvcounts[i-1];
 
-      // if(ep_rank_loc == 0)
-      // { 
-      //   printf("local_recvbuf =\n");
-      //   for(int i=0; i<num_ep*sendcount; i++) printf("%d\t", static_cast<int*>(local_recvbuf)[i]);
-      //   printf("\n");
-      // }
-
-      // printf("mpi_recvcounts = %d %d %d\n", mpi_recvcounts[0], mpi_recvcounts[1], mpi_recvcounts[2]);
-      // printf("mpi_displs = %d %d %d\n", mpi_displs[0], mpi_displs[1], mpi_displs[2]);
-      
-
 
       ::MPI_Allgatherv(local_recvbuf, local_sendcount, to_mpi_type(datatype), tmp_recvbuf, mpi_recvcounts.data(), mpi_displs.data(), to_mpi_type(datatype), to_mpi_comm(comm.mpi_comm));
-
-      // if(ep_rank == 0)
-      // { 
-      //   printf("tmp_recvbuf =\n");
-      //   for(int i=0; i<ep_size*sendcount; i++) printf("%d\t", static_cast<int*>(tmp_recvbuf)[i]);
-      //   printf("\n");
-      // }
-
 
       // reorder 
       int offset;
@@ -125,13 +104,7 @@ namespace ep_lib
         memcpy(recvbuf+displs[i]*datasize, tmp_recvbuf+offset*datasize, recvcounts[i]*datasize);
         
       }
-      
-      // if(ep_rank == 0)
-      // {
-      //       printf("recvbuf[%d] =\n", recvbuf_size);
-      //       for(int i=0; i<ep_size*sendcount; i++) printf("%d\t", static_cast<int*>(recvbuf)[i]);
-      //       printf("\n");
-      // }
+
     }
 
     MPI_Bcast_local(recvbuf, recvbuf_size, datatype, 0, comm);

@@ -49,7 +49,7 @@ namespace ep_lib
     }
 
     MPI_Reduce_local(sendbuf, local_recvbuf, count, datatype, op, 0, comm);
-    
+   
 
 
     if(is_master)

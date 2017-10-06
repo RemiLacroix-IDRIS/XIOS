@@ -25,6 +25,8 @@
 
 #define BUFFER_SIZE 10000
 
+//#define NUM_THREADS 12
+
 typedef std::pair< int, int > SIZE_RANK_INFO; // < rank, size>
 
 typedef std::vector< std::pair<int, int> > RANK_MAP;  // at(ep_rank) = <ep_rank_local, mpi_rank>
@@ -247,12 +249,6 @@ namespace ep_lib
 
   struct BUFFER
   {
-    double *buf_double;
-    float  *buf_float;
-    int    *buf_int;
-    long    *buf_long;
-    unsigned long    *buf_ulong;
-    char    *buf_char;
     void * void_buffer[12];
   };
 
