@@ -100,15 +100,16 @@ namespace ep_lib
         send_buf[1] = local_ep_size;
         send_buf[2] = rank_in_peer_mpi[0];
 
-        MPI_Request req_send, req_recv;
-        MPI_Status sta_send, sta_recv;
         
-        MPI_Isend(send_buf.data(), 3, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag, peer_comm, &req_send);
-        MPI_Irecv(recv_buf.data(), 3, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag, peer_comm, &req_recv);
+        
+        MPI_Request requests[2];
+        MPI_Status statuses[2];
+        
+        MPI_Isend(send_buf.data(), 3, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag, peer_comm, &requests[0]);
+        MPI_Irecv(recv_buf.data(), 3, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag, peer_comm, &requests[1]);
 
 
-        MPI_Wait(&req_send, &sta_send);
-        MPI_Wait(&req_recv, &sta_recv);
+        MPI_Waitall(2, requests, statuses);
         
         size_info[1] = recv_buf[0];
         remote_ep_size = recv_buf[1];
@@ -143,14 +144,17 @@ namespace ep_lib
 
       if(is_local_leader)
       {
-        MPI_Status status;
+        MPI_Request requests[2];
+        MPI_Status statuses[2];
 
         std::copy ( rank_info[0].data(), rank_info[0].data() + size_info[0], send_buf.begin() );
         std::copy ( rank_info[1].data(), rank_info[1].data() + size_info[0], send_buf.begin() + size_info[0] );
         std::copy ( ep_info[0].data(),   ep_info[0].data()   + size_info[0], send_buf.begin() + 2*size_info[0] );
 
-        MPI_Send(send_buf.data(), 3*size_info[0], static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+1, peer_comm);
-        MPI_Recv(recv_buf.data(), 3*size_info[1], static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+1, peer_comm, &status);
+        MPI_Isend(send_buf.data(), 3*size_info[0], static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+1, peer_comm, &requests[0]);
+        MPI_Irecv(recv_buf.data(), 3*size_info[1], static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+1, peer_comm, &requests[1]);
+        
+        MPI_Waitall(2, requests, statuses);
       }
 
       ::MPI_Bcast(recv_buf.data(), 3*size_info[1], static_cast< ::MPI_Datatype> (MPI_INT), local_comm.rank_map->at(local_leader).second, local_mpi_comm);
@@ -269,9 +273,12 @@ namespace ep_lib
       if(is_local_leader)
       {
         size_info[2] = new_ep_info[0].size();
-        MPI_Status status;
-        MPI_Send(&size_info[2], 1, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+2, peer_comm);
-        MPI_Recv(&size_info[3], 1, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+2, peer_comm, &status);
+        MPI_Request requests[2];
+        MPI_Status statuses[2];
+        MPI_Isend(&size_info[2], 1, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+2, peer_comm, &requests[0]);
+        MPI_Irecv(&size_info[3], 1, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+2, peer_comm, &requests[1]);
+         
+        MPI_Waitall(2, requests, statuses);
       }
 
       ::MPI_Bcast(&size_info[2], 2, static_cast< ::MPI_Datatype> (MPI_INT), local_comm.rank_map->at(local_leader).second, local_mpi_comm);
@@ -285,14 +292,17 @@ namespace ep_lib
 
       if(is_local_leader)
       {
-        MPI_Status status;
+        MPI_Request requests[2];
+        MPI_Status statuses[2];
 
         std::copy ( new_rank_info[0].data(), new_rank_info[0].data() + size_info[2], send_buf.begin() );
         std::copy ( new_rank_info[1].data(), new_rank_info[1].data() + size_info[2], send_buf.begin() + size_info[2] );
         std::copy ( new_ep_info[0].data(),   new_ep_info[0].data()   + size_info[0], send_buf.begin() + 2*size_info[2] );
 
-        MPI_Send(send_buf.data(), 3*size_info[2], static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+3, peer_comm);
-        MPI_Recv(recv_buf.data(), 3*size_info[3], static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+3, peer_comm, &status);
+        MPI_Isend(send_buf.data(), 3*size_info[2], static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+3, peer_comm, &requests[0]);
+        MPI_Irecv(recv_buf.data(), 3*size_info[3], static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+3, peer_comm, &requests[1]);
+        
+        MPI_Waitall(2, requests, statuses);
       }
 
       ::MPI_Bcast(recv_buf.data(),   3*size_info[3], static_cast< ::MPI_Datatype> (MPI_INT), local_comm.rank_map->at(local_leader).second, local_mpi_comm);
@@ -433,11 +443,13 @@ namespace ep_lib
     {
       int local_flag = true;
       int remote_flag = false;
-      MPI_Status mpi_status;
+      MPI_Request mpi_requests[2];
+      MPI_Status mpi_statuses[2];
       
-      MPI_Send(&local_flag, 1, MPI_INT, remote_leader, tag, peer_comm);
-
-      MPI_Recv(&remote_flag, 1, MPI_INT, remote_leader, tag, peer_comm, &mpi_status);
+      MPI_Isend(&local_flag, 1, MPI_INT, remote_leader, tag, peer_comm, &mpi_requests[0]);
+      MPI_Irecv(&remote_flag, 1, MPI_INT, remote_leader, tag, peer_comm, &mpi_requests[1]);
+      
+      MPI_Waitall(2, mpi_requests, mpi_statuses);
     }
 
 
@@ -498,12 +510,16 @@ namespace ep_lib
 
     if(is_local_leader)
     {
-      MPI_Status status;
-      MPI_Send((*newintercomm).ep_comm_ptr->intercomm->local_rank_map->data(), 2*local_ep_size, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+4, peer_comm);
-      MPI_Recv((*newintercomm).ep_comm_ptr->intercomm->remote_rank_map->data(), 2*remote_ep_size, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+4, peer_comm, &status);
+      MPI_Request requests[4];
+      MPI_Status statuses[4];
+      
+      MPI_Isend((*newintercomm).ep_comm_ptr->intercomm->local_rank_map->data(), 2*local_ep_size, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+4, peer_comm, &requests[0]);
+      MPI_Irecv((*newintercomm).ep_comm_ptr->intercomm->remote_rank_map->data(), 2*remote_ep_size, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+4, peer_comm, &requests[1]);
 
-      MPI_Send(&local_intercomm_size, 1, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+5, peer_comm);
-      MPI_Recv(&remote_intercomm_size, 1, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+5, peer_comm, &status);
+      MPI_Isend(&local_intercomm_size, 1, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+5, peer_comm, &requests[2]);
+      MPI_Irecv(&remote_intercomm_size, 1, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+5, peer_comm, &requests[3]);
+      
+      MPI_Waitall(4, requests, statuses);
 
       new_bcast_root_0 = intercomm_ep_rank;
     }
@@ -523,9 +539,13 @@ namespace ep_lib
 
     if(is_local_leader)
     {
-      MPI_Status status;
-      MPI_Send((*newintercomm).rank_map->data(), 2*local_intercomm_size, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+6, peer_comm);
-      MPI_Recv((*newintercomm).ep_comm_ptr->intercomm->intercomm_rank_map->data(), 2*remote_intercomm_size, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+6, peer_comm, &status);
+      MPI_Request requests[2];
+      MPI_Status statuses[2];
+      
+      MPI_Isend((*newintercomm).rank_map->data(), 2*local_intercomm_size, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+6, peer_comm, &requests[0]);
+      MPI_Irecv((*newintercomm).ep_comm_ptr->intercomm->intercomm_rank_map->data(), 2*remote_intercomm_size, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag+6, peer_comm, &requests[1]);
+      
+      MPI_Waitall(2, requests, statuses);
     }
 
     MPI_Bcast((*newintercomm).ep_comm_ptr->intercomm->intercomm_rank_map->data(), 2*remote_intercomm_size, static_cast< ::MPI_Datatype> (MPI_INT), new_bcast_root, *newintercomm);
