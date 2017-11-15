@@ -1,8 +1,7 @@
-PROGRAM test_remap_omp
+PROGRAM test_remap_ref
 
   USE xios
   USE mod_wait
-  USE omp_lib
   USE netcdf
 
   IMPLICIT NONE
@@ -39,33 +38,20 @@ PROGRAM test_remap_omp
   INTEGER :: i,j
   INTEGER,PARAMETER :: llm=5, interpolatedLlm = 4, llm2 = 6
   DOUBLE PRECISION, PARAMETER :: missing_value = 100000
-  INTEGER :: provided
 
-  CALL MPI_INIT_THREAD(3, provided, ierr)
-    if(provided .NE. 3) then
-      print*, "provided thread level = ", provided
-      call MPI_Abort()
-    endif
+  CALL MPI_INIT(ierr)
   CALL init_wait
 
   CALL MPI_COMM_RANK(MPI_COMM_WORLD,rank,ierr)
   CALL MPI_COMM_SIZE(MPI_COMM_WORLD,size,ierr)
   if(rank < size-2) then
- 
-  !$omp parallel default(firstprivate) 
 
 !!! XIOS Initialization (get the local communicator)
 
   CALL xios_initialize(id,return_comm=comm)
   CALL MPI_COMM_RANK(comm,rank,ierr)
   CALL MPI_COMM_SIZE(comm,size,ierr)
-  
-  rank = rank*omp_get_num_threads() + omp_get_thread_num()
-  size = size*omp_get_num_threads()
 
-  print*, "rank = ", rank, " size = ", size
-
-  !$omp critical (open_file)
   ierr=NF90_OPEN(src_file, NF90_NOWRITE, ncid)
   ierr=NF90_INQ_VARID(ncid,"bounds_lon",varid)
   ierr=NF90_INQUIRE_VARIABLE(ncid, varid,dimids=dimids)
@@ -171,16 +157,9 @@ PROGRAM test_remap_omp
   ierr=NF90_GET_VAR(ncid,varid,dst_boundslon, start=(/1,dst_ibegin+1/),count=(/dst_nvertex,dst_ni/))
   ierr=NF90_INQ_VARID(ncid,"bounds_lat",varid)
   ierr=NF90_GET_VAR(ncid,varid, dst_boundslat, start=(/1,dst_ibegin+1/),count=(/dst_nvertex,dst_ni/))
-  
-  !$omp end critical (open_file)
-  
-  !$omp barrier
 
-  !$omp master 
-  CALL MPI_barrier(comm, ierr)
-  !$omp end master
 
-  !$omp barrier
+
 
   CALL xios_context_initialize("test",comm)
   CALL xios_get_handle("test",ctx_hdl)
@@ -256,22 +235,13 @@ PROGRAM test_remap_omp
   DEALLOCATE(tmp_field_0, tmp_field_1, tmp_field_2)
 
   CALL xios_finalize()
-  
-  print *, "Client : xios_finalize ", rank
 
-  !$omp barrier
-
-  !$omp master 
   CALL MPI_COMM_FREE(comm, ierr)
-  !$omp end master
 
-  !$omp barrier
-
-  !$omp end parallel
   else
 
     CALL xios_init_server
-    print *, "Server : xios_finalize ", rank
+    print *, "Server : xios_finalize "
   
   endif
 
@@ -279,7 +249,7 @@ PROGRAM test_remap_omp
 
   CALL MPI_FINALIZE(ierr)
 
-END PROGRAM test_remap_omp
+END PROGRAM test_remap_ref
 
 
 
