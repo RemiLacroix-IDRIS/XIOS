@@ -3,10 +3,6 @@
 
 #include "xios_spl.hpp"
 #include "mpi.hpp"
-#ifdef _usingEP
-#include "ep_declaration.hpp"
-#endif
-
 
 namespace xios
 {
@@ -29,7 +25,7 @@ namespace xios
        /*! A new communicator is created by duplicate comm. The communicating tree hierarchy is created.
         *  @param[in] comm : MPI communicator du duplicate for internal use
         */
-       CEventScheduler(const MPI_Comm& comm) ;
+       CEventScheduler(const ep_lib::MPI_Comm& comm) ;
 
 
        //! Destructor
@@ -154,10 +150,10 @@ namespace xios
        struct SPendingRequest
        {
          size_t buffer[3] ;      /*!< communication buffer : timeLine, hashId, level */
-         MPI_Request request ;   /*!< pending MPI request */ 
+         ep_lib::MPI_Request request ;   /*!< pending MPI request */ 
        } ;
        
-       MPI_Comm communicator ;  /*!< Internal MPI communicator */ 
+       ep_lib::MPI_Comm communicator ;  /*!< Internal MPI communicator */ 
        int mpiRank ;            /*!< Rank in the communicator */
        int mpiSize ;            /*!< Size of the communicator */
  

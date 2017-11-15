@@ -76,8 +76,8 @@ namespace xios
          static T* get(const T* ptr) ;
          static T* get(const string& contextId, const string& id) ;
          T* get(void) ;
-         boost::shared_ptr<T> getShared(void) ;
-         static boost::shared_ptr<T> getShared(const T* ptr) ;
+         shared_ptr<T> getShared(void) ;
+         static shared_ptr<T> getShared(const T* ptr) ;
 
          static T* create(const string& id=string("")) ;
          static const vector<T*> getAll() ;
@@ -99,20 +99,13 @@ namespace xios
       private :
 
          /// Propriétés statiques ///
-         // bkp
-         // static xios_map<StdString,
-         //        xios_map<StdString,
-         //        boost::shared_ptr<DerivedType> > > AllMapObj;
-         // static xios_map<StdString,
-         //        std::vector<boost::shared_ptr<DerivedType> > > AllVectObj;
+         static xios_map<StdString,
+                xios_map<StdString,
+                boost::shared_ptr<DerivedType> > > *AllMapObj_ptr;
+         static xios_map<StdString,
+                std::vector<boost::shared_ptr<DerivedType> > > *AllVectObj_ptr;
 
-         // static xios_map< StdString, long int > GenId ;
-
-
-         static xios_map<StdString, xios_map<StdString, boost::shared_ptr<DerivedType> > > *AllMapObj;
-         static xios_map<StdString, std::vector<boost::shared_ptr<DerivedType> > > *AllVectObj;
-         static xios_map< StdString, long int > *GenId;
-         #pragma omp threadprivate(AllMapObj, AllVectObj, GenId)
+         static xios_map< StdString, long int > *GenId_ptr ;
 
    }; // class CObjectTemplate
 } // namespace xios

@@ -34,10 +34,8 @@ PROGRAM test_client
 !!! MPI Initialization
 
   CALL MPI_INIT(ierr)
-  CALL init_wait
 
-  CALL MPI_COMM_RANK(MPI_COMM_WORLD,rank,ierr)
-  if(rank < 2) then
+  CALL init_wait
 
 !!! XIOS Initialization (get the local communicator)
 
@@ -73,7 +71,6 @@ PROGRAM test_client
   field_A(1:ni,1:nj,:)=field_A_glo(ibegin+1:iend+1,jbegin+1:jend+1,:)
 
   CALL xios_context_initialize("test",comm)
-
   CALL xios_get_handle("test",ctx_hdl)
   CALL xios_set_current_context(ctx_hdl)
 
@@ -127,17 +124,13 @@ PROGRAM test_client
 
   CALL xios_is_defined_field_attr("field_A",enabled=ok)
   PRINT *,"field_A : attribute enabled is defined ? ",ok
-  
   CALL xios_close_context_definition()
 
   PRINT*,"field field_A is active ? ",xios_field_is_active("field_A")
-
-  call MPI_Barrier(comm, ierr)
-
   DO ts=1,24*10
     CALL xios_update_calendar(ts)
     CALL xios_send_field("field_A",field_A)
-    CALL wait_us(5000)
+    CALL wait_us(5000) ;
   ENDDO
 
   CALL xios_context_finalize()
@@ -147,15 +140,6 @@ PROGRAM test_client
   CALL MPI_COMM_FREE(comm, ierr)
 
   CALL xios_finalize()
-  print *, "Client : xios_finalize "
-
-    else
-
-    CALL xios_init_server
-    print *, "Server : xios_finalize "
-  
-    endif
-    
 
   CALL MPI_FINALIZE(ierr)
 

@@ -7,6 +7,7 @@
    \brief Auto assign global index across processes.
  */
 #include "dht_auto_indexing.hpp"
+using namespace ep_lib;
 
 namespace xios
 {
@@ -21,7 +22,7 @@ namespace xios
   */
 
   CDHTAutoIndexing::CDHTAutoIndexing(const CArray<size_t,1>& hashValue,
-                                     const ep_lib::MPI_Comm& clientIntraComm)
+                                     const MPI_Comm& clientIntraComm)
     : CClientClientDHTTemplate<size_t>(clientIntraComm)
   {
 
@@ -57,7 +58,7 @@ namespace xios
    * \param [in] clientIntraComm
   */
   CDHTAutoIndexing::CDHTAutoIndexing(Index2VectorInfoTypeMap& hashInitMap,
-                                     const ep_lib::MPI_Comm& clientIntraComm)
+                                     const MPI_Comm& clientIntraComm)
     : CClientClientDHTTemplate<size_t>(clientIntraComm)
   {
 

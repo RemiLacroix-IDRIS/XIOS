@@ -11,9 +11,6 @@
 #define __XIOS_DHT_AUTO_INDEXING_HPP__
 
 #include "client_client_dht_template.hpp"
-#ifdef _usingEP
-#include "ep_declaration.hpp"
-#endif
 
 namespace xios
 {

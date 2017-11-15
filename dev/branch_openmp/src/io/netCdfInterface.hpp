@@ -9,13 +9,13 @@
 #ifndef __NETCDF_INTERFACE_HPP_
 #define __NETCDF_INTERFACE_HPP_
 
+#include "mpi_std.hpp"
 #include "xios_spl.hpp"
 
 #if !defined(USING_NETCDF_PAR)
 #include "exception.hpp"
 #endif
 
-#include "mpi_std.hpp"
 #include "netcdf.hpp"
 
 namespace xios

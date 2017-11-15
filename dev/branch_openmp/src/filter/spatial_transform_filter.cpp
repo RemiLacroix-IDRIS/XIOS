@@ -1,7 +1,9 @@
+#include "mpi.hpp"
 #include "spatial_transform_filter.hpp"
 #include "grid_transformation.hpp"
 #include "context.hpp"
 #include "context_client.hpp"
+using namespace ep_lib;
 
 namespace xios
 {
@@ -64,6 +66,7 @@ namespace xios
             "Impossible to construct a spatial transform filter engine without a valid grid transformation.");
   }
 
+  //std::map<CGridTransformation*, boost::shared_ptr<CSpatialTransformFilterEngine> > CSpatialTransformFilterEngine::engines;
   std::map<CGridTransformation*, boost::shared_ptr<CSpatialTransformFilterEngine> > *CSpatialTransformFilterEngine::engines_ptr = 0;
 
   CSpatialTransformFilterEngine* CSpatialTransformFilterEngine::get(CGridTransformation* gridTransformation)
@@ -71,13 +74,16 @@ namespace xios
     if (!gridTransformation)
       ERROR("CSpatialTransformFilterEngine& CSpatialTransformFilterEngine::get(CGridTransformation* gridTransformation)",
             "Impossible to get the requested engine, the grid transformation is invalid.");
-
+    
     if(engines_ptr == NULL) engines_ptr = new std::map<CGridTransformation*, boost::shared_ptr<CSpatialTransformFilterEngine> >;
 
+    //std::map<CGridTransformation*, boost::shared_ptr<CSpatialTransformFilterEngine> >::iterator it = engines.find(gridTransformation);
     std::map<CGridTransformation*, boost::shared_ptr<CSpatialTransformFilterEngine> >::iterator it = engines_ptr->find(gridTransformation);
+    //if (it == engines.end())
     if (it == engines_ptr->end())
     {
       boost::shared_ptr<CSpatialTransformFilterEngine> engine(new CSpatialTransformFilterEngine(gridTransformation));
+      //it = engines.insert(std::make_pair(gridTransformation, engine)).first;
       it = engines_ptr->insert(std::make_pair(gridTransformation, engine)).first;
     }
 
@@ -121,9 +127,7 @@ namespace xios
     bool ignoreMissingValue = false; 
     double defaultValue = std::numeric_limits<double>::quiet_NaN();
     if (0 != dataDest.numElements()) ignoreMissingValue = NumTraits<double>::isnan(dataDest(0));
-    
-    const std::list<CGridTransformation::SendingIndexGridSourceMap> *listLocalIndexSend_ptr = & (gridTransformation->getLocalIndexToSendFromGridSource());
-    
+
     const std::list<CGridTransformation::SendingIndexGridSourceMap>& listLocalIndexSend = gridTransformation->getLocalIndexToSendFromGridSource();
     const std::list<CGridTransformation::RecvIndexGridDestinationMap>& listLocalIndexToReceive = gridTransformation->getLocalIndexToReceiveOnGridDest();
     const std::list<size_t>& listNbLocalIndexToReceive = gridTransformation->getNbLocalIndexToReceiveOnGridDest();
@@ -132,8 +136,8 @@ namespace xios
 
     CArray<double,1> dataCurrentDest(dataSrc.copy());
 
-    std::list<CGridTransformation::SendingIndexGridSourceMap>::const_iterator itListSend  = listLocalIndexSend_ptr->begin(),
-                                                                              iteListSend = listLocalIndexSend_ptr->end();
+    std::list<CGridTransformation::SendingIndexGridSourceMap>::const_iterator itListSend  = listLocalIndexSend.begin(),
+                                                                              iteListSend = listLocalIndexSend.end();
     std::list<CGridTransformation::RecvIndexGridDestinationMap>::const_iterator itListRecv = listLocalIndexToReceive.begin();
     std::list<size_t>::const_iterator itNbListRecv = listNbLocalIndexToReceive.begin();
     std::list<std::vector<bool> >::const_iterator itLocalMaskIndexOnDest = listLocalIndexMaskOnDest.begin();
@@ -154,13 +158,9 @@ namespace xios
         if (0 != itSend->second.numElements())
           sendBuff[idxSendBuff] = new double[itSend->second.numElements()];
       }
-      
-      const CGridTransformation::RecvIndexGridDestinationMap& localIndexToReceive = *itListRecv;
-      CGridTransformation::RecvIndexGridDestinationMap::const_iterator itbRecv = localIndexToReceive.begin(), itRecv,
-                                                                       iteRecv = localIndexToReceive.end();
 
       idxSendBuff = 0;
-      std::vector<ep_lib::MPI_Request> sendRecvRequest(localIndexToSend.size()+localIndexToReceive.size());
+      std::vector<MPI_Request> sendRecvRequest(localIndexToSend.size() + itListRecv->size());
       int position = 0;
       for (itSend = itbSend; itSend != iteSend; ++itSend, ++idxSendBuff)
       {
@@ -171,12 +171,13 @@ namespace xios
         {
           sendBuff[idxSendBuff][idx] = dataCurrentSrc(localIndex_p(idx));
         }
-        MPI_Isend(sendBuff[idxSendBuff], countSize, MPI_DOUBLE, destRank, 12, client->intraComm, &sendRecvRequest[position]);
-        position++;
+        MPI_Isend(sendBuff[idxSendBuff], countSize, MPI_DOUBLE, destRank, 12, client->intraComm, &sendRecvRequest[position++]);
       }
 
       // Receiving data on destination fields
-      
+      const CGridTransformation::RecvIndexGridDestinationMap& localIndexToReceive = *itListRecv;
+      CGridTransformation::RecvIndexGridDestinationMap::const_iterator itbRecv = localIndexToReceive.begin(), itRecv,
+                                                                       iteRecv = localIndexToReceive.end();
       int recvBuffSize = 0;
       for (itRecv = itbRecv; itRecv != iteRecv; ++itRecv) recvBuffSize += itRecv->second.size(); //(recvBuffSize < itRecv->second.size())
                                                                        //? itRecv->second.size() : recvBuffSize;
@@ -187,11 +188,10 @@ namespace xios
       {
         int srcRank = itRecv->first;
         int countSize = itRecv->second.size();
-        MPI_Irecv(recvBuff + currentBuff, countSize, MPI_DOUBLE, srcRank, 12, client->intraComm, &sendRecvRequest[position]);
-        position++;
+        MPI_Irecv(recvBuff + currentBuff, countSize, MPI_DOUBLE, srcRank, 12, client->intraComm, &sendRecvRequest[position++]);
         currentBuff += countSize;
       }
-      std::vector<ep_lib::MPI_Status> status(sendRecvRequest.size());
+      std::vector<MPI_Status> status(sendRecvRequest.size());
       MPI_Waitall(sendRecvRequest.size(), &sendRecvRequest[0], &status[0]);
 
       dataCurrentDest.resize(*itNbListRecv);
@@ -202,6 +202,7 @@ namespace xios
 
       std::vector<bool> localInitFlag(dataCurrentDest.numElements(), true);
       currentBuff = 0;
+      bool firstPass=true; 
       for (itRecv = itbRecv; itRecv != iteRecv; ++itRecv)
       {
         int countSize = itRecv->second.size();
@@ -210,9 +211,10 @@ namespace xios
                          recvBuff+currentBuff,
                          dataCurrentDest,
                          localInitFlag,
-                         ignoreMissingValue);
+                         ignoreMissingValue,firstPass);
 
         currentBuff += countSize;
+        firstPass=false ;
       }
 
       (*itAlgo)->updateData(dataCurrentDest);

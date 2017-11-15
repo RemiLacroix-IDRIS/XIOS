@@ -3,31 +3,27 @@
 #include "netCdf_cf_constant.hpp"
 
 #include <boost/algorithm/string.hpp>
-// mpi_std.hpp
-#ifdef _usingEP
-#include "ep_declaration.hpp"
-#endif
 
 namespace xios
 {
-  CINetCDF4::CINetCDF4(const StdString& filename, const MPI_Comm* comm /*= NULL*/, bool multifile /*= true*/, const StdString& timeCounterName /*= "time_counter"*/)
+  CINetCDF4::CINetCDF4(const StdString& filename, const ep_lib::MPI_Comm* comm /*= NULL*/, bool multifile /*= true*/, const StdString& timeCounterName /*= "time_counter"*/)
   {
     // Don't use parallel mode if there is only one process
     if (comm)
     {
       int commSize = 0;
-      MPI_Comm_size(*comm, &commSize);
+      ep_lib::MPI_Comm_size(*comm, &commSize);
       if (commSize <= 1)
         comm = NULL;
     }
-
     mpi = comm && !multifile;
-    MPI_Info m_info = MPI_INFO_NULL.mpi_info;
+    ep_lib::MPI_Info info_null;
 
     // The file format will be detected automatically by NetCDF, it is safe to always set NC_MPIIO
     // even if Parallel NetCDF ends up being used.
     if (mpi)
-      CNetCdfInterface::openPar(filename, NC_NOWRITE | NC_MPIIO, *comm, m_info, this->ncidp);
+      //CNetCdfInterface::openPar(filename, NC_NOWRITE | NC_MPIIO, *comm, info_null, this->ncidp);
+      CNetCdfInterface::openPar(filename, NC_NOWRITE | NC_MPIIO, static_cast<MPI_Comm>(comm->mpi_comm), info_null.mpi_info, this->ncidp);
     else
       CNetCdfInterface::open(filename, NC_NOWRITE, this->ncidp);
 

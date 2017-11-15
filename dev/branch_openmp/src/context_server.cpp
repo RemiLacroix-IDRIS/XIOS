@@ -9,7 +9,7 @@
 #include "field.hpp"
 #include "file.hpp"
 #include "grid.hpp"
-#include "mpi_std.hpp"
+#include "mpi.hpp"
 #include "tracer.hpp"
 #include "timer.hpp"
 #include "cxios.hpp"
@@ -17,12 +17,12 @@
 #include "server.hpp"
 #include <boost/functional/hash.hpp>
 
-
+using namespace ep_lib;
 
 namespace xios
 {
 
-  CContextServer::CContextServer(CContext* parent, ep_lib::MPI_Comm intraComm_, ep_lib::MPI_Comm interComm_)
+  CContextServer::CContextServer(CContext* parent,MPI_Comm intraComm_,MPI_Comm interComm_)
   {
     context=parent;
     intraComm=intraComm_;
@@ -71,62 +71,96 @@ namespace xios
     int flag;
     int count;
     char * addr;
-    ep_lib::MPI_Status status;
+    MPI_Status status;
     map<int,CServerBuffer*>::iterator it;
+    bool okLoop;
 
-    for(rank=0;rank<commSize;rank++)
+    traceOff();
+    MPI_Iprobe(-2, 20,interComm,&flag,&status);
+    traceOn();
+
+    if (flag==true)
     {
+      #ifdef _usingMPI
+      rank=status.MPI_SOURCE ;
+      #elif _usingEP
+      rank=status.ep_src ;
+      #endif
+      okLoop = true;
       if (pendingRequest.find(rank)==pendingRequest.end())
+        okLoop = !listenPendingRequest(status) ;
+      if (okLoop)
       {
-        traceOff();
-        ep_lib::MPI_Iprobe(rank,20,interComm,&flag,&status);
-        traceOn();
-        if (flag)
+        for(rank=0;rank<commSize;rank++)
         {
-          it=buffers.find(rank);
-          if (it==buffers.end()) // Receive the buffer size and allocate the buffer
+          if (pendingRequest.find(rank)==pendingRequest.end())
           {
-            StdSize buffSize = 0;
-            ep_lib::MPI_Recv(&buffSize, 1, MPI_LONG, rank, 20, interComm, &status);
-            mapBufferSize_.insert(std::make_pair(rank, buffSize));
-            it=(buffers.insert(pair<int,CServerBuffer*>(rank,new CServerBuffer(buffSize)))).first;
-          }
-          else
-          {
-            
-            ep_lib::MPI_Get_count(&status,MPI_CHAR,&count);
-            if (it->second->isBufferFree(count))
-            {
-              addr=(char*)it->second->getBuffer(count);
-              ep_lib::MPI_Irecv(addr,count,MPI_CHAR,rank,20,interComm,&pendingRequest[rank]);
-              bufferRequest[rank]=addr;
-            }
+
+            traceOff();
+            MPI_Iprobe(rank, 20,interComm,&flag,&status);
+            traceOn();
+            if (flag==true) listenPendingRequest(status) ;
           }
         }
       }
     }
   }
 
+  bool CContextServer::listenPendingRequest(MPI_Status& status)
+  {
+    int count;
+    char * addr;
+    map<int,CServerBuffer*>::iterator it;
+    #ifdef _usingMPI
+    int rank=status.MPI_SOURCE ;
+    #elif _usingEP
+    int rank=status.ep_src;
+    #endif
+
+    it=buffers.find(rank);
+    if (it==buffers.end()) // Receive the buffer size and allocate the buffer
+    {
+       StdSize buffSize = 0;
+       MPI_Recv(&buffSize, 1, MPI_LONG, rank, 20, interComm, &status);
+       mapBufferSize_.insert(std::make_pair(rank, buffSize));
+       it=(buffers.insert(pair<int,CServerBuffer*>(rank,new CServerBuffer(buffSize)))).first;
+       return true;
+    }
+    else
+    {
+      MPI_Get_count(&status,MPI_CHAR,&count);
+      if (it->second->isBufferFree(count))
+      {
+         addr=(char*)it->second->getBuffer(count);
+         MPI_Irecv(addr,count,MPI_CHAR,rank,20,interComm,&pendingRequest[rank]);
+         bufferRequest[rank]=addr;
+         return true;
+      }
+      else
+        return false;
+    }
+  }
+
   void CContextServer::checkPendingRequest(void)
   {
-    map<int,ep_lib::MPI_Request>::iterator it;
+    map<int,MPI_Request>::iterator it;
     list<int> recvRequest;
     list<int>::iterator itRecv;
     int rank;
     int flag;
     int count;
-    ep_lib::MPI_Status status;
+    MPI_Status status;
 
-    for(it=pendingRequest.begin();it!=pendingRequest.end();++it)
+    for(it=pendingRequest.begin();it!=pendingRequest.end();it++)
     {
       rank=it->first;
       traceOff();
-      ep_lib::MPI_Test(& it->second, &flag, &status);
+      MPI_Test(& it->second, &flag, &status);
       traceOn();
       if (flag==true)
       {
         recvRequest.push_back(rank);
-        ep_lib::MPI_Get_count(&status,MPI_CHAR,&count);
+        MPI_Get_count(&status,MPI_CHAR,&count);
         processRequest(rank,bufferRequest[rank],count);
       }
     }
@@ -219,19 +253,18 @@ namespace xios
     if (event.classId==CContext::GetType() && event.type==CContext::EVENT_ID_CONTEXT_FINALIZE)
     {
       finished=true;
-      #pragma omp critical (_output)
       info(20)<<"Server Side context <"<<context->getId()<<"> finalized"<<endl;
       std::map<int, StdSize>::const_iterator itbMap = mapBufferSize_.begin(),
                                              iteMap = mapBufferSize_.end(), itMap;
       StdSize totalBuf = 0;
       for (itMap = itbMap; itMap != iteMap; ++itMap)
       {
-        //report(10)<< " Memory report : Context <"<<context->getId()<<"> : server side : memory used for buffer of each connection to client" << endl
-        //          << "  +) With client of rank " << itMap->first << " : " << itMap->second << " bytes " << endl;
+        report(10)<< " Memory report : Context <"<<context->getId()<<"> : server side : memory used for buffer of each connection to client" << endl
+                  << "  +) With client of rank " << itMap->first << " : " << itMap->second << " bytes " << endl;
         totalBuf += itMap->second;
       }
       context->finalize();
-      //report(0)<< " Memory report : Context <"<<context->getId()<<"> : server side : total memory used for buffer "<<totalBuf<<" bytes"<<endl;
+      report(0)<< " Memory report : Context <"<<context->getId()<<"> : server side : total memory used for buffer "<<totalBuf<<" bytes"<<endl;
     }
     else if (event.classId==CContext::GetType()) CContext::dispatchEvent(event);
     else if (event.classId==CContextGroup::GetType()) CContextGroup::dispatchEvent(event);

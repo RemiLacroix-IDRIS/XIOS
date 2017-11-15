@@ -13,14 +13,15 @@
 #include "meshutil.hpp" // cptArea
 #include "mapper.hpp"
 #include "cputime.hpp" // cputime
-#include <stdio.h>
+
+using namespace ep_lib;
 
 using namespace sphereRemap ;
 
 /* mapper is a ponter to a global class instance whoes members are allocated in the first step (finding the sizes of the weight arrays)
    and deallocated during the second step (computing the weights) */
 Mapper *mapper;
-#pragma omp threadprivate(mapper)
+
 
 /** xxx_bounds_yyy is of length n_vert_per_cell_xxx*n_cell_xxx
    This function computes the weights and returns number of weights is returned through the last argument.
@@ -32,15 +33,15 @@ extern "C" void remap_get_num_weights(const double* src_bounds_lon, const double
                      const double* dst_pole,
                      int order, int* n_weights)
 {
-  assert(src_bounds_lon);
-  assert(src_bounds_lat);
-  assert(n_vert_per_cell_src >= 3);
-  assert(n_cell_src >= 4);
-  assert(dst_bounds_lon);
-  assert(dst_bounds_lat);
-  assert(n_vert_per_cell_dst >= 3);
-  assert(n_cell_dst >= 4);
-  assert(1 <= order && order <= 2);
+	assert(src_bounds_lon);
+	assert(src_bounds_lat);
+	assert(n_vert_per_cell_src >= 3);
+	assert(n_cell_src >= 4);
+	assert(dst_bounds_lon);
+	assert(dst_bounds_lat);
+	assert(n_vert_per_cell_dst >= 3);
+	assert(n_cell_dst >= 4);
+	assert(1 <= order && order <= 2);
 
   mapper = new Mapper(MPI_COMM_WORLD);
   mapper->setVerbosity(PROGRESS) ;
@@ -79,7 +80,7 @@ extern "C" void remap_get_num_weights(const double* src_bounds_lon, const double
 	}
 	double tic = cputime();
 	mapper = new Mapper(MPI_COMM_WORLD);
-        mapper->setVerbosity(PROGRESS) ;
+  mapper->setVerbosity(PROGRESS) ;
 	mapper->buildSSTree(src_msh, dst_msh);
 	double tac = cputime();
 	vector<double> timings = mapper->computeWeights(dst_elt, src_elt, order);
@@ -148,10 +149,7 @@ extern "C" void mpi_init()
 	/*int argc = 0;
 	char **argv = NULL;
 	MPI_Init(&argc, &argv);*/
-	//MPI_Init(NULL, NULL);
-        int provided;
-        MPI_Init_thread(NULL, NULL, 3, &provided);
-        assert(provided >= 3);
+	MPI_Init(NULL, NULL);
 }
 
 extern "C" int mpi_rank()

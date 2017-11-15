@@ -5,10 +5,11 @@
 #include <iostream>
 #include <sstream>
 #include "tracer.hpp"
+using namespace ep_lib;
 
 namespace xios
 {
-  std::map<std::string,CTimer> CTimer::allTimer;
+  //std::map<std::string,CTimer> CTimer::allTimer;
   std::map<std::string,CTimer> *CTimer::allTimer_ptr = 0;
   
   CTimer::CTimer(const std::string& name_) : name(name_) 
@@ -54,24 +55,24 @@ namespace xios
   
   CTimer& CTimer::get(const std::string name)
   {
-    // bkp
-    // std::map<std::string,CTimer>::iterator it = allTimer.find(name);
-    // if (it == allTimer.end())
-    //   it = allTimer.insert(std::make_pair(name, CTimer(name))).first;
-    // return it->second;
+    if(allTimer_ptr == NULL) allTimer_ptr = new std::map<std::string,CTimer>;
 
-    if(allTimer_ptr == 0) allTimer_ptr = new std::map<std::string,CTimer>;
+    //std::map<std::string,CTimer>::iterator it = allTimer.find(name);
+    std::map<std::string,CTimer>::iterator it = allTimer_ptr->find(name);
+    //if (it == allTimer.end())
+    if (it == allTimer_ptr->end())
+      it = allTimer_ptr->insert(std::make_pair(name, CTimer(name))).first;
 
-    std::map<std::string,CTimer>::iterator it = (*allTimer_ptr).find(name);
-    if (it == (*allTimer_ptr).end())
-      it = (*allTimer_ptr).insert(std::make_pair(name, CTimer(name))).first;
+      //it = allTimer.insert(std::make_pair(name, CTimer(name))).first;
     return it->second;
   }
 
   string CTimer::getAllCumulatedTime(void)
   {
     std::ostringstream strOut ;
-    for(std::map<std::string,CTimer>::iterator it=allTimer.begin();it!=allTimer.end();++it)
+    if(allTimer_ptr == 0) allTimer_ptr = new std::map<std::string,CTimer>;
+    //for(std::map<std::string,CTimer>::iterator it=allTimer.begin();it!=allTimer.end();++it)
+    for(std::map<std::string,CTimer>::iterator it=allTimer_ptr->begin();it!=allTimer_ptr->end();++it)
       strOut<<"Timer : "<<it->first<<"    -->   cumulated time : "<<it->second.getCumulatedTime()<<std::endl ;
     return strOut.str() ;
   }

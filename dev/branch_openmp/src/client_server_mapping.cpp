@@ -7,6 +7,7 @@
    \brief Mapping between index client and server.
  */
 #include "client_server_mapping.hpp"
+using namespace ep_lib;
 
 namespace xios {
 
@@ -63,10 +64,6 @@ std::map<int,int> CClientServerMapping::computeConnectedClients(int nbServer, in
   // get connected server for everybody
   MPI_Allgather(&nbConnectedServer,1,MPI_INT,recvCount,1,MPI_INT,clientIntraComm) ;
 
-  
-  // for(int i=0; i<nbClient; i++)
-  //   printf("MPI_Allgather : recvCount[%d] = %d\n", i, recvCount[i]);
-
   displ[0]=0 ;
   for(int n=1;n<nbClient;n++) displ[n]=displ[n-1]+recvCount[n-1] ;
   int recvSize=displ[nbClient-1]+recvCount[nbClient-1] ;
@@ -74,11 +71,6 @@ std::map<int,int> CClientServerMapping::computeConnectedClients(int nbServer, in
 
 
   MPI_Allgatherv(sendBuff,nbConnectedServer,MPI_INT,recvBuff,recvCount,displ,MPI_INT,clientIntraComm) ;
-
-  // for(int i=0; i<recvSize; i++)
-  //   printf("MPI_Allgatherv : recvBuff[%d] = %d\n", i, recvBuff[i]);
-
-
   for(int n=0;n<recvSize;n++) clientRes[recvBuff[n]]++ ;
 
   for(int n=0;n<nbConnectedServer;n++)

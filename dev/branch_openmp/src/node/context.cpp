@@ -1,3 +1,4 @@
+
 #include "context.hpp"
 #include "attribute_template.hpp"
 #include "object_template.hpp"
@@ -16,13 +17,14 @@
 #include "timer.hpp"
 #include "memtrack.hpp"
 
+using namespace ep_lib;
+
 
 namespace xios {
 
-  //shared_ptr<CContextGroup> CContext::root;
-  boost::shared_ptr<CContextGroup> * CContext::root_ptr = 0;
+  shared_ptr<CContextGroup> CContext::root;
 
-   /// ////////////////////// Dfinitions ////////////////////// ///
+   /// ////////////////////// Définitions ////////////////////// ///
 
    CContext::CContext(void)
       : CObjectTemplate<CContext>(), CContextAttributes()
@@ -56,14 +58,8 @@ namespace xios {
    */
    CContextGroup* CContext::getRoot(void)
    {
-      //if (root.get()==NULL) root=shared_ptr<CContextGroup>(new CContextGroup(xml::CXMLNode::GetRootName()));
-      //return root.get();
-
-      //static shared_ptr<CContextGroup> *root_ptr;
-      if(root_ptr == 0) //root_ptr = new shared_ptr<CContextGroup>;
-      // if (root_ptr->get()==NULL) 
-      root_ptr = new boost::shared_ptr<CContextGroup>(new CContextGroup(xml::CXMLNode::GetRootName()));
-      return root_ptr->get();
+      if (root.get()==NULL) root=shared_ptr<CContextGroup>(new CContextGroup(xml::CXMLNode::GetRootName()));
+      return root.get();
    }
 
    //----------------------------------------------------------------
@@ -185,7 +181,7 @@ namespace xios {
           << SuperClassAttribute::toString() << ">" << std::endl;
       if (!this->hasChild())
       {
-         //oss << "<!-- No definition -->" << std::endl; // fait planter l'incrmentation
+         //oss << "<!-- No definition -->" << std::endl; // fait planter l'incrémentation
       }
       else
       {
@@ -247,13 +243,7 @@ namespace xios {
    void CContext::initClient(ep_lib::MPI_Comm intraComm, ep_lib::MPI_Comm interComm, CContext* cxtServer /*= 0*/)
    {
      hasClient=true;
-     client = new CContextClient(this, intraComm, interComm, cxtServer);
-
-     int tmp_rank;
-     MPI_Comm_rank(intraComm, &tmp_rank);
-     MPI_Barrier(intraComm);
-     
-
+     client = new CContextClient(this,intraComm, interComm, cxtServer);
      registryIn=new CRegistry(intraComm);
      registryIn->setPath(getId()) ;
      if (client->clientRank==0) registryIn->fromFile("xios_registry.bin") ;
@@ -270,9 +260,9 @@ namespace xios {
      }
      else
      {
-       MPI_Comm_dup(intraComm, &intraCommServer);
+       ep_lib::MPI_Comm_dup(intraComm, &intraCommServer);
        comms.push_back(intraCommServer);
-       MPI_Comm_dup(interComm, &interCommServer);
+       ep_lib::MPI_Comm_dup(interComm, &interCommServer);
        comms.push_back(interCommServer);
      }
      server = new CContextServer(this,intraCommServer,interCommServer);
@@ -352,9 +342,9 @@ namespace xios {
      }
      else
      {
-       MPI_Comm_dup(intraComm, &intraCommClient);
+       ep_lib::MPI_Comm_dup(intraComm, &intraCommClient);
        comms.push_back(intraCommClient);
-       MPI_Comm_dup(interComm, &interCommClient);
+       ep_lib::MPI_Comm_dup(interComm, &interCommClient);
        comms.push_back(interCommClient);
      }
      client = new CContextClient(this,intraCommClient,interCommClient, cxtClient);
@@ -394,7 +384,7 @@ namespace xios {
         }
 
         for (std::list<ep_lib::MPI_Comm>::iterator it = comms.begin(); it != comms.end(); ++it)
-          MPI_Comm_free(&(*it));
+          ep_lib::MPI_Comm_free(&(*it));
         comms.clear();
       }
    }
@@ -526,12 +516,12 @@ namespace xios {
      }
    }
 
-   void CContext::checkPrefetchingOfEnabledReadModeFiles()
+   void CContext::doPostTimestepOperationsForEnabledReadModeFiles()
    {
      int size = enabledReadModeFiles.size();
      for (int i = 0; i < size; ++i)
      {
-        enabledReadModeFiles[i]->prefetchEnabledReadModeFieldsIfNeeded();
+        enabledReadModeFiles[i]->doPostTimestepOperationsForEnabledReadModeFields();
      }
    }
 
@@ -562,13 +552,13 @@ namespace xios {
       fieldsWithReadAccess[i]->buildFilterGraph(garbageCollector, true);
   }
 
-   void CContext::solveAllInheritance(bool apply)
+   void CContext::solveAllInheritance(bool apply) // default : apply = true
    {
-     // Rsolution des hritages descendants (cd des hritages de groupes)
+     // Résolution des héritages descendants (càd des héritages de groupes)
      // pour chacun des contextes.
       solveDescInheritance(apply);
 
-     // Rsolution des hritages par rfrence au niveau des fichiers.
+     // Résolution des héritages par référence au niveau des fichiers.
       const vector<CFile*> allFiles=CFile::getAll();
       const vector<CGrid*> allGrids= CGrid::getAll();
 
@@ -592,9 +582,9 @@ namespace xios {
       const CDate& initDate = calendar->getInitDate();
 
       for (unsigned int i = 0; i < allFiles.size(); i++)
-         if (!allFiles[i]->enabled.isEmpty()) // Si l'attribut 'enabled' est dfini.
+         if (!allFiles[i]->enabled.isEmpty()) // Si l'attribut 'enabled' est défini.
          {
-            if (allFiles[i]->enabled.getValue()) // Si l'attribut 'enabled' est fix  vrai.
+            if (allFiles[i]->enabled.getValue()) // Si l'attribut 'enabled' est fixé à vrai.
             {
               if ((initDate + allFiles[i]->output_freq.getValue()) < (initDate + this->getCalendar()->getTimeStep()))
               {
@@ -619,7 +609,7 @@ namespace xios {
          }
 
       if (enabledFiles.size() == 0)
-         DEBUG(<<"Aucun fichier ne va tre sorti dans le contexte nomm \""
+         DEBUG(<<"Aucun fichier ne va être sorti dans le contexte nommé \""
                << getId() << "\" !");
    }
 
@@ -835,9 +825,6 @@ namespace xios {
    */
    void CContext::postProcessing()
    {
-     int myRank;
-     MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
-
      if (isPostProcessed) return;
 
       // Make sure the calendar was correctly created
@@ -859,7 +846,7 @@ namespace xios {
       // Warning: This must be done after solving the inheritance and before the rest of post-processing
       prepareTimeseries();
 
-      //Initialisation du vecteur 'enabledFiles' contenant la liste des fichiers  sortir.
+      //Initialisation du vecteur 'enabledFiles' contenant la liste des fichiers à sortir.
       this->findEnabledFiles();
       this->findEnabledReadModeFiles();
 
@@ -1217,18 +1204,15 @@ namespace xios {
    //! Update calendar in each time step
    void CContext::updateCalendar(int step)
    {
-      #pragma omp critical (_output)
-      {info(50) << "updateCalendar : before : " << calendar->getCurrentDate() << endl;}
+      info(50) << "updateCalendar : before : " << calendar->getCurrentDate() << endl;
       calendar->update(step);
-      #pragma omp critical (_output)
-      {info(50) << "updateCalendar : after : " << calendar->getCurrentDate() << endl;}
+      info(50) << "updateCalendar : after : " << calendar->getCurrentDate() << endl;
 #ifdef XIOS_MEMTRACK_LIGHT
-      #pragma omp critical (_output)
-      {info(50) << " Current memory used by XIOS : "<<  MemTrack::getCurrentMemorySize()*1.0/(1024*1024)<<" Mbyte, at timestep "<<step<<" of context "<<this->getId()<<endl ;}
+      info(50) << " Current memory used by XIOS : "<<  MemTrack::getCurrentMemorySize()*1.0/(1024*1024)<<" Mbyte, at timestep "<<step<<" of context "<<this->getId()<<endl ;
 #endif
       if (hasClient)
       {
-        checkPrefetchingOfEnabledReadModeFiles();
+        doPostTimestepOperationsForEnabledReadModeFiles();
         garbageCollector.invalidate(calendar->getCurrentDate());
       }
    }
@@ -1272,7 +1256,7 @@ namespace xios {
     bool hasctxt = CContext::has(id);
     CContext* context = CObjectFactory::CreateObject<CContext>(id).get();
     getRoot();
-    if (!hasctxt) CGroupFactory::AddChild(*root_ptr, context->getShared());
+    if (!hasctxt) CGroupFactory::AddChild(root, context->getShared());
 
 #define DECLARE_NODE(Name_, name_) \
     C##Name_##Definition::create(C##Name_##Definition::GetDefName());

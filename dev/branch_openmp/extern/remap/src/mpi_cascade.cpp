@@ -1,5 +1,6 @@
 #include "mpi_cascade.hpp"
 #include <iostream>
+using namespace ep_lib;
 
 namespace sphereRemap {
 

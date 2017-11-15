@@ -3,10 +3,6 @@
 #include "parallel_tree.hpp"
 #include "mpi.hpp"
 
-#ifdef _usingEP
-#include "ep_declaration.hpp"
-#endif
-
 namespace sphereRemap {
 
 enum verbosity
@@ -21,7 +17,7 @@ void cptOffsetsFromLengths(const int *lengths, int *offsets, int sz);
 class Mapper
 {
 public:
-       Mapper(ep_lib::MPI_Comm comm=MPI_COMM_WORLD) : communicator(comm), verbose(SILENT), neighbourElements(NULL), sstree(comm) {}
+       Mapper(ep_lib::MPI_Comm comm) : communicator(comm), verbose(SILENT), neighbourElements(NULL), sstree(comm) {}
        ~Mapper();
        void setVerbosity(verbosity v) {verbose=v ;}
 

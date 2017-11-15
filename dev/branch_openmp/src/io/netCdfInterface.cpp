@@ -9,7 +9,6 @@
 
 #include "netCdfInterface.hpp"
 #include "netCdfException.hpp"
-// mpi_std.hpp
 
 namespace xios
 {
@@ -49,7 +48,7 @@ This function creates a new netcdf file on parallel file system
 */
 int CNetCdfInterface::createPar(const StdString& fileName, int cMode, MPI_Comm comm, MPI_Info info, int& ncId)
 {
-  int status = xios::nc_create_par(fileName.c_str(), cMode, comm, info, &ncId);
+  int status = xios::nc_create_par(fileName.c_str(), cMode, comm, MPI_INFO_NULL.mpi_info, &ncId);
   if (NC_NOERR != status)
   {
     StdString errormsg(nc_strerror(status));
@@ -74,10 +73,7 @@ This function opens a netcdf file, given its name and open mode, return its id
 */
 int CNetCdfInterface::open(const StdString& fileName, int oMode, int& ncId)
 {
-  int status = NC_NOERR;
-  #pragma omp critical (_netcdf)
-  status = nc_open(fileName.c_str(), oMode, &ncId);
-  
+  int status = nc_open(fileName.c_str(), oMode, &ncId);
   if (NC_NOERR != status)
   {
     StdString errormsg(nc_strerror(status));
@@ -105,9 +101,8 @@ This function opens a new netcdf file on parallel file system
 */
 int CNetCdfInterface::openPar(const StdString& fileName, int oMode, MPI_Comm comm, MPI_Info info, int& ncId)
 {
-  int status;
-  #pragma omp critical (_netcdf)
-  status = xios::nc_open_par(fileName.c_str(), oMode, comm, info, &ncId); // nc_open
+  //int status = xios::nc_open_par(fileName.c_str(), oMode, comm, info, &ncId);
+  int status = xios::nc_open_par(fileName.c_str(), oMode, comm, MPI_INFO_NULL.mpi_info, &ncId);
   if (NC_NOERR != status)
   {
     StdString errormsg(nc_strerror(status));
@@ -130,11 +125,7 @@ This function closes a netcdf file, given its id
 */
 int CNetCdfInterface::close(int ncId)
 {
-  int status = NC_NOERR;
-  #pragma omp critical (_netcdf)
-  //#pragma omp master
-  {
-  status = nc_close(ncId);
+  int status = nc_close(ncId);
   if (NC_NOERR != status)
   {
     StdString errormsg(nc_strerror(status));
@@ -145,7 +136,7 @@ int CNetCdfInterface::close(int ncId)
     StdString e = sstr.str();
     throw CNetCdfException(e);
   }
-  }
+
   return status;
 }
 
@@ -355,9 +346,7 @@ This function makes a request to netcdf, returns length of a dimension, given it
 */
 int CNetCdfInterface::inqDimLen(int ncid, int dimId, StdSize& dimLen)
 {
-  int status;
-  #pragma omp critical (_netcdf)
-  status = nc_inq_dimlen(ncid, dimId, &dimLen);
+  int status = nc_inq_dimlen(ncid, dimId, &dimLen);
   if (NC_NOERR != status)
   {
     StdString errormsg(nc_strerror(status));

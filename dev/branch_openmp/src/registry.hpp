@@ -5,10 +5,6 @@
 #include "type.hpp"
 #include "mpi.hpp"
 #include "message.hpp"
-#ifdef _usingEP
-#include "ep_declaration.hpp"
-#endif
-
 
 // Those two headers can be replaced by the C++11 equivalent in the future
 #include <boost/utility/enable_if.hpp>
@@ -109,10 +105,10 @@ namespace xios
       void getKey_(const std::string& key, CBaseType& value) ;
 
 /** use internally for recursivity */
-      void gatherRegistry(const MPI_Comm& comm) ;
+      void gatherRegistry(const ep_lib::MPI_Comm& comm) ;
 
 /** use internally for recursivity */
-      void hierarchicalGatherRegistry(const MPI_Comm& comm) ;
+      void hierarchicalGatherRegistry(const ep_lib::MPI_Comm& comm) ;
 
 
 /** Prefix added systematically to the keys, with "::" as separator*/

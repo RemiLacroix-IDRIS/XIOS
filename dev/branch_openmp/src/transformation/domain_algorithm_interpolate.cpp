@@ -19,6 +19,7 @@
 #include "grid_transformation_factory_impl.hpp"
 #include "interpolate_domain.hpp"
 #include "grid.hpp"
+using namespace ep_lib;
 
 namespace xios {
 CGenericAlgorithmTransformation* CDomainAlgorithmInterpolate::create(CGrid* gridDst, CGrid* gridSrc,
@@ -111,6 +112,8 @@ void CDomainAlgorithmInterpolate::computeRemap()
   const int constNVertex = 4; // Value by default number of vertex for rectangular domain
   int nVertexSrc, nVertexDest;
   nVertexSrc = nVertexDest = constNVertex;
+
+
 
   // First of all, try to retrieve the boundary values of domain source and domain destination
   int localDomainSrcSize = domainSrc_->i_index.numElements();
@@ -280,6 +283,7 @@ void CDomainAlgorithmInterpolate::computeRemap()
     globalSrc[idx] = globalIndex;
   }
 
+
   for (int idx = 0; idx < nDstLocal; ++idx)
   {
     i_ind=domainDest_->i_index(idx) ;
@@ -403,12 +407,10 @@ void CDomainAlgorithmInterpolate::processPole(std::map<int,std::vector<std::pair
 {
   CContext* context = CContext::getCurrent();
   CContextClient* client=context->client;
-  int split_key;
-  ep_lib::MPI_Comm_rank(client->intraComm, &split_key);
 
-  ep_lib::MPI_Comm poleComme(MPI_COMM_NULL);
-  ep_lib::MPI_Comm_split(client->intraComm, interMapValuePole.empty() ? 9 : 1, split_key, &poleComme);
-  if (MPI_COMM_NULL != poleComme)
+  ep_lib::MPI_Comm poleComme;
+  ep_lib::MPI_Comm_split(client->intraComm, interMapValuePole.empty() ? 0 : 1, 0, &poleComme);
+  if (!poleComme.is_null())
   {
     int nbClientPole;
     ep_lib::MPI_Comm_size(poleComme, &nbClientPole);
@@ -427,7 +429,6 @@ void CDomainAlgorithmInterpolate::processPole(std::map<int,std::vector<std::pair
     displ[0]=0;
     for(int n=1;n<nbClientPole;++n) displ[n]=displ[n-1]+recvCount[n-1] ;
     int recvSize=displ[nbClientPole-1]+recvCount[nbClientPole-1] ;
-    
 
     std::vector<int> sendSourceIndexBuff(nbWeight);
     std::vector<double> sendSourceWeightBuff(nbWeight);
@@ -600,9 +601,10 @@ void CDomainAlgorithmInterpolate::exchangeRemapInfo(std::map<int,std::vector<std
   int* sendIndexSrcBuff  = new int [sendBuffSize];
   double* sendWeightBuff = new double [sendBuffSize];
 
-  std::vector<ep_lib::MPI_Request> sendRequest;
+  std::vector<ep_lib::MPI_Request> sendRequest(3*globalIndexInterpSendToClient.size());
 
   int sendOffSet = 0, l = 0;
+  int position = 0;
   for (itMap = itbMap; itMap != iteMap; ++itMap)
   {
     const std::vector<size_t>& indexToSend = itMap->second;
@@ -621,30 +623,27 @@ void CDomainAlgorithmInterpolate::exchangeRemapInfo(std::map<int,std::vector<std
       }
     }
 
-    sendRequest.push_back(ep_lib::MPI_Request());
     ep_lib::MPI_Isend(sendIndexDestBuff + sendOffSet,
              k,
              MPI_INT,
              itMap->first,
              MPI_DOMAIN_INTERPOLATION_DEST_INDEX,
              client->intraComm,
-             &sendRequest.back());
-    sendRequest.push_back(ep_lib::MPI_Request());
+             &sendRequest[position++]);
     ep_lib::MPI_Isend(sendIndexSrcBuff + sendOffSet,
              k,
              MPI_INT,
              itMap->first,
              MPI_DOMAIN_INTERPOLATION_SRC_INDEX,
              client->intraComm,
-             &sendRequest.back());
-    sendRequest.push_back(ep_lib::MPI_Request());
+             &sendRequest[position++]);
     ep_lib::MPI_Isend(sendWeightBuff + sendOffSet,
              k,
              MPI_DOUBLE,
              itMap->first,
              MPI_DOMAIN_INTERPOLATION_WEIGHT,
              client->intraComm,
-             &sendRequest.back());
+             &sendRequest[position++]);
     sendOffSet += k;
   }
 
@@ -660,7 +659,7 @@ void CDomainAlgorithmInterpolate::exchangeRemapInfo(std::map<int,std::vector<std
     ep_lib::MPI_Recv((recvIndexDestBuff + receivedSize),
              recvBuffSize,
              MPI_INT,
-             MPI_ANY_SOURCE,
+             -2,
              MPI_DOMAIN_INTERPOLATION_DEST_INDEX,
              client->intraComm,
              &recvStatus);
@@ -672,6 +671,7 @@ void CDomainAlgorithmInterpolate::exchangeRemapInfo(std::map<int,std::vector<std
     #elif _usingEP
     clientSrcRank = recvStatus.ep_src;
     #endif
+
     ep_lib::MPI_Recv((recvIndexSrcBuff + receivedSize),
              recvBuffSize,
              MPI_INT,
@@ -697,8 +697,7 @@ void CDomainAlgorithmInterpolate::exchangeRemapInfo(std::map<int,std::vector<std
   }
 
   std::vector<ep_lib::MPI_Status> requestStatus(sendRequest.size());
-  ep_lib::MPI_Status stat_ignore;
-  ep_lib::MPI_Waitall(sendRequest.size(), &sendRequest[0], &stat_ignore);
+  ep_lib::MPI_Waitall(sendRequest.size(), &sendRequest[0], &requestStatus[0]);
 
   delete [] sendIndexDestBuff;
   delete [] sendIndexSrcBuff;
@@ -711,7 +710,7 @@ void CDomainAlgorithmInterpolate::exchangeRemapInfo(std::map<int,std::vector<std
 }
  
 /*! Redefined some functions of CONetCDF4 to make use of them */
-CDomainAlgorithmInterpolate::WriteNetCdf::WriteNetCdf(const StdString& filename, const MPI_Comm comm)
+CDomainAlgorithmInterpolate::WriteNetCdf::WriteNetCdf(const StdString& filename, const ep_lib::MPI_Comm comm)
   : CNc4DataOutput(NULL, filename, false, false, true, comm, false, true) {}
 int CDomainAlgorithmInterpolate::WriteNetCdf::addDimensionWrite(const StdString& name, 
                                                                 const StdSize size)
@@ -802,8 +801,8 @@ void CDomainAlgorithmInterpolate::writeInterpolationInfo(std::string& filename,
 
   std::vector<StdSize> start(1, startIndex - localNbWeight);
   std::vector<StdSize> count(1, localNbWeight);
-
-  WriteNetCdf netCdfWriter(filename, static_cast<MPI_Comm>(client->intraComm.mpi_comm));
+  
+  WriteNetCdf netCdfWriter(filename, client->intraComm);  
 
   // Define some dimensions
   netCdfWriter.addDimensionWrite("n_src", n_src);

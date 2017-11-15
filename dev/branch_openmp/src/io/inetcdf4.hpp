@@ -13,7 +13,6 @@
 #define UNLIMITED_DIM (size_t)(-1)
 #endif  // UNLIMITED_DIM
 
-
 namespace xios
 {
   typedef std::vector<StdString> CVarPath;
@@ -22,7 +21,7 @@ namespace xios
   {
     public:
       /// Constructors ///
-      CINetCDF4(const StdString& filename, const MPI_Comm* comm = NULL, bool multifile = true,
+      CINetCDF4(const StdString& filename, const ep_lib::MPI_Comm* comm = NULL, bool multifile = true,
                 const StdString& timeCounterName = "time_counter");
       CINetCDF4(const CINetCDF4& inetcdf4);       // Not implemented.
       CINetCDF4(const CINetCDF4* const inetcdf4); // Not implemented.

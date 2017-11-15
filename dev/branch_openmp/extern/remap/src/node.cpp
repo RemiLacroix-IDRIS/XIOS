@@ -253,32 +253,32 @@ bool find_in_tree2(NodePtr node, NodePtr ref)
 /* This appends `this` to the node `node` */
 NodePtr insert(NodePtr thIs, NodePtr node)
 {
-  int la = thIs->level; // node to be inserted
-  int lb = node->level; // node where insertation
-  assert(la < lb); // node to be inserted must have lower level then parent
-  //if (thIs->parent) assert(find_in_tree1(thIs) == true);
-  NodePtr q = NULL;
-  NodePtr chd = NULL;
-  node->move(thIs);
-  if (la == lb - 1)
-  {
+	int la = thIs->level; // node to be inserted
+	int lb = node->level; // node where insertation
+	assert(la < lb); // node to be inserted must have lower level then parent
+	//if (thIs->parent) assert(find_in_tree1(thIs) == true);
+	NodePtr q = NULL;
+	NodePtr chd = NULL;
+	node->move(thIs);
+	if (la == lb - 1)
+	{
     node->child.push_back(thIs);
-    thIs->parent = node;
-    if (node->child.size() > MAX_NODE_SZ &&  node->tree->canSplit() ) // with us as additional child `node` is now too large :(
-    return (node->reinserted || node->parent == NULL) ? split(node) : reinsert(node);
-  }
-  else // la < lb - 1
-  {
-    chd = thIs->closest(node->child);
-    q = insert(thIs, chd);
-  }
-  if ((node->updateCount + 1) % UPDATE_EVERY == 0)
-    node->update();
-  else
-  {
-    if (q) node->remove(q);
-    node->inflate(chd);
-  }
+		thIs->parent = node;
+		if (node->child.size() > MAX_NODE_SZ &&  node->tree->canSplit() ) // with us as additional child `node` is now too large :(
+			return (node->reinserted || node->parent == NULL) ? split(node) : reinsert(node);
+	}
+	else // la < lb - 1
+	{
+		chd = thIs->closest(node->child);
+		q = insert(thIs, chd);
+	}
+	if ((node->updateCount + 1) % UPDATE_EVERY == 0)
+		node->update();
+	else
+	{
+		if (q) node->remove(q);
+		node->inflate(chd);
+	}
 
   return q;
 }

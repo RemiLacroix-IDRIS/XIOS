@@ -50,13 +50,13 @@
      </file_group>
 
       <file_group id="write_files" >
-        <file id="output_2D" name="output_2D" enabled=".TRUE.">
+        <file id="output_2D" name="output_2D" output_freq="1ts" enabled=".TRUE.">
           <field field_ref="src_field_2D" name="field_src" enabled=".TRUE."/>
           <field field_ref="src_field_2D_clone" name="field_src_clone" default_value="100000" enabled=".TRUE."/>
           <field field_ref="src_field_2D" name="field_dst_regular_0"  domain_ref="dst_domain_regular_pole" enabled=".TRUE."/>
           <field field_ref="dst_field_2D" name="field_dst_regular_1" enabled=".TRUE." />
           <field field_ref="dst_field_2D_regular_pole" name="field_dst_regular_2" enabled=".TRUE."/>
-          <field field_ref="dst_field_2D_clone" name="field_dst_regular_3" detect_missing_value=".false." default_value="100000" enabled=".TRUE."/>
+          <field field_ref="dst_field_2D_clone" name="field_dst_regular_3" detect_missing_value=".false." default_value="100000" enabled=".FALSE."/>
           <field field_ref="dst_field_2D_extract" name="field_dst_regular_4" enabled=".TRUE."/>
         </file> 
        <file id="output_3D" name="output_3D" enabled=".TRUE.">

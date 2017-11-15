@@ -59,7 +59,6 @@ namespace xios {
       static bool registerTrans();
       static CTransformation<CDomain>* create(const StdString& id, xml::CXMLNode* node);
       static bool _dummyRegistered;
-      #pragma omp threadprivate(_dummyRegistered)
   }; // class CGenerateRectilinearDomain
 
   DECLARE_GROUP(CGenerateRectilinearDomain);

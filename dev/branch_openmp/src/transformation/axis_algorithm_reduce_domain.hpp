@@ -11,7 +11,6 @@
 
 #include "axis_algorithm_transformation.hpp"
 #include "transformation.hpp"
-#include "reduction.hpp"
 
 namespace xios {
 
@@ -24,7 +23,7 @@ class CReductionAlgorithm;
   \class CAxisAlgorithmReduceDomain
   Reduce a domain to an axis
 */
-class CAxisAlgorithmReduceDomain : public CAxisAlgorithmTransformation, public CReductionAlgorithm
+class CAxisAlgorithmReduceDomain : public CAxisAlgorithmTransformation
 {
 public:
   CAxisAlgorithmReduceDomain(CAxis* axisDestination, CDomain* domainSource, CReduceDomainToAxis* algo);
@@ -33,7 +32,7 @@ public:
                      const double* dataInput,
                      CArray<double,1>& dataOut,
                      std::vector<bool>& flagInitial,                     
-                     bool ignoreMissingValue);
+                     bool ignoreMissingValue, bool firstPass);
 
   virtual void updateData(CArray<double,1>& dataOut);
   

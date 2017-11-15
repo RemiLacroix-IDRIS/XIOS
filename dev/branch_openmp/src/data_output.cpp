@@ -3,7 +3,7 @@
 #include "attribute_template.hpp"
 #include "group_template.hpp"
 #include "context.hpp"
-//mpi.hpp
+
 namespace xios
 {
       /// ////////////////////// Définitions ////////////////////// ///

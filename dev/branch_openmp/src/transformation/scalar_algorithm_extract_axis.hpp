@@ -11,7 +11,6 @@
 
 #include "scalar_algorithm_transformation.hpp"
 #include "transformation.hpp"
-#include "reduction.hpp"
 
 namespace xios {
 
@@ -24,7 +23,7 @@ class CReductionAlgorithm;
   \class CScalarAlgorithmExtractAxis
   Extract a scalar from an axis
 */
-class CScalarAlgorithmExtractAxis : public CScalarAlgorithmTransformation, public CReductionAlgorithm
+class CScalarAlgorithmExtractAxis : public CScalarAlgorithmTransformation
 {
 public:
   CScalarAlgorithmExtractAxis(CScalar* scalarDestination, CAxis* axisSource, CExtractAxisToScalar* algo);
@@ -33,7 +32,7 @@ public:
                      const double* dataInput,
                      CArray<double,1>& dataOut,
                      std::vector<bool>& flagInitial,                     
-                     bool ignoreMissingValue);
+                     bool ignoreMissingValue, bool firstPass);
 
   virtual ~CScalarAlgorithmExtractAxis();
 

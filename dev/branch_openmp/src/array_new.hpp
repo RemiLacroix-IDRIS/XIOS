@@ -553,7 +553,7 @@ namespace xios
         int numDim;
         TinyVector<int,N_rank> vect;
         size_t ne;
-
+        
         ret =  buffer.get(numDim);
         ret &= buffer.get(vect.data(), N_rank);
         this->resize(vect);

@@ -10,9 +10,6 @@ Coord readPole(std::istream &is)
 }
 
 CRemapGrid srcGrid;
-#pragma omp threadprivate(srcGrid)
-
 CRemapGrid tgtGrid;
-#pragma omp threadprivate(tgtGrid)
 
 }

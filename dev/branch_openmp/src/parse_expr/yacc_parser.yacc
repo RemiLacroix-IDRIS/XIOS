@@ -14,20 +14,17 @@ extern "C"
   int yyerror(const char *s);
 }
 
-  static IFilterExprNode* parsed;
-  static std::string globalInputText;
-  static std::string *globalInputText_ptr = 0;
-  static size_t globalReadOffset = 0;
-  #pragma omp threadprivate(parsed, globalInputText_ptr, globalReadOffset)
-  
+  IFilterExprNode* parsed;
+  std::string globalInputText;
+  size_t globalReadOffset = 0;
+
   int readInputForLexer(char* buffer, size_t* numBytesRead, size_t maxBytesToRead)
   {
-    if(globalInputText_ptr == 0) globalInputText_ptr = new std::string;
     size_t numBytesToRead = maxBytesToRead;
-    size_t bytesRemaining = (*globalInputText_ptr).length()-globalReadOffset;
+    size_t bytesRemaining = globalInputText.length()-globalReadOffset;
     size_t i;
     if (numBytesToRead > bytesRemaining) numBytesToRead = bytesRemaining;
-    for (i = 0; i < numBytesToRead; i++) buffer[i] = (*globalInputText_ptr).c_str()[globalReadOffset + i];
+    for (i = 0; i < numBytesToRead; i++) buffer[i] = globalInputText.c_str()[globalReadOffset + i];
     *numBytesRead = numBytesToRead;
     globalReadOffset += numBytesToRead;
     return 0;
@@ -147,13 +144,9 @@ namespace xios
 {
   IFilterExprNode* parseExpr(const string& strExpr)
   {
-    #pragma omp critical (_parser)
-    {
-      if(globalInputText_ptr == 0) globalInputText_ptr = new std::string;
-      (*globalInputText_ptr).assign (strExpr);
-      globalReadOffset = 0;
-      yyparse();
-    }
+    globalInputText = strExpr;
+    globalReadOffset = 0;
+    yyparse();
     return parsed;
   }
 }

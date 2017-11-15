@@ -13,7 +13,7 @@
 #include "grid.hpp"
 #include "grid_transformation_factory_impl.hpp"
 
-
+#include "reduction.hpp"
 
 namespace xios {
 CGenericAlgorithmTransformation* CScalarAlgorithmReduceDomain::create(CGrid* gridDst, CGrid* gridSrc,
@@ -67,26 +67,28 @@ CScalarAlgorithmReduceDomain::CScalarAlgorithmReduceDomain(CScalar* scalarDestin
          << "Scalar destination " << scalarDestination->getId());
 
   }
+  
+  // if(CReductionAlgorithm::ReductionOperations_ptr == 0) 
+  //   CReductionAlgorithm::initReductionOperation();
 
-  if(CReductionAlgorithm::ReductionOperations_ptr == 0) 
-    CReductionAlgorithm::initReductionOperation();
-
-  if ((*CReductionAlgorithm::ReductionOperations_ptr).end() == (*CReductionAlgorithm::ReductionOperations_ptr).find(op))
+  //if (CReductionAlgorithm::ReductionOperations.end() == CReductionAlgorithm::ReductionOperations.find(op))
+  if (CReductionAlgorithm::ReductionOperations_ptr->end() == CReductionAlgorithm::ReductionOperations_ptr->find(op))
     ERROR("CScalarAlgorithmReduceDomain::CScalarAlgorithmReduceDomain(CDomain* domainDestination, CDomain* domainSource, CReduceDomainToScalar* algo)",
        << "Operation '" << op << "' not found. Please make sure to use a supported one"
        << "Domain source " <<domainSource->getId() << std::endl
        << "Scalar destination " << scalarDestination->getId());
 
-  reduction_ = CReductionAlgorithm::createOperation((*CReductionAlgorithm::ReductionOperations_ptr)[op]);
+  //reduction_ = CReductionAlgorithm::createOperation(CReductionAlgorithm::ReductionOperations[op]);
+  reduction_ = CReductionAlgorithm::createOperation(CReductionAlgorithm::ReductionOperations_ptr->at(op));
 }
 
 void CScalarAlgorithmReduceDomain::apply(const std::vector<std::pair<int,double> >& localIndex,
                                          const double* dataInput,
                                          CArray<double,1>& dataOut,
                                          std::vector<bool>& flagInitial,                     
-                                         bool ignoreMissingValue)
+                                         bool ignoreMissingValue, bool firstPass)
 {
-  reduction_->apply(localIndex, dataInput, dataOut, flagInitial, ignoreMissingValue);
+  reduction_->apply(localIndex, dataInput, dataOut, flagInitial, ignoreMissingValue, firstPass);
 }
 
 void CScalarAlgorithmReduceDomain::updateData(CArray<double,1>& dataOut)

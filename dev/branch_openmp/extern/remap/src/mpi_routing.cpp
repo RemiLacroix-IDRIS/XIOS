@@ -4,9 +4,7 @@
 #include "elt.hpp"
 #include "timerRemap.hpp"
 #include <iostream>
-#ifdef _usingEP
-#include "ep_declaration.hpp"
-#endif
+using namespace ep_lib;
 
 namespace sphereRemap {
 
@@ -124,10 +122,6 @@ destRanks.push_back(i);
 	CTimer::get("CMPIRouting::init(reduce_scatter)").suspend();
 	CTimer::get("CMPIRouting::init(reduce_scatter)").print();
 
-	MPI_Info info_null;
-
-	// MPI_Alloc_mem(nbTarget *sizeof(int), info_null, &targetRank);
-	// MPI_Alloc_mem(nbSource *sizeof(int), info_null, &sourceRank);
 	MPI_Alloc_mem(nbTarget *sizeof(int), MPI_INFO_NULL, &targetRank);
 	MPI_Alloc_mem(nbSource *sizeof(int), MPI_INFO_NULL, &sourceRank);
 
@@ -157,7 +151,7 @@ destRanks.push_back(i);
 	for (int i = 0; i < nbSource; i++)
 	{
 		#ifdef _usingEP
-		MPI_Irecv(&sourceRank[i], 1, MPI_INT, -1, 0, communicator, &request[indexRequest]);
+		MPI_Irecv(&sourceRank[i], 1, MPI_INT, -2, 0, communicator, &request[indexRequest]);
 		#else
 		MPI_Irecv(&sourceRank[i], 1, MPI_INT, MPI_ANY_SOURCE, 0, communicator, &request[indexRequest]);
 		#endif
@@ -181,7 +175,7 @@ destRanks.push_back(i);
 	for (int i = 0; i < nbSource; i++)
 	{
 		#ifdef _usingEP
-		MPI_Irecv(&sourceRank[i], 1, MPI_INT, -1, 0, communicator, &request[indexRequest]);
+		MPI_Irecv(&sourceRank[i], 1, MPI_INT, -2, 0, communicator, &request[indexRequest]);
 		#else
 		MPI_Irecv(&sourceRank[i], 1, MPI_INT, MPI_ANY_SOURCE, 0, communicator, &request[indexRequest]);
 		#endif

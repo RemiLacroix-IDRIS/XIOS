@@ -43,9 +43,10 @@ namespace xios {
    CAxis::~CAxis(void)
    { /* Ne rien faire de plus */ }
 
-   std::map<StdString, ETranformationType> *CAxis::transformationMapList_ptr = 0; //new std::map<StdString, ETranformationType>();  
-   //bool CAxis::dummyTransformationMapList_ = CAxis::initializeTransformationMap(CAxis::transformationMapList_ptr);
-
+   //std::map<StdString, ETranformationType> CAxis::transformationMapList_ = std::map<StdString, ETranformationType>();
+   std::map<StdString, ETranformationType> *CAxis::transformationMapList_ptr = 0;
+   //bool CAxis::dummyTransformationMapList_ = CAxis::initializeTransformationMap(CAxis::transformationMapList_);
+   
    bool CAxis::initializeTransformationMap(std::map<StdString, ETranformationType>& m)
    {
      m["zoom_axis"] = TRANS_ZOOM_AXIS;
@@ -54,7 +55,6 @@ namespace xios {
      m["reduce_domain"] = TRANS_REDUCE_DOMAIN_TO_AXIS;
      m["extract_domain"] = TRANS_EXTRACT_DOMAIN_TO_AXIS;
    }
-
 
    bool CAxis::initializeTransformationMap()
    {
@@ -65,7 +65,6 @@ namespace xios {
      (*CAxis::transformationMapList_ptr)["reduce_domain"]    = TRANS_REDUCE_DOMAIN_TO_AXIS;
      (*CAxis::transformationMapList_ptr)["extract_domain"]   = TRANS_EXTRACT_DOMAIN_TO_AXIS;
    }
-
 
    ///---------------------------------------------------------------
 
@@ -499,7 +498,7 @@ namespace xios {
       {
         globalAxisZoom[nZoomCount] = globalZoomIndex;
         ++nZoomCount;
-      }
+      } 
     }
 
     std::set<int> writtenInd;
@@ -830,8 +829,8 @@ namespace xios {
 
       CContextServer* server = CContext::getCurrent()->server;
       axis->numberWrittenIndexes_ = axis->indexesToWrite.size();
-      ep_lib::MPI_Allreduce(&axis->numberWrittenIndexes_, &axis->totalNumberWrittenIndexes_, 1, MPI_INT, MPI_SUM, server->intraComm);
-      ep_lib::MPI_Scan(&axis->numberWrittenIndexes_, &axis->offsetWrittenIndexes_, 1, MPI_INT, MPI_SUM, server->intraComm);
+      MPI_Allreduce(&axis->numberWrittenIndexes_, &axis->totalNumberWrittenIndexes_, 1, MPI_INT, MPI_SUM, server->intraComm);
+      MPI_Scan(&axis->numberWrittenIndexes_, &axis->offsetWrittenIndexes_, 1, MPI_INT, MPI_SUM, server->intraComm);
       axis->offsetWrittenIndexes_ -= axis->numberWrittenIndexes_;
     }
   }
@@ -977,7 +976,7 @@ namespace xios {
         msg << this->getId();
         msg << ni << begin << end;
         msg << global_zoom_begin.getValue() << global_zoom_n.getValue();
-        msg << isCompressible_;
+        msg << isCompressible_;        
         msg << zoomIndex;
         if (zoomIndex)
           msg << global_zoom_index.getValue();
@@ -1156,12 +1155,11 @@ namespace xios {
         { nodeId = node.getAttributes()["id"]; }
 
         nodeElementName = node.getElementName();
-
+        //std::map<StdString, ETranformationType>::const_iterator ite = transformationMapList_.end(), it;
         if(transformationMapList_ptr == 0) initializeTransformationMap();
-        //transformationMapList_ptr = new std::map<StdString, ETranformationType>();
-
-        std::map<StdString, ETranformationType>::const_iterator ite = (*CAxis::transformationMapList_ptr).end(), it;
-        it = (*CAxis::transformationMapList_ptr).find(nodeElementName);
+        std::map<StdString, ETranformationType>::const_iterator ite = transformationMapList_ptr->end(), it;
+        //it = transformationMapList_.find(nodeElementName);
+        it = transformationMapList_ptr->find(nodeElementName);
         if (ite != it)
         {
           transformationMap_.push_back(std::make_pair(it->second, CTransformation<CAxis>::createTransformation(it->second,
@@ -1183,4 +1181,3 @@ namespace xios {
    ///---------------------------------------------------------------
 
 } // namespace xios
-

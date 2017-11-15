@@ -79,13 +79,10 @@ namespace xios {
       int nbEdges_;
       int nbFaces_;
 
-      static std::map <StdString, CMesh> meshList;
-      static std::map <StdString, vector<int> > domainList;
-
+      //static std::map <StdString, CMesh> meshList;
       static std::map <StdString, CMesh> *meshList_ptr;
+      //static std::map <StdString, vector<int> > domainList;
       static std::map <StdString, vector<int> > *domainList_ptr;
-      #pragma omp threadprivate(meshList_ptr, domainList_ptr)
-   
       CClientClientDHTSizet* pNodeGlobalIndex;                    // pointer to a map <nodeHash, nodeIdxGlo>
       CClientClientDHTSizet* pEdgeGlobalIndex;                    // pointer to a map <edgeHash, edgeIdxGlo>
       void getGloNghbFacesNodeType(const ep_lib::MPI_Comm&, const CArray<int, 1>&, const CArray<double, 2>&, const CArray<double, 2>&, CArray<int, 2>&);

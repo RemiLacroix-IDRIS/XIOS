@@ -5,72 +5,64 @@
 
 namespace xios
 {
-   /// ////////////////////// Définitions ////////////////////// ///
+   /// ////////////////////// Dfinitions ////////////////////// ///
    template <typename U>
        int CObjectFactory::GetObjectNum(void)
    {
-      if (CurrContext_ptr->size() == 0)
+      if (CurrContext.size() == 0)
          ERROR("CObjectFactory::GetObjectNum(void)",
                << "please define current context id !");
-
-      if(U::AllVectObj == NULL) return 0;
-      
-      
-      return (*U::AllVectObj)[*CObjectFactory::CurrContext_ptr].size();
+      //return (U::AllVectObj[CObjectFactory::CurrContext].size());
+      if(U::AllVectObj_ptr == NULL) return 0;
+      return (*U::AllVectObj_ptr)[CObjectFactory::CurrContext].size();
    }
 
    template <typename U>
       int CObjectFactory::GetObjectIdNum(void)
    {
-      if (CurrContext_ptr->size() == 0)
+      if (CurrContext.size() == 0)
          ERROR("CObjectFactory::GetObjectIdNum(void)",
                << "please define current context id !");
-      if(U::AllMapObj  == NULL) return 0;
-
-      
-
-      return (* U::AllMapObj) [*CObjectFactory::CurrContext_ptr].size();
+      //return (U::AllMapObj[CObjectFactory::CurrContext].size());
+      if(U::AllMapObj_ptr == NULL) return 0;
+      return (*U::AllMapObj_ptr)[CObjectFactory::CurrContext].size();
    }
 
    template <typename U>
       bool CObjectFactory::HasObject(const StdString & id)
    {
-      if (CurrContext_ptr->size() == 0)
+      if (CurrContext.size() == 0)
          ERROR("CObjectFactory::HasObject(const StdString & id)",
                << "[ id = " << id << " ] please define current context id !");
-      
-      if(U::AllMapObj  == NULL)  return false;
+      //return (U::AllMapObj[CObjectFactory::CurrContext].find(id) !=
+      //        U::AllMapObj[CObjectFactory::CurrContext].end());
+      if(U::AllMapObj_ptr  == NULL)  return false;
+      return ((*U::AllMapObj_ptr)[CObjectFactory::CurrContext].find(id) !=
+              (*U::AllMapObj_ptr)[CObjectFactory::CurrContext].end());
 
-      
-
-      return ((*U::AllMapObj)[*CObjectFactory::CurrContext_ptr].find(id) !=
-              (*U::AllMapObj)[*CObjectFactory::CurrContext_ptr].end());
    }
 
    template <typename U>
       bool CObjectFactory::HasObject(const StdString & context, const StdString & id)
    {
-      if(U::AllMapObj  == NULL) return false;
 
-      if (U::AllMapObj->find(context) == U::AllMapObj->end()) return false ;
+      // if (U::AllMapObj.find(context) == U::AllMapObj.end()) return false ;
+      // else return (U::AllMapObj[context].find(id) !=  U::AllMapObj[context].end());
+      if(U::AllMapObj_ptr  == NULL) return false;
 
-      else
-      {
-         return ((*U::AllMapObj)[context].find(id) !=  (*U::AllMapObj)[context].end());
-      } 
-         
+      if (U::AllMapObj_ptr->find(context) == U::AllMapObj_ptr->end()) return false ;
+      else return ((*U::AllMapObj_ptr)[context].find(id) !=  (*U::AllMapObj_ptr)[context].end());
    }
 
    template <typename U>
       boost::shared_ptr<U> CObjectFactory::GetObject(const U * const object)
    {
-      if(U::AllVectObj == NULL) return (boost::shared_ptr<U>());
-   
-      if (CurrContext_ptr->size() == 0)
+      if(U::AllVectObj_ptr == NULL) return (boost::shared_ptr<U>());
+      if (CurrContext.size() == 0)
          ERROR("CObjectFactory::GetObject(const U * const object)",
                << "please define current context id !");
-      std::vector<boost::shared_ptr<U> > & vect =
-                     (*U::AllVectObj)[*CObjectFactory::CurrContext_ptr];
+      //std::vector<boost::shared_ptr<U> > & vect = U::AllVectObj[CObjectFactory::CurrContext];
+      std::vector<boost::shared_ptr<U> > & vect = (*U::AllVectObj_ptr)[CObjectFactory::CurrContext];
 
       typename std::vector<boost::shared_ptr<U> >::const_iterator
          it = vect.begin(), end = vect.end();
@@ -91,39 +83,52 @@ namespace xios
    template <typename U>
       boost::shared_ptr<U> CObjectFactory::GetObject(const StdString & id)
    {
-      if(U::AllMapObj  == NULL) return (boost::shared_ptr<U>());
-
-      if (CurrContext_ptr->size() == 0)
+      if(U::AllMapObj_ptr  == NULL) return (boost::shared_ptr<U>());
+      if (CurrContext.size() == 0)
          ERROR("CObjectFactory::GetObject(const StdString & id)",
                << "[ id = " << id << " ] please define current context id !");
       if (!CObjectFactory::HasObject<U>(id))
          ERROR("CObjectFactory::GetObject(const StdString & id)",
                << "[ id = " << id << ", U = " << U::GetName() << " ] "
                << "object was not found.");
-      return (*U::AllMapObj)[*CObjectFactory::CurrContext_ptr][id];
+
+      //cout<<"CObjectFactory::GetObject(const StdString & id)[ id = " << id << ", U = " << U::GetName() << " ] "<<endl;
+      if(id == "src_domain_regular_read")
+      {
+         //cout<<"match"<<endl;
+      }
+
+      //return (U::AllMapObj[CObjectFactory::CurrContext][id]);
+      return (*U::AllMapObj_ptr)[CObjectFactory::CurrContext][id];
    }
 
    template <typename U>
       boost::shared_ptr<U> CObjectFactory::GetObject(const StdString & context, const StdString & id)
    {
-      if(U::AllMapObj  == NULL) return (boost::shared_ptr<U>());
+      if(U::AllMapObj_ptr  == NULL) return (boost::shared_ptr<U>());
 
       if (!CObjectFactory::HasObject<U>(context,id))
          ERROR("CObjectFactory::GetObject(const StdString & id)",
                << "[ id = " << id << ", U = " << U::GetName() <<", context = "<<context<< " ] "
                << "object was not found.");
 
-      return (*U::AllMapObj)[context][id];
+      //cout<<"CObjectFactory::GetObject(const StdString & context, const StdString & id)[ id = " << id << ", U = " << U::GetName() << " ] "<<endl;
+      if(id == "src_domain_regular_read")
+      {
+         //cout<<"match"<<endl;
+         boost::shared_ptr<U> value;
+      }
+      //return (U::AllMapObj[context][id]);
+      return (*U::AllMapObj_ptr)[context][id];
    }
 
    template <typename U>
    boost::shared_ptr<U> CObjectFactory::CreateObject(const StdString& id)
    {
-      if(U::AllVectObj == NULL) U::AllVectObj = new xios_map<StdString, std::vector<boost::shared_ptr<U> > >;
-      if(U::AllMapObj  == NULL) U::AllMapObj  = new xios_map<StdString, xios_map<StdString, boost::shared_ptr<U> > >;
+      if(U::AllVectObj_ptr == NULL) U::AllVectObj_ptr = new xios_map<StdString, std::vector<boost::shared_ptr<U> > >;
+      if(U::AllMapObj_ptr  == NULL) U::AllMapObj_ptr  = new xios_map<StdString, xios_map<StdString, boost::shared_ptr<U> > >;
 
-      
-      if (CurrContext_ptr->empty())
+      if (CurrContext.empty())
          ERROR("CObjectFactory::CreateObject(const StdString& id)",
                << "[ id = " << id << " ] please define current context id !");
 
@@ -135,8 +140,12 @@ namespace xios
       {
          boost::shared_ptr<U> value(new U(id.empty() ? CObjectFactory::GenUId<U>() : id));
 
-         (* U::AllVectObj)[*CObjectFactory::CurrContext_ptr].insert((*U::AllVectObj)[*CObjectFactory::CurrContext_ptr].end(), value);
-         (* U::AllMapObj) [*CObjectFactory::CurrContext_ptr].insert(std::make_pair(value->getId(), value));
+         //U::AllVectObj[CObjectFactory::CurrContext].insert(U::AllVectObj[CObjectFactory::CurrContext].end(), value);
+         //U::AllMapObj[CObjectFactory::CurrContext].insert(std::make_pair(value->getId(), value));
+
+         (*U::AllVectObj_ptr)[CObjectFactory::CurrContext].insert((*U::AllVectObj_ptr)[CObjectFactory::CurrContext].end(), value);
+         (*U::AllMapObj_ptr) [CObjectFactory::CurrContext].insert(std::make_pair(value->getId(), value));
+         //cout<<"CObjectFactory::CreateObject(const StdString& id) [ id = " << id << " ]" <<endl;
 
          return value;
       }
@@ -146,9 +155,8 @@ namespace xios
       const std::vector<boost::shared_ptr<U> > &
          CObjectFactory::GetObjectVector(const StdString & context)
    {
-      if(U::AllVectObj != NULL) 
-      
-      return (*U::AllVectObj)[context];
+      //return (U::AllVectObj[context]);
+      return (*U::AllVectObj_ptr)[context];
    }
 
    template <typename U>
@@ -162,8 +170,8 @@ namespace xios
    StdString CObjectFactory::GenUId(void)
    {
       StdOStringStream oss;
-      if(U::GenId == NULL) U::GenId = new xios_map< StdString, long int >;
-      oss << GetUIdBase<U>() << (*U::GenId)[*CObjectFactory::CurrContext_ptr]++;
+      if(U::GenId_ptr == NULL) U::GenId_ptr = new xios_map< StdString, long int >;
+      oss << GetUIdBase<U>() << (*U::GenId_ptr)[CObjectFactory::CurrContext]++;
       return oss.str();
    }
 

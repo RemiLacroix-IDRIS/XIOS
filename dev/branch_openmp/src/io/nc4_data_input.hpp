@@ -2,10 +2,10 @@
 #define __XIOS_NC4_DATA_INPUT__
 
 /// XIOS headers ///
+#include "mpi_std.hpp"
 #include "xios_spl.hpp"
 #include "data_input.hpp"
 #include "inetcdf4.hpp"
-// mpi_std.hpp
 
 namespace xios
 {
@@ -23,7 +23,7 @@ namespace xios
     typedef CDataInput SuperClass;
 
     /// Constructors ///
-    CNc4DataInput(const StdString& filename, MPI_Comm comm_file, bool multifile, bool isCollective = true,
+    CNc4DataInput(const StdString& filename, ep_lib::MPI_Comm comm_file, bool multifile, bool isCollective = true,
                   const StdString& timeCounterName = "time_counter");
     CNc4DataInput(const CNc4DataInput& dataInput);       // Not implemented.
     CNc4DataInput(const CNc4DataInput* const dataInput); // Not implemented.
@@ -70,7 +70,7 @@ namespace xios
 
   private:
     /// Private attributes ///
-    MPI_Comm comm_file;
+    ep_lib::MPI_Comm comm_file;
     const StdString filename;
     bool isCollective;
   }; // class CNc4DataInput

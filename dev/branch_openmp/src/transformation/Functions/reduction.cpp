@@ -9,9 +9,26 @@ namespace xios {
 
 CReductionAlgorithm::CallBackMap* CReductionAlgorithm::reductionCreationCallBacks_ = 0;
 //std::map<StdString,EReductionType> CReductionAlgorithm::ReductionOperations = std::map<StdString,EReductionType>();
-std::map<StdString,EReductionType> *CReductionAlgorithm::ReductionOperations_ptr = 0; 
-//#pragma omp threadprivate(CReductionAlgorithm::ReductionOperations_ptr)
+std::map<StdString,EReductionType> *CReductionAlgorithm::ReductionOperations_ptr = 0;
 
+bool CReductionAlgorithm::initReductionOperation(std::map<StdString,EReductionType>& m)
+{
+  // So so stupid way to intialize operation but it works ...
+  m["sum"] = TRANS_REDUCE_SUM;
+  CSumReductionAlgorithm::registerTrans();
+
+  m["min"] = TRANS_REDUCE_MIN;
+  CMinReductionAlgorithm::registerTrans();
+
+  m["max"] = TRANS_REDUCE_MAX;
+  CMaxReductionAlgorithm::registerTrans();
+
+  m["extract"] = TRANS_REDUCE_EXTRACT;
+  CExtractReductionAlgorithm::registerTrans();
+
+  m["average"] = TRANS_REDUCE_AVERAGE;
+  CAverageReductionAlgorithm::registerTrans();
+}
 
 bool CReductionAlgorithm::initReductionOperation()
 {
@@ -34,12 +51,11 @@ bool CReductionAlgorithm::initReductionOperation()
 }
 
 //bool CReductionAlgorithm::_dummyInit = CReductionAlgorithm::initReductionOperation(CReductionAlgorithm::ReductionOperations);
-//bool CReductionAlgorithm::_dummyInit = CReductionAlgorithm::initReductionOperation();
+bool CReductionAlgorithm::_dummyInit = CReductionAlgorithm::initReductionOperation();
 
 CReductionAlgorithm* CReductionAlgorithm::createOperation(EReductionType reduceType)
 {
   int reduceTypeInt = reduceType;
-
   CallBackMap::const_iterator it = (*reductionCreationCallBacks_).find(reduceType);
   if ((*reductionCreationCallBacks_).end() == it)
   {

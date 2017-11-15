@@ -12,6 +12,7 @@
 #include "domain.hpp"
 #include "grid.hpp"
 #include "grid_transformation_factory_impl.hpp"
+#include "reduction.hpp"
 
 namespace xios {
 CGenericAlgorithmTransformation* CAxisAlgorithmReduceDomain::create(CGrid* gridDst, CGrid* gridSrc,
@@ -68,20 +69,17 @@ CAxisAlgorithmReduceDomain::CAxisAlgorithmReduceDomain(CAxis* axisDestination, C
   }
 
   dir_ = (CReduceDomainToAxis::direction_attr::iDir == algo->direction)  ? iDir : jDir;
-
-  if(CReductionAlgorithm::ReductionOperations_ptr == 0) 
-    CReductionAlgorithm::initReductionOperation();
-
-  reduction_ = CReductionAlgorithm::createOperation((*CReductionAlgorithm::ReductionOperations_ptr)[op]);
+  //reduction_ = CReductionAlgorithm::createOperation(CReductionAlgorithm::ReductionOperations[op]);
+  reduction_ = CReductionAlgorithm::createOperation(CReductionAlgorithm::ReductionOperations_ptr->at(op));
 }
 
 void CAxisAlgorithmReduceDomain::apply(const std::vector<std::pair<int,double> >& localIndex,
                                        const double* dataInput,
                                        CArray<double,1>& dataOut,
                                        std::vector<bool>& flagInitial,                     
-                                       bool ignoreMissingValue)
+                                       bool ignoreMissingValue, bool firstPass)
 {
-  reduction_->apply(localIndex, dataInput, dataOut, flagInitial, ignoreMissingValue);
+  reduction_->apply(localIndex, dataInput, dataOut, flagInitial, ignoreMissingValue, firstPass);
 }
 
 void CAxisAlgorithmReduceDomain::updateData(CArray<double,1>& dataOut)
@@ -104,7 +102,7 @@ void CAxisAlgorithmReduceDomain::computeIndexSourceMapping_(const std::vector<CA
 
   CArray<int,1>& axisDstIndex = axisDest_->index;
   int ni_glo = domainSrc_->ni_glo, nj_glo = domainSrc_->nj_glo;
-  if (jDir == dir_)
+  if (iDir == dir_)
   {
     int nbAxisIdx = axisDstIndex.numElements();
     for (int idxAxis = 0; idxAxis < nbAxisIdx; ++idxAxis)
@@ -119,7 +117,7 @@ void CAxisAlgorithmReduceDomain::computeIndexSourceMapping_(const std::vector<CA
       }
     }
   }
-  else if (iDir == dir_)
+  else if (jDir == dir_)
   {
     int nbAxisIdx = axisDstIndex.numElements();
     for (int idxAxis = 0; idxAxis < nbAxisIdx; ++idxAxis)

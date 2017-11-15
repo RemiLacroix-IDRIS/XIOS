@@ -2,7 +2,6 @@
 #define __XIOS_CSpatialTransformFilter__
 
 #include "filter.hpp"
-
 namespace xios
 {
   class CGrid;
@@ -105,8 +104,6 @@ namespace xios
       //! The allocated engines
       //static std::map<CGridTransformation*, boost::shared_ptr<CSpatialTransformFilterEngine> > engines;
       static std::map<CGridTransformation*, boost::shared_ptr<CSpatialTransformFilterEngine> > *engines_ptr;
-      #pragma omp threadprivate(engines_ptr)
-      
   }; // class CSpatialTransformFilterEngine
 } // namespace xios
 

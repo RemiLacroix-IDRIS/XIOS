@@ -7,10 +7,6 @@
 #include "mpi.hpp"
 #include "event_scheduler.hpp"
 
-#ifdef _usingEP
-#include "ep_declaration.hpp"
-#endif
-
 namespace xios
 {
     class CServer
@@ -27,9 +23,9 @@ namespace xios
         static void listenRootFinalize(void);
         static void registerContext(void* buff,int count, int leaderRank=0);
 
-        static MPI_Comm intraComm;
-        static list<MPI_Comm> interComm;
-        static std::list<MPI_Comm> contextInterComms;
+        static ep_lib::MPI_Comm intraComm;
+        static list<ep_lib::MPI_Comm> interComm;
+        static std::list<ep_lib::MPI_Comm> contextInterComms;
         static CEventScheduler* eventScheduler;
         
         struct contextMessage

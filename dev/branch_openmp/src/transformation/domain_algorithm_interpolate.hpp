@@ -8,13 +8,10 @@
  */
 #ifndef __XIOS_DOMAIN_ALGORITHM_INTERPOLATE_HPP__
 #define __XIOS_DOMAIN_ALGORITHM_INTERPOLATE_HPP__
-
+#include "mpi_std.hpp"
 #include "domain_algorithm_transformation.hpp"
 #include "transformation.hpp"
 #include "nc4_data_output.hpp"
-#ifdef _usingEP
-#include "ep_declaration.hpp"
-#endif
 
 namespace xios {
 
@@ -58,7 +55,7 @@ private:
   class WriteNetCdf : public CNc4DataOutput
   {
   public:
-    WriteNetCdf(const StdString& filename, const MPI_Comm comm);
+    WriteNetCdf(const StdString& filename, const ep_lib::MPI_Comm comm);
     int addDimensionWrite(const StdString& name, const StdSize size = UNLIMITED_DIM);
     int addVariableWrite(const StdString& name, nc_type type,
                          const std::vector<StdString>& dim);

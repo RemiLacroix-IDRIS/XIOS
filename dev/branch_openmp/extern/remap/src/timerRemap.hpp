@@ -26,9 +26,7 @@ namespace sphereRemap {
     double getCumulatedTime(void);
     void print(void);
     //static map<string,CTimer*> allTimer;
-    static map<string,CTimer*> *allTimer;
-    #pragma omp threadprivate(allTimer)
-    
+    static map<string,CTimer*> *allTimer_ptr;
     static double getTime(void);
     static CTimer& get(string name);
   };

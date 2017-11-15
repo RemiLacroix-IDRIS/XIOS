@@ -10,16 +10,14 @@
 #include "mpi.hpp"
 #include "timer.hpp"
 #include "buffer_client.hpp"
-#include "log.hpp"
-
+using namespace ep_lib;
 
 namespace xios
 {
-    extern int test_omp_rank;
-    #pragma omp threadprivate(test_omp_rank)
 
     MPI_Comm CClient::intraComm ;
     MPI_Comm CClient::interComm ;
+    //std::list<MPI_Comm> CClient::contextInterComms;
     std::list<MPI_Comm> *CClient::contextInterComms_ptr = 0;
     int CClient::serverLeader ;
     bool CClient::is_MPI_Initialized ;
@@ -27,9 +25,7 @@ namespace xios
     StdOFStream CClient::m_infoStream;
     StdOFStream CClient::m_errorStream;
 
-    StdOFStream CClient::array_infoStream[16];
-
-    void CClient::initialize(const string& codeId, MPI_Comm& localComm, MPI_Comm& returnComm)
+    void CClient::initialize(const string& codeId,MPI_Comm& localComm,MPI_Comm& returnComm)
     {
       int initialized ;
       MPI_Initialized(&initialized) ;
@@ -40,15 +36,11 @@ namespace xios
       if (!CXios::usingOasis)
       {
 // localComm doesn't given
-
         if (localComm == MPI_COMM_NULL)
         {
           if (!is_MPI_Initialized)
           {
-            //MPI_Init(NULL, NULL);
-            int return_level;
-            MPI_Init_thread(NULL, NULL, 3, &return_level);
-            assert(return_level == 3);
+            MPI_Init(NULL, NULL);
           }
           CTimer::get("XIOS").resume() ;
           CTimer::get("XIOS init/finalize").resume() ;
@@ -60,10 +52,10 @@ namespace xios
           int size ;
           int myColor ;
           int i,c ;
+          MPI_Comm newComm ;
 
-          MPI_Comm_size(CXios::globalComm,&size);
+          MPI_Comm_size(CXios::globalComm,&size) ;
           MPI_Comm_rank(CXios::globalComm,&rank);
-       
 
           hashAll=new unsigned long[size] ;
 
@@ -105,18 +97,9 @@ namespace xios
             int intraCommSize, intraCommRank ;
             MPI_Comm_size(intraComm,&intraCommSize) ;
             MPI_Comm_rank(intraComm,&intraCommRank) ;
-            
-            #pragma omp critical(_output)
-            {
-              info(10)<<"intercommCreate::client "<<test_omp_rank<< " "<< &test_omp_rank <<" intraCommSize : "<<intraCommSize
-                 <<" intraCommRank :"<<intraCommRank<<"  serverLeader "<< serverLeader
-                 <<" globalComm : "<< &(CXios::globalComm) << endl ;  
-            }
-
-            
-            //test_sendrecv(CXios::globalComm);
+            info(50)<<"intercommCreate::client "<<rank<<" intraCommSize : "<<intraCommSize
+                 <<" intraCommRank :"<<intraCommRank<<"  clientLeader "<< serverLeader<<endl ;
             MPI_Intercomm_create(intraComm,0,CXios::globalComm,serverLeader,0,&interComm) ;
-
           }
           else
           {
@@ -139,7 +122,7 @@ namespace xios
         }
       }
       // using OASIS
-      else
+/*      else
       {
         // localComm doesn't given
         if (localComm == MPI_COMM_NULL)
@@ -164,28 +147,23 @@ namespace xios
         }
         else MPI_Comm_dup(intraComm,&interComm) ;
       }
-
+*/
       MPI_Comm_dup(intraComm,&returnComm) ;
-
     }
 
 
     void CClient::registerContext(const string& id,MPI_Comm contextComm)
     {
       CContext::setCurrent(id) ;
-      CContext* context = CContext::create(id);
-
-      int tmp_rank;
-      MPI_Comm_rank(contextComm,&tmp_rank) ;
-      
+      CContext* context=CContext::create(id);
       StdString idServer(id);
       idServer += "_server";
 
       if (!CXios::isServer)
       {
         int size,rank,globalRank ;
-        //size_t message_size ;
-        //int leaderRank ;
+        size_t message_size ;
+        int leaderRank ;
         MPI_Comm contextInterComm ;
 
         MPI_Comm_size(contextComm,&size) ;
@@ -196,7 +174,7 @@ namespace xios
 
         CMessage msg ;
         msg<<idServer<<size<<globalRank ;
-
+//        msg<<id<<size<<globalRank ;
 
         int messageSize=msg.size() ;
         char * buff = new char[messageSize] ;
@@ -207,22 +185,17 @@ namespace xios
         delete [] buff ;
 
         MPI_Intercomm_create(contextComm,0,CXios::globalComm,serverLeader,10+globalRank,&contextInterComm) ;
-        
-        #pragma omp critical(_output)
-        info(10)<<" RANK "<< tmp_rank<<" Register new Context : "<<id<<endl ;
-
+        info(10)<<"Register new Context : "<<id<<endl ;
 
         MPI_Comm inter ;
         MPI_Intercomm_merge(contextInterComm,0,&inter) ;
         MPI_Barrier(inter) ;
 
-        
         context->initClient(contextComm,contextInterComm) ;
 
-        
+        //contextInterComms.push_back(contextInterComm);
         if(contextInterComms_ptr == NULL) contextInterComms_ptr = new std::list<MPI_Comm>;
         contextInterComms_ptr->push_back(contextInterComm);
-        
         MPI_Comm_free(&inter);
       }
       else
@@ -239,10 +212,10 @@ namespace xios
 
         // Finally, we should return current context to context client
         CContext::setCurrent(id);
-        
+
+        //contextInterComms.push_back(contextInterComm);
         if(contextInterComms_ptr == NULL) contextInterComms_ptr = new std::list<MPI_Comm>;
         contextInterComms_ptr->push_back(contextInterComm);
-
       }
     }
 
@@ -252,7 +225,7 @@ namespace xios
       int msg=0 ;
 
       MPI_Comm_rank(intraComm,&rank) ;
-
+ 
       if (!CXios::isServer)
       {
         MPI_Comm_rank(intraComm,&rank) ;
@@ -262,9 +235,9 @@ namespace xios
         }
       }
 
-      for (std::list<MPI_Comm>::iterator it = contextInterComms_ptr->begin(); it != contextInterComms_ptr->end(); ++it)
+      //for (std::list<MPI_Comm>::iterator it = contextInterComms.begin(); it != contextInterComms.end(); it++)
+      for (std::list<MPI_Comm>::iterator it = contextInterComms_ptr->begin(); it != contextInterComms_ptr->end(); it++)
         MPI_Comm_free(&(*it));
-      
       MPI_Comm_free(&interComm);
       MPI_Comm_free(&intraComm);
 
@@ -273,15 +246,12 @@ namespace xios
 
       if (!is_MPI_Initialized)
       {
-        if (CXios::usingOasis) oasis_finalize();
-        else MPI_Finalize();
+        //if (CXios::usingOasis) oasis_finalize();
+        //else
+        MPI_Finalize() ;
       }
       
-      #pragma omp critical (_output)
-      info(20) << "Client "<<rank<<" : Client side context is finalized "<< endl ;
-
-   /*#pragma omp critical (_output)
-   {
+      info(20) << "Client side context is finalized"<<endl ;
       report(0) <<" Performance report : Whole time from XIOS init and finalize: "<< CTimer::get("XIOS init/finalize").getCumulatedTime()<<" s"<<endl ;
       report(0) <<" Performance report : total time spent for XIOS : "<< CTimer::get("XIOS").getCumulatedTime()<<" s"<<endl ;
       report(0)<< " Performance report : time spent for waiting free buffer : "<< CTimer::get("Blocking time").getCumulatedTime()<<" s"<<endl ;
@@ -291,8 +261,6 @@ namespace xios
       report(0)<< " Memory report : Minimum buffer size required : " << CClientBuffer::maxRequestSize << " bytes" << endl ;
       report(0)<< " Memory report : increasing it by a factor will increase performance, depending of the volume of data wrote in file at each time step of the file"<<endl ;
       report(100)<<CTimer::getAllCumulatedTime()<<endl ;
-   }*/
-   
    }
 
    int CClient::getRank()
@@ -321,11 +289,10 @@ namespace xios
       }
 
       fileNameClient << fileName << "_" << std::setfill('0') << std::setw(numDigit) << getRank() << ext;
-      
       fb->open(fileNameClient.str().c_str(), std::ios::out);
       if (!fb->is_open())
         ERROR("void CClient::openStream(const StdString& fileName, const StdString& ext, std::filebuf* fb)",
-            << std::endl << "Can not open <" << fileNameClient << "> file to write the client log(s).");
+              << std::endl << "Can not open <" << fileNameClient << "> file to write the client log(s).");
     }
 
     /*!
@@ -336,15 +303,11 @@ namespace xios
     */
     void CClient::openInfoStream(const StdString& fileName)
     {
-      //std::filebuf* fb = m_infoStream.rdbuf();
+      std::filebuf* fb = m_infoStream.rdbuf();
+      openStream(fileName, ".out", fb);
 
-      info_FB[omp_get_thread_num()] = array_infoStream[omp_get_thread_num()].rdbuf();
-          
-      openStream(fileName, ".out", info_FB[omp_get_thread_num()]);
-
-      info.write2File(info_FB[omp_get_thread_num()]);
-      report.write2File(info_FB[omp_get_thread_num()]);
-      
+      info.write2File(fb);
+      report.write2File(fb);
     }
 
     //! Write the info logs to standard output

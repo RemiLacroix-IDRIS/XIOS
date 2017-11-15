@@ -3,12 +3,14 @@
 #include <string>
 #include <map>
 #include <iostream>
+using namespace ep_lib;
 
 namespace sphereRemap {
 
 using namespace std;
 
-map<string,CTimer*> *CTimer::allTimer = 0;
+//map<string,CTimer*> CTimer::allTimer;
+map<string,CTimer*> *CTimer::allTimer_ptr = 0;
 
 CTimer::CTimer(const string& name_) : name(name_)
 {
@@ -54,10 +56,12 @@ void CTimer::print(void)
 
 CTimer& CTimer::get(const string name)
 {
-        if(allTimer == 0) allTimer = new map<string,CTimer*>;
 	map<string,CTimer*>::iterator it;
-	it=(*allTimer).find(name);
-	if (it==(*allTimer).end()) it=(*allTimer).insert(pair<string,CTimer*>(name,new CTimer(name))).first;
+	if(allTimer_ptr == 0) allTimer_ptr = new map<string,CTimer*>;
+	//it=allTimer.find(name);
+	it=allTimer_ptr->find(name);
+	//if (it==allTimer.end()) it=allTimer.insert(pair<string,CTimer*>(name,new CTimer(name))).first;
+	if (it==allTimer_ptr->end()) it=allTimer_ptr->insert(pair<string,CTimer*>(name,new CTimer(name))).first;
 	return *(it->second);
 }
 }

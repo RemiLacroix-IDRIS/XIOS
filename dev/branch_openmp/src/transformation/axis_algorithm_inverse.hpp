@@ -11,10 +11,7 @@
 
 #include "axis_algorithm_transformation.hpp"
 #include "transformation.hpp"
-#ifdef _usingEP
-#include "ep_declaration.hpp"
-#endif
-   
+
 namespace xios {
 
 class CAxis;

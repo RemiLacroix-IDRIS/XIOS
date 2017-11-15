@@ -24,10 +24,9 @@ class CReductionAlgorithm
 public:
   //static std::map<StdString,EReductionType> ReductionOperations;
   static std::map<StdString,EReductionType> *ReductionOperations_ptr;
-  #pragma omp threadprivate(ReductionOperations_ptr)
 
 public:
-  CReductionAlgorithm() { }
+  CReductionAlgorithm() {}
 
   /*!
     Create an operation (sum, max, min) based on type
@@ -42,12 +41,13 @@ public:
     \param [in] dataInput Pointer to the first element of data input array (in form of buffer)
     \param [in/out] dataOut Array contains local data
     \param [in/out] flagInitial vector of boolean to mark the local index already initialized. True means there is a need for initialization
+    \param [in] firstPass indicate if it is the first time the apply funtion is called for a same transformation, in order to make a clean initialization 
   */
   virtual void apply(const std::vector<std::pair<int,double> >& localIndex,
                      const double* dataInput,
                      CArray<double,1>& dataOut,
                      std::vector<bool>& flagInitial,                     
-                     bool ignoreMissingValue) = 0;
+                     bool ignoreMissingValue, bool firstPass) = 0;
   /*!
     Update local data 
     In some case (e.g average) we need global information (e.g weights) then update data with this information
@@ -61,7 +61,6 @@ protected:
   typedef CReductionAlgorithm* (*CreateOperationCallBack)();
   typedef std::map<EReductionType, CreateOperationCallBack> CallBackMap;
   static CallBackMap* reductionCreationCallBacks_;
-  #pragma omp threadprivate(reductionCreationCallBacks_)
 
   static bool registerOperation(EReductionType reduceType, CreateOperationCallBack createFn);
   static bool unregisterOperation(EReductionType reduceType);
@@ -70,7 +69,6 @@ protected:
   static bool initReductionOperation(std::map<StdString,EReductionType>& m);
   static bool initReductionOperation();
   static bool _dummyInit;
-  #pragma omp threadprivate(_dummyInit)
 };
 
 }

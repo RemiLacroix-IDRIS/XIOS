@@ -343,6 +343,8 @@ namespace ep_lib
       return a||b||c||d;
     }
 
+    bool is_null();
+
   };
 
 

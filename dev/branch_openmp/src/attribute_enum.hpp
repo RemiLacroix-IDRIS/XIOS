@@ -13,77 +13,76 @@
 
 namespace xios
 {
-    /// ////////////////////// DÃ©clarations ////////////////////// ///
-    /*!
-      \class CAttributeEnum
-      This class implements the attribute representing enumeration
+      /// ////////////////////// Déclarations ////////////////////// ///
+        /*!
+        \class CAttributeEnum
+        This class implements the attribute representing enumeration
       */
-    template <class T>
-        class CAttributeEnum : public CAttribute, public CEnum<T>
-    {
+      template <class T>
+         class CAttributeEnum : public CAttribute, public CEnum<T>
+      {
         typedef typename T::t_enum T_enum ;
         public :
 
-        /// Constructeurs ///
-        explicit CAttributeEnum(const StdString & id);
-        CAttributeEnum(const StdString & id,
-                xios_map<StdString, CAttribute*> & umap);
-        CAttributeEnum(const StdString & id, const T_enum & value);
-        CAttributeEnum(const StdString & id, const T_enum & value,
-                xios_map<StdString, CAttribute*> & umap);
+            /// Constructeurs ///
+            explicit CAttributeEnum(const StdString & id);
+            CAttributeEnum(const StdString & id,
+                               xios_map<StdString, CAttribute*> & umap);
+            CAttributeEnum(const StdString & id, const T_enum & value);
+            CAttributeEnum(const StdString & id, const T_enum & value,
+                               xios_map<StdString, CAttribute*> & umap);
 
-        /// Accesseur ///
-        T_enum getValue(void) const;
-        string getStringValue(void) const;
+            /// Accesseur ///
+            T_enum getValue(void) const;
+            string getStringValue(void) const;
 
 
-        /// Mutateurs ///
-        void setValue(const T_enum & value);
+            /// Mutateurs ///
+            void setValue(const T_enum & value);
+            
+            void set(const CAttribute& attr) ;
+            void set(const CAttributeEnum& attr) ;
+            void reset(void);
+            
+            void setInheritedValue(const CAttributeEnum& attr );
+            void setInheritedValue(const CAttribute& attr );
+            T_enum getInheritedValue(void)  const;
+            string getInheritedStringValue(void) const;
+            bool hasInheritedValue(void) const;          
+          
+            bool isEqual(const CAttributeEnum& attr );
+            bool isEqual(const CAttribute& attr );
 
-        void set(const CAttribute& attr) ;
-        void set(const CAttributeEnum& attr) ;
-        void reset(void);
+            /// Destructeur ///
+            virtual ~CAttributeEnum(void) { }
 
-        void setInheritedValue(const CAttributeEnum& attr );
-        void setInheritedValue(const CAttribute& attr );
-        T_enum getInheritedValue(void)  const;
-        string getInheritedStringValue(void) const;
-        bool hasInheritedValue(void) const;          
+            /// Operateur ///
+            CAttributeEnum& operator=(const T_enum & value);
 
-        bool isEqual(const CAttributeEnum& attr );
-        bool isEqual(const CAttribute& attr );
+            /// Autre ///
+            virtual StdString toString(void) const { return _toString();}
+            virtual void fromString(const StdString & str) { if (str==resetInheritanceStr) { reset(); _canInherite=false ;}  else _fromString(str);}
 
-        /// Destructeur ///
-        virtual ~CAttributeEnum(void) { }
+            virtual bool toBuffer  (CBufferOut& buffer) const { return _toBuffer(buffer);} 
+            virtual bool fromBuffer(CBufferIn& buffer) { return _fromBuffer(buffer); } 
+            
+            virtual void generateCInterface(ostream& oss,const string& className) ;
+            virtual void generateFortran2003Interface(ostream& oss,const string& className) ;
+            virtual void generateFortranInterfaceDeclaration_(ostream& oss,const string& className) ;
+            virtual void generateFortranInterfaceBody_(ostream& oss,const string& className) ;
+            virtual void generateFortranInterfaceDeclaration(ostream& oss,const string& className) ;
+            virtual void generateFortranInterfaceGetDeclaration_(ostream& oss,const string& className) ;
+            virtual void generateFortranInterfaceGetBody_(ostream& oss,const string& className) ;
+            virtual void generateFortranInterfaceGetDeclaration(ostream& oss,const string& className) ;      
 
-        /// Operateur ///
-        CAttributeEnum& operator=(const T_enum & value);
-
-        /// Autre ///
-        virtual StdString toString(void) const { return _toString();}
-        virtual void fromString(const StdString & str) { if (str==resetInheritanceStr) { reset(); _canInherite=false ;}  else _fromString(str);}
-
-        virtual bool toBuffer  (CBufferOut& buffer) const { return _toBuffer(buffer);} 
-        virtual bool fromBuffer(CBufferIn& buffer) { return _fromBuffer(buffer); } 
-
-        virtual void generateCInterface(ostream& oss,const string& className) ;
-        virtual void generateFortran2003Interface(ostream& oss,const string& className) ;
-        virtual void generateFortranInterfaceDeclaration_(ostream& oss,const string& className) ;
-        virtual void generateFortranInterfaceBody_(ostream& oss,const string& className) ;
-        virtual void generateFortranInterfaceDeclaration(ostream& oss,const string& className) ;
-        virtual void generateFortranInterfaceGetDeclaration_(ostream& oss,const string& className) ;
-        virtual void generateFortranInterfaceGetBody_(ostream& oss,const string& className) ;
-        virtual void generateFortranInterfaceGetDeclaration(ostream& oss,const string& className) ;      
-
-        private :
-        StdString _toString(void) const;
-        void _fromString(const StdString & str);
-        bool _toBuffer  (CBufferOut& buffer) const;
-        bool _fromBuffer(CBufferIn& buffer) ;
-        CEnum<T> inheritedValue ;
-    }; // class CAttributeEnum    
-
+         private :
+          StdString _toString(void) const;
+          void _fromString(const StdString & str);
+          bool _toBuffer  (CBufferOut& buffer) const;
+          bool _fromBuffer(CBufferIn& buffer) ;
+          CEnum<T> inheritedValue ;
+      }; // class CAttributeEnum    
+   
 } // namespace xios
 
 #endif // __XIOS_ATTRIBUTE_ENUM__
-

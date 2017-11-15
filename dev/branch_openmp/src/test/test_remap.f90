@@ -41,10 +41,6 @@ PROGRAM test_remap
 
   CALL MPI_INIT(ierr)
   CALL init_wait
-  
-  CALL MPI_COMM_RANK(MPI_COMM_WORLD,rank,ierr)
-  CALL MPI_COMM_SIZE(MPI_COMM_WORLD,size,ierr)
-  if(rank < size-2) then
 
 !!! XIOS Initialization (get the local communicator)
 
@@ -231,15 +227,6 @@ PROGRAM test_remap
   CALL MPI_COMM_FREE(comm, ierr)
 
   CALL xios_finalize()
-  
-  print *, "Client : xios_finalize "
-
-    else
-
-    CALL xios_init_server
-    print *, "Server : xios_finalize "
-  
-    endif
 
   CALL MPI_FINALIZE(ierr)
 

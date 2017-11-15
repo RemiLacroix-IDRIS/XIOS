@@ -9,6 +9,7 @@
 #include "grid_transformation_selector.hpp"
 #include "grid.hpp"
 #include "algo_types.hpp"
+using namespace ep_lib;
 
 namespace xios {
 

@@ -9,8 +9,17 @@ using namespace std;
 std::list< ep_lib::MPI_Request* > * EP_PendingRequests = 0;
 #pragma omp threadprivate(EP_PendingRequests)
 
+
+
 namespace ep_lib
 { 
+  bool MPI_Comm::is_null()
+  {
+    if(!this->is_intercomm)
+      return this->mpi_comm == MPI_COMM_NULL.mpi_comm;
+    else
+      return this->ep_comm_ptr->intercomm->mpi_inter_comm == MPI_COMM_NULL.mpi_comm;
+  }
 
   int tag_combine(int real_tag, int src, int dest)
   {

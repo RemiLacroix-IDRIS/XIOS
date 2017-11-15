@@ -17,13 +17,14 @@
 #include "mpi.hpp"
 #include "timer.hpp"
 
+
 namespace xios {
 
    /// ////////////////////// Dfinitions ////////////////////// ///
 
    CFile::CFile(void)
       : CObjectTemplate<CFile>(), CFileAttributes()
-      , vFieldGroup(), data_out(), enabledFields(), fileComm(MPI_COMM_NULL)
+      , vFieldGroup(), data_out(), enabledFields()
       , allDomainEmpty(false), isOpen(false)
    {
      setVirtualFieldGroup(CFieldGroup::create(getId() + "_virtual_field_group"));
@@ -32,7 +33,7 @@ namespace xios {
 
    CFile::CFile(const StdString & id)
       : CObjectTemplate<CFile>(id), CFileAttributes()
-      , vFieldGroup(), data_out(), enabledFields(), fileComm(MPI_COMM_NULL)
+      , vFieldGroup(), data_out(), enabledFields()
       , allDomainEmpty(false), isOpen(false)
     {
       setVirtualFieldGroup(CFieldGroup::create(getId() + "_virtual_field_group"));
@@ -262,8 +263,8 @@ namespace xios {
 
       // create sub communicator for file
       int color = allDomainEmpty ? 0 : 1;
-      MPI_Comm_split(server->intraComm, color, server->intraCommRank, &fileComm);
-      if (allDomainEmpty) MPI_Comm_free(&fileComm);
+      ep_lib::MPI_Comm_split(server->intraComm, color, server->intraCommRank, &fileComm);
+      if (allDomainEmpty) ep_lib::MPI_Comm_free(&fileComm);
 
       // if (time_counter.isEmpty()) time_counter.setValue(time_counter_attr::centered);
       if (time_counter_name.isEmpty()) time_counter_name = "time_counter";
@@ -460,8 +461,8 @@ namespace xios {
          if (multifile)
          {
             int commSize, commRank;
-            MPI_Comm_size(fileComm, &commSize);
-            MPI_Comm_rank(fileComm, &commRank);
+            ep_lib::MPI_Comm_size(fileComm, &commSize);
+            ep_lib::MPI_Comm_rank(fileComm, &commRank);
 
             if (server->intraCommSize > 1)
             {
@@ -481,8 +482,8 @@ namespace xios {
 
          if (isOpen) data_out->closeFile();
 
-        data_out = boost::shared_ptr<CDataOutput>(new CNc4DataOutput(this, oss.str(), append, useClassicFormat, useCFConvention,
-                                                              static_cast< ::MPI_Comm >(fileComm.mpi_comm), multifile, isCollective, time_counter_name));
+        data_out = shared_ptr<CDataOutput>(new CNc4DataOutput(this, oss.str(), append, useClassicFormat, useCFConvention,
+                                                              fileComm, multifile, isCollective, time_counter_name));
         isOpen = true;
 
         data_out->writeFile(CFile::get(this));
@@ -576,8 +577,8 @@ namespace xios {
       if (multifile)
       {
         int commSize, commRank;
-        MPI_Comm_size(fileComm, &commSize);
-        MPI_Comm_rank(fileComm, &commRank);
+        ep_lib::MPI_Comm_size(fileComm, &commSize);
+        ep_lib::MPI_Comm_rank(fileComm, &commRank);
 
         if (server->intraCommSize > 1)
         {
@@ -595,21 +596,10 @@ namespace xios {
 
       bool isCollective = par_access.isEmpty() || par_access == par_access_attr::collective;
 
-      #ifdef _usingEP
-      //printf("multifile was %d\n", multifile);
-      multifile = true;
       if (isOpen) data_out->closeFile();
-      if (time_counter_name.isEmpty()) data_in = boost::shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), static_cast< ::MPI_Comm >(fileComm.mpi_comm), multifile, isCollective));
-      else data_in = boost::shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), static_cast< ::MPI_Comm >(fileComm.mpi_comm), multifile, isCollective, time_counter_name));
+      if (time_counter_name.isEmpty()) data_in = shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), fileComm, multifile, isCollective));
+      else data_in = shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), fileComm, multifile, isCollective, time_counter_name));
       isOpen = true;
-      #else
-      if (isOpen) data_out->closeFile();
-      if (time_counter_name.isEmpty()) data_in = boost::shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), static_cast< ::MPI_Comm >(fileComm.mpi_comm), multifile, isCollective));
-      else data_in = boost::shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), static_cast< ::MPI_Comm >(fileComm.mpi_comm), multifile, isCollective, time_counter_name));
-      isOpen = true;
-      #endif
-
-      
     }
   }
 
@@ -624,7 +614,8 @@ namespace xios {
          else
           this->data_in->closeFile();
        }
-      if (fileComm != MPI_COMM_NULL) MPI_Comm_free(&fileComm);
+//      if (fileComm != MPI_COMM_NULL) MPI_Comm_free(&fileComm);
+      //if (fileComm.mpi_comm != ::MPI_COMM_NULL) MPI_Comm_free(&fileComm);
    }
    //----------------------------------------------------------------
 
@@ -637,13 +628,10 @@ namespace xios {
      CContextClient* client=context->client;
 
      // It would probably be better to call initFile() somehow
-     
-     MPI_Comm_dup(client->intraComm, &fileComm);
+     ep_lib::MPI_Comm_dup(client->intraComm, &fileComm);
      if (time_counter_name.isEmpty()) time_counter_name = "time_counter";
 
-     //#pragma omp critical (_readAttributesOfEnabledFieldsInReadMode_)
-     //{
-     checkFile(); // calls nc_open
+     checkFile();
 
      for (int idx = 0; idx < enabledFields.size(); ++idx)
      {
@@ -657,23 +645,14 @@ namespace xios {
         enabledFields[idx]->solveGenerateGrid();
 
         // Read necessary value from file
-        #pragma omp critical (_func)
-        {
-          //checkFile();
-          this->data_in->readFieldAttributesValues(enabledFields[idx]);
-          //close();
-        }
-        
+        this->data_in->readFieldAttributesValues(enabledFields[idx]);
+
         // Fill attributes for base reference
         enabledFields[idx]->solveGridDomainAxisBaseRef();
      }
 
      // Now everything is ok, close it
      close();
-     //}
-     
-     //if (fileComm != MPI_COMM_NULL) MPI_Comm_free(&fileComm);
-     
    }
 
 
@@ -805,16 +784,21 @@ namespace xios {
    }
 
    /*!
-     Prefetching the data for enabled fields read from file whose data is out-of-date.
+     Do all post timestep operations for enabled fields in read mode:
+      - Prefetch the data read from file when needed
+      - Check that the data excepted from server has been received
    */
-   void CFile::prefetchEnabledReadModeFieldsIfNeeded(void)
+   void CFile::doPostTimestepOperationsForEnabledReadModeFields(void)
    {
      if (mode.isEmpty() || mode.getValue() != mode_attr::read)
        return;
 
      int size = this->enabledFields.size();
      for (int i = 0; i < size; ++i)
+     {
+       this->enabledFields[i]->checkForLateDataFromServer();
        this->enabledFields[i]->sendReadDataRequestIfNeeded();
+     }
    }
 
    void CFile::solveFieldRefInheritance(bool apply)
@@ -1120,6 +1104,7 @@ namespace xios {
      {
        CField* field = this->enabledFields[i];
        this->sendAddField(field->getId());
+       field->checkAttributes();
        field->sendAllAttributesToServer();
        field->sendAddAllVariables();
      }

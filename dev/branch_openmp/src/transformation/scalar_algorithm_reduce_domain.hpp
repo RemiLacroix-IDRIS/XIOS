@@ -11,7 +11,6 @@
 
 #include "scalar_algorithm_transformation.hpp"
 #include "transformation.hpp"
-#include "reduction.hpp"
 
 namespace xios {
 
@@ -24,7 +23,7 @@ class CReductionAlgorithm;
   \class CScalarAlgorithmReduceDomain
   Reducing an DOMAIN to a scalar
 */
-class CScalarAlgorithmReduceDomain : public CScalarAlgorithmTransformation, public CReductionAlgorithm
+class CScalarAlgorithmReduceDomain : public CScalarAlgorithmTransformation
 {
 public:
   CScalarAlgorithmReduceDomain(CScalar* scalarDestination, CDomain* domainSource, CReduceDomainToScalar* algo);
@@ -33,7 +32,7 @@ public:
                      const double* dataInput,
                      CArray<double,1>& dataOut,
                      std::vector<bool>& flagInitial,                     
-                     bool ignoreMissingValue);
+                     bool ignoreMissingValue, bool firstPass);
 
   virtual void updateData(CArray<double,1>& dataOut);
   

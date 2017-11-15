@@ -4,6 +4,7 @@
 /// XIOS headers ///
 #include "xios_spl.hpp"
 //#include "node_type.hpp"
+#include "mpi_std.hpp"
 #include "calendar_wrapper.hpp"
 
 #include "declare_group.hpp"
@@ -12,7 +13,6 @@
 #include "data_output.hpp"
 #include "garbage_collector.hpp"
 #include "registry.hpp"
-#include "mpi.hpp"
 
 
 namespace xios {
@@ -114,7 +114,7 @@ namespace xios {
          void solveAllRefOfEnabledFields(bool sendToServer);
          void buildFilterGraphOfEnabledFields();
          void startPrefetchingOfEnabledReadModeFiles();
-         void checkPrefetchingOfEnabledReadModeFiles();
+         void doPostTimestepOperationsForEnabledReadModeFiles();
          void findFieldsWithReadAccess(void);
          void solveAllRefOfFieldsWithReadAccess();
          void buildFilterGraphOfFieldsWithReadAccess();
@@ -205,10 +205,7 @@ namespace xios {
          std::vector<CField*> fieldsWithReadAccess;
 
          // Context root
-         //static shared_ptr<CContextGroup> root;
-
-         static boost::shared_ptr<CContextGroup> *root_ptr;
-         #pragma omp threadprivate(root_ptr)
+         static shared_ptr<CContextGroup> root;
 
          // Determine context on client or not
          bool hasClient;
@@ -221,11 +218,8 @@ namespace xios {
 
          // Concrete contex client
          CContextClient* client;
-
-
          CRegistry* registryIn ;  //!< input registry which is read from file
          CRegistry* registryOut ; //!< output registry which will be wrote on file at the finalize
-         
 
       private:
          bool isPostProcessed;

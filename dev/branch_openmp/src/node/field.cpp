@@ -23,9 +23,27 @@
 #include "temporal_filter.hpp"
 #include "spatial_transform_filter.hpp"
 
+#include <stdio.h>
+
 namespace xios{
 
    /// ////////////////////// Dfinitions ////////////////////// ///
+
+  CField* CField::my_getDirectFieldReference(void) const
+  {                                                                      
+    // if (this->field_ref.isEmpty())                                     
+    // ERROR("C" #type "* C" #type "::getDirect" #type "Reference(void)", 
+    //       << "The " #name_ " with id = '" << getId() << "'"            
+    //       << " has no " #name_ "_ref.");                               
+                                                                       
+    // if (!C##type::has(this->name_##_ref))                                
+    // ERROR("C" #type "* C" #type "::getDirect" #type "Reference(void)", 
+    //       << this->name_##_ref                                         
+    //       << " refers to an unknown " #name_ " id.");                  
+                                                                       
+    return CField::get(this->field_ref);                              
+  }
+
 
    CField::CField(void)
       : CObjectTemplate<CField>(), CFieldAttributes()
@@ -37,6 +55,7 @@ namespace xios{
       , useCompressedOutput(false)
       , hasTimeInstant(false)
       , hasTimeCentered(false)
+      , wasDataRequestedFromServer(false)
       , wasDataAlreadyReceivedFromServer(false)
       , isEOF(false)
    { setVirtualVariableGroup(CVariableGroup::create(getId() + "_virtual_variable_group")); }
@@ -51,6 +70,7 @@ namespace xios{
       , useCompressedOutput(false)
       , hasTimeInstant(false)
       , hasTimeCentered(false)
+      , wasDataRequestedFromServer(false)
       , wasDataAlreadyReceivedFromServer(false)
       , isEOF(false)
    { setVirtualVariableGroup(CVariableGroup::create(getId() + "_virtual_variable_group")); }
@@ -260,7 +280,8 @@ namespace xios{
 
     lastDataRequestedFromServer = tsDataRequested;
 
-    if (!isEOF) // No need to send the request if we already know we are at EOF
+    // No need to send the request if we are sure that we are already at EOF
+    if (!isEOF || context->getCalendar()->getCurrentDate() <= dateEOF)
     {
       CEventClient event(getType(), EVENT_ID_READ_DATA);
       if (client->isServerLeader())
@@ -277,6 +298,8 @@ namespace xios{
     else
       serverSourceFilter->signalEndOfStream(tsDataRequested);
 
+    wasDataRequestedFromServer = true;
+
     return !isEOF;
   }
 
@@ -292,13 +315,11 @@ namespace xios{
 
     while (currentDate >= lastDataRequestedFromServer)
     {
-      #pragma omp critical (_output)
-      {
-        info(20) << "currentDate : " << currentDate << endl ;
-        info(20) << "lastDataRequestedFromServer : " << lastDataRequestedFromServer << endl ;
-        info(20) << "file->output_freq.getValue() : " << file->output_freq.getValue() << endl ;
-        info(20) << "lastDataRequestedFromServer + file->output_freq.getValue() : " << lastDataRequestedFromServer + file->output_freq << endl ;
-      }
+      info(20) << "currentDate : " << currentDate << endl ;
+      info(20) << "lastDataRequestedFromServer : " << lastDataRequestedFromServer << endl ;
+      info(20) << "file->output_freq.getValue() : " << file->output_freq.getValue() << endl ;
+      info(20) << "lastDataRequestedFromServer + file->output_freq.getValue() : " << lastDataRequestedFromServer + file->output_freq << endl ;
+
       dataRequested |= sendReadDataRequest(lastDataRequestedFromServer + file->output_freq);
     }
 
@@ -434,12 +455,13 @@ namespace xios{
   void CField::recvReadDataReady(vector<int> ranks, vector<CBufferIn*> buffers)
   {
     CContext* context = CContext::getCurrent();
-    int record;
     std::map<int, CArray<double,1> > data;
+    const bool wasEOF = isEOF;
 
     for (int i = 0; i < ranks.size(); i++)
     {
       int rank = ranks[i];
+      int record;
       *buffers[i] >> record;
       isEOF = (record == int(-1));
 
@@ -458,9 +480,47 @@ namespace xios{
     }
 
     if (isEOF)
+    {
+      if (!wasEOF)
+        dateEOF = lastDataReceivedFromServer;
+
       serverSourceFilter->signalEndOfStream(lastDataReceivedFromServer);
+    }
     else
       serverSourceFilter->streamDataFromServer(lastDataReceivedFromServer, data);
+  }
+
+  void CField::checkForLateDataFromServer(void)
+  {
+    CContext* context = CContext::getCurrent();
+    const CDate& currentDate = context->getCalendar()->getCurrentDate();
+
+    // Check if data previously requested has been received as expected
+    if (wasDataRequestedFromServer && (!isEOF || currentDate <= dateEOF))
+    {
+      CTimer timer("CField::checkForLateDataFromServer");
+
+      bool isDataLate;
+      do
+      {
+        const CDate nextDataDue = wasDataAlreadyReceivedFromServer ? (lastDataReceivedFromServer + file->output_freq) : context->getCalendar()->getInitDate();
+        isDataLate = nextDataDue < currentDate;
+
+        if (isDataLate)
+        {
+          timer.resume();
+
+          context->checkBuffersAndListen();
+
+          timer.suspend();
+        }
+      }
+      while (isDataLate && timer.getCumulatedTime() < CXios::recvFieldTimeout);
+
+      if (isDataLate)
+        ERROR("void CField::checkForLateDataFromServer(void)",
+              << "Late data at timestep = " << currentDate);
+    }
   }
 
    //----------------------------------------------------------------
@@ -693,13 +753,13 @@ namespace xios{
    {
      CContext* context = CContext::getCurrent();
      solveOnlyReferenceEnabledField(doSending2Server);
-     int myRank;
-     MPI_Comm_rank(context->client->intraComm, &myRank);
+
+     //std::cout<<"Field "<<this->getId()<<" areAllReferenceSolved = "<<areAllReferenceSolved<<std::endl; 
 
      if (!areAllReferenceSolved)
      {
         areAllReferenceSolved = true;
-
+        //std::cout<<"Field "<<this->getId()<<" all reference solved"<<std::endl; 
         if (context->hasClient)
         {
           solveRefInheritance(true);
@@ -824,10 +884,11 @@ namespace xios{
          instantDataFilter = getFieldReference(gc);
        // Check if the data is to be read from a file
        else if (file && !file->mode.isEmpty() && file->mode == CFile::mode_attr::read)
-         instantDataFilter = serverSourceFilter = boost::shared_ptr<CSourceFilter>(new CSourceFilter(gc, grid,
-                                                                                                     freq_offset.isEmpty() ? NoneDu : freq_offset,
-                                                                                                     true,
+       {
+         checkAttributes();
+         instantDataFilter = serverSourceFilter = boost::shared_ptr<CSourceFilter>(new CSourceFilter(gc, grid, freq_offset, true,
                                                                                                      detectMissingValues, defaultValue));
+       }
        else // The data might be passed from the model
        {
           if (check_if_active.isEmpty()) check_if_active = false;
@@ -909,10 +970,11 @@ namespace xios{
        if (file && !file->mode.isEmpty() && file->mode == CFile::mode_attr::read)
        {
          if (!serverSourceFilter)
-           serverSourceFilter = boost::shared_ptr<CSourceFilter>(new CSourceFilter(gc, grid,
-                                                                                   freq_offset.isEmpty() ? NoneDu : freq_offset,
-                                                                                   true,
+         {
+           checkAttributes();
+           serverSourceFilter = boost::shared_ptr<CSourceFilter>(new CSourceFilter(gc, grid, freq_offset, true,
                                                                                    detectMissingValues, defaultValue));
+         }
 
          selfReferenceFilter = serverSourceFilter;
        }
@@ -957,13 +1019,9 @@ namespace xios{
          ERROR("void CField::getTemporalDataFilter(CGarbageCollector& gc, CDuration outFreq)",
                << "An operation must be defined for field \"" << getId() << "\".");
 
-       if (freq_op.isEmpty())
-         freq_op.setValue(TimeStep);
-       if (freq_offset.isEmpty())
-         freq_offset.setValue(NoneDu);
+       checkAttributes();
 
        const bool detectMissingValues = (!detect_missing_value.isEmpty() && !default_value.isEmpty() && detect_missing_value == true);
-       
        boost::shared_ptr<CTemporalFilter> temporalFilter(new CTemporalFilter(gc, operation,
                                                                              CContext::getCurrent()->getCalendar()->getInitDate(),
                                                                              freq_op, freq_offset, outFreq,
@@ -999,11 +1057,9 @@ namespace xios{
          ERROR("void CField::getSelfTemporalDataFilter(CGarbageCollector& gc, CDuration outFreq)",
                << "An operation must be defined for field \"" << getId() << "\".");
 
-       if (freq_op.isEmpty()) freq_op.setValue(TimeStep);
-       if (freq_offset.isEmpty()) freq_offset.setValue(NoneDu);
+       checkAttributes();
 
        const bool detectMissingValues = (!detect_missing_value.isEmpty() && !default_value.isEmpty() && detect_missing_value == true);
-
        boost::shared_ptr<CTemporalFilter> temporalFilter(new CTemporalFilter(gc, operation,
                                                                              CContext::getCurrent()->getCalendar()->getInitDate(),
                                                                              freq_op, freq_offset, outFreq,
@@ -1446,6 +1502,28 @@ namespace xios{
       string id;
       buffer >> id;
       addVariableGroup(id);
+   }
+
+   /*!
+    * Check on freq_off and freq_op attributes.
+    */
+   void CField::checkAttributes(void)
+   {
+     bool isFieldRead = file && !file->mode.isEmpty() && file->mode == CFile::mode_attr::read;
+     if (isFieldRead && operation.getValue() != "instant")
+       ERROR("void CField::checkAttributes(void)",
+             << "Unsupported operation for field '" << getFieldOutputName() << "'." << std::endl
+             << "Currently only \"instant\" is supported for fields read from file.")
+
+     if (freq_op.isEmpty())
+     {
+       if (operation.getValue() == "instant")
+         freq_op.setValue(file->output_freq.getValue());
+       else
+         freq_op.setValue(TimeStep);
+     }
+     if (freq_offset.isEmpty())
+       freq_offset.setValue(isFieldRead ? NoneDu : (freq_op.getValue() - TimeStep));
    }
 
    /*!

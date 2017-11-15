@@ -12,12 +12,11 @@
 #include "reduce_axis_to_scalar.hpp"
 #include "grid.hpp"
 #include "grid_transformation_factory_impl.hpp"
+#include "reduction.hpp"
+
+#include "reduction.hpp"
 
 namespace xios {
-
-//extern std::map<StdString,EReductionType> *CReductionAlgorithm::ReductionOperations_ptr; 
-//#pragma omp threadprivate(CReductionAlgorithm::ReductionOperations_ptr)
-
 CGenericAlgorithmTransformation* CScalarAlgorithmReduceAxis::create(CGrid* gridDst, CGrid* gridSrc,
                                                                      CTransformation<CScalar>* transformation,
                                                                      int elementPositionInGrid,
@@ -75,25 +74,21 @@ CScalarAlgorithmReduceAxis::CScalarAlgorithmReduceAxis(CScalar* scalarDestinatio
 
   }
   
-  if(CReductionAlgorithm::ReductionOperations_ptr == 0) 
-    CReductionAlgorithm::initReductionOperation();
-  
-  if ((*CReductionAlgorithm::ReductionOperations_ptr).end() == (*CReductionAlgorithm::ReductionOperations_ptr).find(op))
+  //if (CReductionAlgorithm::ReductionOperations.end() == CReductionAlgorithm::ReductionOperations.find(op))
+  if (CReductionAlgorithm::ReductionOperations_ptr->end() == CReductionAlgorithm::ReductionOperations_ptr->find(op))
     ERROR("CScalarAlgorithmReduceAxis::CScalarAlgorithmReduceAxis(CAxis* axisDestination, CAxis* axisSource, CReduceAxisToScalar* algo)",
        << "Operation '" << op << "' not found. Please make sure to use a supported one"
        << "Axis source " <<axisSource->getId() << std::endl
        << "Scalar destination " << scalarDestination->getId());
 
-  reduction_ = CReductionAlgorithm::createOperation((*CReductionAlgorithm::ReductionOperations_ptr)[op]);
+  //reduction_ = CReductionAlgorithm::createOperation(CReductionAlgorithm::ReductionOperations[op]);
+  reduction_ = CReductionAlgorithm::createOperation(CReductionAlgorithm::ReductionOperations_ptr->at(op));
 }
 
-void CScalarAlgorithmReduceAxis::apply(const std::vector<std::pair<int,double> >& localIndex,
-                                         const double* dataInput,
-                                         CArray<double,1>& dataOut,
-                                         std::vector<bool>& flagInitial,
-				       bool ignoreMissingValue)
+void CScalarAlgorithmReduceAxis::apply(const std::vector<std::pair<int,double> >& localIndex, const double* dataInput, CArray<double,1>& dataOut,
+                                         std::vector<bool>& flagInitial, bool ignoreMissingValue, bool firstPass)
 {
-  reduction_->apply(localIndex, dataInput, dataOut, flagInitial, ignoreMissingValue);
+  reduction_->apply(localIndex, dataInput, dataOut, flagInitial, ignoreMissingValue, firstPass);
 }
 
 void CScalarAlgorithmReduceAxis::updateData(CArray<double,1>& dataOut)
@@ -114,12 +109,11 @@ void CScalarAlgorithmReduceAxis::computeIndexSourceMapping_(const std::vector<CA
   TransformationIndexMap& transMap = this->transformationMapping_[0];
   TransformationWeightMap& transWeight = this->transformationWeight_[0];
 
-  CArray<int,1>& axisSrcIndex = axisSrc_->index;
-  int globalIndexSize = axisSrcIndex.numElements();
+  int globalIndexSize = axisSrc_-> n_glo;
 
   for (int idx = 0; idx < globalIndexSize; ++idx)
   {
-    transMap[0].push_back(axisSrcIndex(idx));
+    transMap[0].push_back(idx);
     transWeight[0].push_back(1.0);
   }
 }

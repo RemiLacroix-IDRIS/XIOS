@@ -43,7 +43,7 @@ CAxisAlgorithmZoom::CAxisAlgorithmZoom(CAxis* axisDestination, CAxis* axisSource
   zoomAxis->checkValid(axisSource);
   zoomBegin_ = zoomAxis->begin.getValue();
   zoomSize_  = zoomAxis->n.getValue();
-  zoomEnd_   = zoomBegin_ + zoomSize_ - 1;
+  zoomEnd_   = zoomBegin_ + zoomSize_ - 1;  
 
   if (zoomSize_ > axisSource->n_glo.getValue())
   {

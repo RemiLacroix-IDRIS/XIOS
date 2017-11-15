@@ -3,9 +3,9 @@
 
 /// XIOS headers ///
 #include "xios_spl.hpp"
+#include "mpi_std.hpp"
 #include "onetcdf4.hpp"
 #include "data_output.hpp"
-// mpi_std.hpp
 
 namespace xios
 {
@@ -26,8 +26,9 @@ namespace xios
                (CFile* file, const StdString & filename, bool exist);
             CNc4DataOutput
                (CFile* file, const StdString & filename, bool exist, bool useClassicFormat,
-                bool useCFConvention, MPI_Comm comm_file, bool multifile, 
-                bool isCollective = true, const StdString& timeCounterName = "time_counter");
+                bool useCFConvention,
+                ep_lib::MPI_Comm comm_file, bool multifile, bool isCollective = true,
+                const StdString& timeCounterName = "time_counter");
 
             CNc4DataOutput(const CNc4DataOutput & dataoutput);       // Not implemented.
             CNc4DataOutput(const CNc4DataOutput * const dataoutput); // Not implemented.
@@ -115,7 +116,7 @@ namespace xios
             void setWrittenScalar(const std::string& scalarName);
 
             /// Propriétés privées ///
-            MPI_Comm comm_file;
+            ep_lib::MPI_Comm comm_file;
             const StdString filename;
             std::map<Time, StdSize> timeToRecordCache;
 

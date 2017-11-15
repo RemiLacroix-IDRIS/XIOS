@@ -56,12 +56,9 @@ public:
 
   typedef std::map<ETranformationType, CreateTransformationCallBack> CallBackMap;
   static CallBackMap* transformationCreationCallBacks_;
-  #pragma omp threadprivate(transformationCreationCallBacks_)
-  
   static bool registerTransformation(ETranformationType transType, CreateTransformationCallBack createFn);
   static bool unregisterTransformation(ETranformationType transType);
   static bool initializeTransformation_;
-  #pragma omp threadprivate(initializeTransformation_)
 };
 
 template<typename T>
@@ -81,8 +78,6 @@ CGenericAlgorithmTransformation* CGridTransformationFactory<T>::createTransforma
                                                                                std::map<int, int>& elementPositionInGridDst2AxisPosition,
                                                                                std::map<int, int>& elementPositionInGridDst2DomainPosition)
 {
-  if (0 == transformationCreationCallBacks_)
-    transformationCreationCallBacks_ = new CallBackMap();
   typename CallBackMap::const_iterator it = (*transformationCreationCallBacks_).find(transType);
   if ((*transformationCreationCallBacks_).end() == it)
   {

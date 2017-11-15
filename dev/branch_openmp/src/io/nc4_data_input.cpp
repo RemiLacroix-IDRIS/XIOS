@@ -7,11 +7,9 @@
 #include "axis.hpp"
 #include "scalar.hpp"
 
-// mpi.hpp
-
 namespace xios
 {
-  CNc4DataInput::CNc4DataInput(const StdString& filename, ::MPI_Comm comm_file, bool multifile, bool isCollective /*= true*/, const StdString& timeCounterName /*= "time_counter"*/)
+  CNc4DataInput::CNc4DataInput(const StdString& filename, ep_lib::MPI_Comm comm_file, bool multifile, bool isCollective /*= true*/, const StdString& timeCounterName /*= "time_counter"*/)
     : SuperClass()
     , SuperClassWriter(filename, &comm_file, multifile, timeCounterName)
     , comm_file(comm_file)
@@ -54,10 +52,7 @@ namespace xios
 
     CArray<double,1> fieldData(grid->getWrittenDataSize());
     if (!field->default_value.isEmpty()) fieldData = field->default_value;
-    #ifdef _usingEP
-    SuperClass::type = ONE_FILE;
-    printf("SuperClass::type = %d\n", SuperClass::type);
-    #endif
+
     switch (SuperClass::type)
     {
       case MULTI_FILE:
@@ -325,7 +320,7 @@ namespace xios
 
       std::vector<StdSize> nBeginBndsLatLon(3), nSizeBndsLatLon(3);
       nBeginBndsLatLon[0] = 0; nSizeBndsLatLon[0] = domain->nj_glo.getValue();
-      nBeginBndsLatLon[1] = 0; nSizeBndsLatLon[1] = domain->nj_glo.getValue();
+      nBeginBndsLatLon[1] = 0; nSizeBndsLatLon[1] = domain->ni_glo.getValue();
       nBeginBndsLatLon[2] = 0; nSizeBndsLatLon[2] = nbVertex;
 
       if (SuperClassWriter::hasVariable(boundsLatName))

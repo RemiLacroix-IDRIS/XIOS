@@ -1,5 +1,5 @@
 /* ************************************************************************** *
- *      Copyright © IPSL/LSCE, xios, Avril 2010 - Octobre 2011         *
+ *      Copyright  IPSL/LSCE, xios, Avril 2010 - Octobre 2011         *
  * ************************************************************************** */
 
 #include <boost/multi_array.hpp>
@@ -8,7 +8,7 @@
 #include <cstring>
 #include <iostream>
 
-
+#include "mpi_std.hpp"
 #include "xios.hpp"
 //#include "oasis_cinterface.hpp"
 
@@ -22,22 +22,20 @@
 #include "field.hpp"
 #include "context.hpp"
 #include "context_client.hpp"
-#include "mpi_std.hpp"
-#include "timer.hpp"
-#include "array_new.hpp"
 
+#include "timer.hpp"
 
 extern "C"
 {
-// /////////////////////////////// Définitions ////////////////////////////// //
+// /////////////////////////////// Dfinitions ////////////////////////////// //
 
-   // ----------------------- Redéfinition de types ----------------------------
+   // ----------------------- Redfinition de types ----------------------------
 
    typedef enum { NETCDF4 = 0 } XFileType;
 
    typedef xios::CContext* XContextPtr;
 
-   // -------------------- Traitement des données ------------------------------
+   // -------------------- Traitement des donnes ------------------------------
 
    // This function is not exported to the public Fortran interface,
    // it is only used from the parse_xml.exe standalone test tool.
@@ -63,25 +61,23 @@ extern "C"
 
       int initialized;
       MPI_Initialized(&initialized);
-
-      #ifdef _usingEP
-      if (initialized) local_comm = ep_lib::EP_Comm_f2c(static_cast< int >(*f_local_comm));
-      else local_comm = MPI_COMM_NULL;
-      #else
+      #ifdef _usingMPI
       if (initialized) local_comm=MPI_Comm_f2c(*f_local_comm);
-      else local_comm = MPI_COMM_NULL;
+      else local_comm=MPI_COMM_NULL;
+      #elif _usingEP
+      ep_lib::fc_comm_map.clear();
+      if (initialized) local_comm=ep_lib::EP_Comm_f2c(static_cast<int>(*f_local_comm));
+      else local_comm=MPI_COMM_NULL;
       #endif
       
-     
+
 
       CXios::initClientSide(str, local_comm, return_comm);
-
-      #ifdef _usingEP
-      *f_return_comm = ep_lib::EP_Comm_c2f(return_comm);
-      #else
-      *f_return_comm = MPI_Comm_c2f(return_comm);
+      #ifdef _usingMPI
+      *f_return_comm=MPI_Comm_c2f(return_comm);
+      #elif _usingEP
+      *f_return_comm=ep_lib::EP_Comm_c2f(return_comm);
       #endif
-
       CTimer::get("XIOS init").suspend();
       CTimer::get("XIOS").suspend();
    }
@@ -94,10 +90,12 @@ extern "C"
      if (!cstr2string(context_id, len_context_id, str)) return;
      CTimer::get("XIOS").resume();
      CTimer::get("XIOS init context").resume();
+     #ifdef _usingMPI
+     comm=MPI_Comm_f2c(*f_comm);
+     #elif _usingEP
      comm = ep_lib::EP_Comm_f2c(static_cast< int >(*f_comm));
-
-     CClient::registerContext(str,comm);
-          
+     #endif
+     CClient::registerContext(str, comm);
      CTimer::get("XIOS init context").suspend();
      CTimer::get("XIOS").suspend();
    }
@@ -381,7 +379,7 @@ extern "C"
    }
 
 
-   // ---------------------- Ecriture des données ------------------------------
+   // ---------------------- Ecriture des donnes ------------------------------
 
    void cxios_write_data_k80(const char* fieldid, int fieldid_size, double* data_k8, int data_Xsize)
    {
@@ -447,9 +445,7 @@ extern "C"
 
       CContext* context = CContext::getCurrent();
       if (!context->hasServer && !context->client->isAttachedModeEnabled())
-      {
         context->checkBuffersAndListen();
-      }  
 
       CArray<double, 3>data(data_k8, shape(data_Xsize, data_Ysize, data_Zsize), neverDeleteData);
       CField::get(fieldid_str)->setData(data);
@@ -716,7 +712,7 @@ extern "C"
       CTimer::get("XIOS").suspend();
     }
 
-   // ---------------------- Lecture des données ------------------------------
+   // ---------------------- Lecture des donnes ------------------------------
 
    void cxios_read_data_k80(const char* fieldid, int fieldid_size, double* data_k8, int data_Xsize)
    {

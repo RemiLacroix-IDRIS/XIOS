@@ -10,35 +10,23 @@
 #include <new>
 #include "memtrack.hpp"
 #include "registry.hpp"
+using namespace ep_lib;
 
 namespace xios
 {
-
-  extern int test_omp_rank;
-  #pragma omp threadprivate(test_omp_rank)
-
-  const string CXios::rootFile="./iodef.xml" ;
-  const string CXios::xiosCodeId="xios.x" ;
-  const string CXios::clientFile="./xios_client";
-  const string CXios::serverFile="./xios_server";
-
+  string CXios::rootFile="./iodef.xml" ;
+  string CXios::xiosCodeId="xios.x" ;
+  string CXios::clientFile="./xios_client";
+  string CXios::serverFile="./xios_server";
 
   bool CXios::isClient ;
   bool CXios::isServer ;
-
-
   MPI_Comm CXios::globalComm ;
-
-  
   bool CXios::usingOasis ;
   bool CXios::usingServer = false;
-
-
   double CXios::bufferSizeFactor = 1.0;
   const double CXios::defaultBufferSizeFactor = 1.0;
   StdSize CXios::minBufferSize = 1024 * sizeof(double);
-
-
   bool CXios::printLogs2Files;
   bool CXios::isOptPerformance = true;
   CRegistry* CXios::globalRegistry = 0;
@@ -48,13 +36,7 @@ namespace xios
   void CXios::initialize()
   {
     set_new_handler(noMemory);
-    
-    
-    #pragma omp critical
-    {
-      parseFile(rootFile);  
-    }
-    #pragma omp barrier
+    parseFile(rootFile);
     parseXiosConfig();
   }
 
@@ -86,18 +68,18 @@ namespace xios
     if (recvFieldTimeout < 0.0)
       ERROR("CXios::parseXiosConfig()", "recv_field_timeout cannot be negative.");
 
- 
+    //globalComm=MPI_COMM_WORLD ;
     int num_ep;
     if(isClient)  
     { 
       num_ep = omp_get_num_threads();
     }
-    
+        
     if(isServer) 
     { 
       num_ep = omp_get_num_threads();
     }
-    
+        
     MPI_Info info;
     #pragma omp master
     {
@@ -105,18 +87,11 @@ namespace xios
       MPI_Comm_create_endpoints(MPI_COMM_WORLD, num_ep, info, ep_comm);  // servers should reach here too.
       passage = ep_comm;  
     }
-    
+        
     #pragma omp barrier
-
-      
+    
+          
     CXios::globalComm = passage[omp_get_thread_num()];
-
-    int tmp_rank;
-    MPI_Comm_rank(CXios::globalComm, &tmp_rank);
-
-    
-    test_omp_rank = tmp_rank;
-    
   }
 
   /*!
@@ -132,7 +107,6 @@ namespace xios
     initialize() ;
 
     CClient::initialize(codeId,localComm,returnComm) ;
-
     if (CClient::getRank()==0) globalRegistry = new CRegistry(returnComm) ;
 
     // If there are no server processes then we are in attached mode
@@ -141,7 +115,6 @@ namespace xios
 
     if (printLogs2Files)
     {
-      #pragma omp critical
       CClient::openInfoStream(clientFile);
       CClient::openErrorStream(clientFile);
     }
@@ -157,7 +130,6 @@ namespace xios
      CClient::finalize() ;
      if (CClient::getRank()==0)
      {
-       #pragma omp critical (_output)
        info(80)<<"Write data base Registry"<<endl<<globalRegistry->toString()<<endl ;
        globalRegistry->toFile("xios_registry.bin") ;
        delete globalRegistry ;
@@ -183,17 +155,6 @@ namespace xios
   //! Init server by parsing only xios part of config file
   void CXios::initServer()
   {
-    int initialized;
-    MPI_Initialized(&initialized);
-    if (initialized) CServer::is_MPI_Initialized=true ;
-    else CServer::is_MPI_Initialized=false ;
-      
- 
-    if(!CServer::is_MPI_Initialized)
-    {
-      MPI_Init(NULL, NULL);
-    }
-      
     set_new_handler(noMemory);
     std::set<StdString> parseList;
     parseList.insert("xios");
@@ -209,8 +170,7 @@ namespace xios
     isServer = true;
     
     initServer();
-    
-    
+
     // Initialize all aspects MPI
     CServer::initialize();
     if (CServer::getRank()==0) globalRegistry = new CRegistry(CServer::intraComm) ;

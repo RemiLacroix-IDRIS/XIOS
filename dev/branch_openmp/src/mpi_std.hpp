@@ -10,9 +10,8 @@
 /* skip C++ Binding for OpenMPI */
 #define OMPI_SKIP_MPICXX
 
-#include "../extern/src_ep_dev/ep_lib.hpp"
 #include <mpi.h>
-
-
+#include "../extern/src_ep_dev/ep_lib.hpp"
+#include "../extern/src_ep_dev/ep_declaration.hpp"
 
 #endif

@@ -93,7 +93,7 @@ namespace xios
     const CType_ref& operator = (T& val) const ;
     const CType_ref& operator = (CType<T>& val) const ;
     const CType_ref& operator = (const CType_ref& val) const;
-    operator T&() const;
+    operator T&() const;    
 
     inline virtual CBaseType* clone(void) const   { return _clone(); }
     virtual void fromString(const string& str)   { _fromString(str); }

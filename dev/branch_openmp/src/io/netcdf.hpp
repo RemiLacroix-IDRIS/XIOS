@@ -17,7 +17,7 @@
 #  if defined(USING_NETCDF_PAR)
 extern "C"
 {
-  #include <netcdf_par.h>
+#  include <netcdf_par.h>
 }
 #  endif
 #endif

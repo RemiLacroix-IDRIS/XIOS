@@ -9,6 +9,7 @@
 
 #include "policy.hpp"
 #include <cmath>
+using namespace ep_lib;
 
 namespace xios
 {

@@ -3,7 +3,6 @@
 
 #include "inetcdf4.hpp"
 #include "netCdfInterface.hpp"
-// mpi_std.hpp
 
 namespace xios
 {

@@ -5,9 +5,6 @@
 #include "buffer_out.hpp"
 #include "mpi.hpp"
 #include "cxios.hpp"
-#ifdef _usingEP
-#include "ep_declaration.hpp"
-#endif
 
 namespace xios
 {
@@ -15,9 +12,8 @@ namespace xios
   {
     public:
       static size_t maxRequestSize;
-      #pragma omp threadprivate(maxRequestSize)
 
-      CClientBuffer(MPI_Comm intercomm, int serverRank, StdSize bufferSize, StdSize estimatedMaxEventSize, StdSize maxBufferedEvents);
+      CClientBuffer(ep_lib::MPI_Comm intercomm, int serverRank, StdSize bufferSize, StdSize estimatedMaxEventSize, StdSize maxBufferedEvents);
       ~CClientBuffer();
 
       bool isBufferFree(int size);
@@ -39,10 +35,10 @@ namespace xios
       const int serverRank;
       bool pending;
 
-      MPI_Request request;
+      ep_lib::MPI_Request request;
 
       CBufferOut* retBuffer;
-      const MPI_Comm interComm;
+      const ep_lib::MPI_Comm interComm;
   };
 }
 #endif

@@ -8,9 +8,11 @@
 #include "oasis_cinterface.hpp"
 #include <boost/functional/hash.hpp>
 #include <boost/algorithm/string.hpp>
+#include "mpi.hpp"
 #include "tracer.hpp"
 #include "timer.hpp"
 #include "event_scheduler.hpp"
+using namespace ep_lib;
 
 namespace xios
 {
@@ -24,16 +26,23 @@ namespace xios
     map<string,CContext*> CServer::contextList ;
     bool CServer::finished=false ;
     bool CServer::is_MPI_Initialized ;
-
-    
     CEventScheduler* CServer::eventScheduler = 0;
    
     void CServer::initialize(void)
     {
+     // int initialized ;
+     // MPI_Initialized(&initialized) ;
+     // if (initialized) is_MPI_Initialized=true ;
+     // else is_MPI_Initialized=false ;
+
       // Not using OASIS
       if (!CXios::usingOasis)
       {
 
+       // if (!is_MPI_Initialized)
+       // {
+       //   MPI_Init(NULL, NULL);
+       // }
         CTimer::get("XIOS").resume() ;
 
         boost::hash<string> hashString ;
@@ -41,17 +50,13 @@ namespace xios
         unsigned long hashServer=hashString(CXios::xiosCodeId) ;
         unsigned long* hashAll ;
 
-
+//        int rank ;
         int size ;
         int myColor ;
         int i,c ;
         MPI_Comm newComm ;
 
         MPI_Comm_size(CXios::globalComm,&size) ;
-        
-        //size = CXios::globalComm.ep_comm_ptr->size_rank_info[0].second;
-        printf("global size = %d, size= %d\n", CXios::globalComm.ep_comm_ptr->size_rank_info[0].second, size);
-        
         MPI_Comm_rank(CXios::globalComm,&rank);
         hashAll=new unsigned long[size] ;
 
@@ -72,16 +77,13 @@ namespace xios
         }
 
         myColor=colors[hashServer] ;
-
-
         MPI_Comm_split(CXios::globalComm,myColor,rank,&intraComm) ;
 
-        
         int serverLeader=leaders[hashServer] ;
         int clientLeader;
 
          serverLeader=leaders[hashServer] ;
-         for(it=leaders.begin();it!=leaders.end();++it)
+         for(it=leaders.begin();it!=leaders.end();it++)
          {
            if (it->first!=hashServer)
            {
@@ -92,7 +94,6 @@ namespace xios
              info(50)<<"intercommCreate::server "<<rank<<" intraCommSize : "<<intraCommSize
                      <<" intraCommRank :"<<intraCommRank<<"  clientLeader "<< clientLeader<<endl ;
 
-            // test_sendrecv(CXios::globalComm);
              MPI_Intercomm_create(intraComm,0,CXios::globalComm,clientLeader,0,&newComm) ;
              interComm.push_back(newComm) ;
            }
@@ -101,8 +102,9 @@ namespace xios
          delete [] hashAll ;
       }
       // using OASIS
-      else
+/*      else
       {
+        int rank ,size;
         int size;
         if (!is_MPI_Initialized) oasis_init(CXios::xiosCodeId);
 
@@ -132,7 +134,8 @@ namespace xios
         }
 	      oasis_enddef() ;
       }
-
+*/
+//      int rank;
       MPI_Comm_rank(intraComm,&rank) ;
       if (rank==0) isRoot=true;
       else isRoot=false;
@@ -146,20 +149,17 @@ namespace xios
      
       delete eventScheduler ;
 
-      for (std::list<MPI_Comm>::iterator it = contextInterComms.begin(); it != contextInterComms.end(); ++it)
+      for (std::list<MPI_Comm>::iterator it = contextInterComms.begin(); it != contextInterComms.end(); it++)
         MPI_Comm_free(&(*it));
-      for (std::list<MPI_Comm>::iterator it = interComm.begin(); it != interComm.end(); ++it)
+      for (std::list<MPI_Comm>::iterator it = interComm.begin(); it != interComm.end(); it++)
         MPI_Comm_free(&(*it));
-
       MPI_Comm_free(&intraComm);
 
       if (!is_MPI_Initialized)
       {
         if (CXios::usingOasis) oasis_finalize();
-        //else  {MPI_Finalize() ;}
+        //else MPI_Finalize() ;
       }
-
-      
       report(0)<<"Performance report : Time spent for XIOS : "<<CTimer::get("XIOS server").getCumulatedTime()<<endl  ;
       report(0)<<"Performance report : Time spent in processing events : "<<CTimer::get("Process events").getCumulatedTime()<<endl  ;
       report(0)<<"Performance report : Ratio : "<<CTimer::get("Process events").getCumulatedTime()/CTimer::get("XIOS server").getCumulatedTime()*100.<<"%"<<endl  ;
@@ -181,19 +181,13 @@ namespace xios
          else
          {
            listenRootContext();
-           if (!finished) 
-           {
-             listenRootFinalize() ;
-           }
+           if (!finished) listenRootFinalize() ;
          }
 
          contextEventLoop() ;
          if (finished && contextList.empty()) stop=true ;
-         
          eventScheduler->checkEvent() ;
        }
-       
-       
        CTimer::get("XIOS server").suspend() ;
      }
 
@@ -203,7 +197,7 @@ namespace xios
         int msg ;
         int flag ;
 
-        for(it=interComm.begin();it!=interComm.end();++it)
+        for(it=interComm.begin();it!=interComm.end();it++)
         {
            MPI_Status status ;
            traceOff() ;
@@ -213,7 +207,6 @@ namespace xios
            {
               MPI_Recv(&msg,1,MPI_INT,0,0,*it,&status) ;
               info(20)<<" CServer : Receive client finalize"<<endl ;
-
               MPI_Comm_free(&(*it));
               interComm.erase(it) ;
               break ;
@@ -267,19 +260,14 @@ namespace xios
        if (recept==false)
        {
          traceOff() ;
-         #ifdef _usingEP
-         MPI_Iprobe(-1,1,CXios::globalComm, &flag, &status) ;
-         #else
-         MPI_Iprobe(MPI_ANY_SOURCE,1,CXios::globalComm, &flag, &status) ;
-         #endif
+         MPI_Iprobe(-2,1,CXios::globalComm, &flag, &status) ;
          traceOn() ;
-         
          if (flag==true)
          {
            #ifdef _usingMPI
            rank=status.MPI_SOURCE ;
            #elif _usingEP
-           rank= status.ep_src ;
+           rank=status.ep_src;
            #endif
            MPI_Get_count(&status,MPI_CHAR,&count) ;
            buffer=new char[count] ;
@@ -297,7 +285,7 @@ namespace xios
            #ifdef _usingMPI
            rank=status.MPI_SOURCE ;
            #elif _usingEP
-           rank= status.ep_src ;
+           rank=status.ep_src;
            #endif
            MPI_Get_count(&status,MPI_CHAR,&count) ;
            recvContextMessage((void*)buffer,count) ;
@@ -341,7 +329,6 @@ namespace xios
          {
             MPI_Isend(buff,count,MPI_CHAR,i,2,intraComm,&requests[i-1]) ;
          }
-         
          MPI_Waitall(size-1,requests,status) ;
          registerContext(buff,count,it->second.leaderRank) ;
 
@@ -421,7 +408,7 @@ namespace xios
      {
        bool finished ;
        map<string,CContext*>::iterator it ;
-       for(it=contextList.begin();it!=contextList.end();++it)
+       for(it=contextList.begin();it!=contextList.end();it++)
        {
          finished=it->second->checkBuffersAndListen();
          if (finished)

@@ -14,6 +14,7 @@
 #include "mpi_tag.hpp"
 #include "context.hpp"
 #include "context_client.hpp"
+using namespace ep_lib;
 
 namespace xios
 {

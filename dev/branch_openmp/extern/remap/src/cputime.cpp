@@ -1,4 +1,5 @@
 #include "mpi.hpp"
+using namespace ep_lib;
 
 namespace sphereRemap {
   

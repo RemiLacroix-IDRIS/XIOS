@@ -4,7 +4,6 @@
 #include "onetcdf4.hpp"
 #include "netCdfInterface.hpp"
 #include "timer.hpp"
-// mpi_std.hpp
 
 namespace xios
 {

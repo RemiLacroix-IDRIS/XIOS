@@ -12,7 +12,7 @@
 
 #include "xios_spl.hpp"
 #include "array_new.hpp"
-#include "mpi_std.hpp"
+#include "mpi.hpp"
 #include "policy.hpp"
 #include <boost/unordered_map.hpp>
 #include "dht_data_types.hpp"
@@ -86,19 +86,32 @@ class CClientClientDHTTemplate: public HierarchyPolicy
     void sendInfoToClients(int clientDestRank, unsigned char* info, int infoSize,
                            const ep_lib::MPI_Comm& clientIntraComm,
                            std::vector<ep_lib::MPI_Request>& requestSendInfo);
+    void sendInfoToClients(int clientDestRank, unsigned char* info, int infoSize,
+                           const ep_lib::MPI_Comm& clientIntraComm,
+                           ep_lib::MPI_Request* requestSendInfo);
 
     void recvInfoFromClients(int clientSrcRank, unsigned char* info, int infoSize,
                             const ep_lib::MPI_Comm& clientIntraComm,
                             std::vector<ep_lib::MPI_Request>& requestRecvInfo);
+    void recvInfoFromClients(int clientSrcRank, unsigned char* info, int infoSize,
+                             const ep_lib::MPI_Comm& clientIntraComm,
+                             ep_lib::MPI_Request* requestRecvInfo);
+                                                        
 
     // Send global index to clients
     void sendIndexToClients(int clientDestRank, size_t* indices, size_t indiceSize,
                             const ep_lib::MPI_Comm& clientIntraComm,
                             std::vector<ep_lib::MPI_Request>& requestSendIndexGlobal);
+    void sendIndexToClients(int clientDestRank, size_t* indices, size_t indiceSize,
+                            const ep_lib::MPI_Comm& clientIntraComm,
+                            ep_lib::MPI_Request* requestSendIndexGlobal);
 
     void recvIndexFromClients(int clientSrcRank, size_t* indices, size_t indiceSize,
                              const ep_lib::MPI_Comm& clientIntraComm,
                              std::vector<ep_lib::MPI_Request>& requestRecvIndex);
+    void recvIndexFromClients(int clientSrcRank, size_t* indices, size_t indiceSize,
+                              const ep_lib::MPI_Comm& clientIntraComm,
+                              ep_lib::MPI_Request* requestRecvIndex);
 
     void sendRecvOnReturn(const std::vector<int>& sendNbRank, std::vector<int>& sendNbElements,
                           const std::vector<int>& recvNbRank, std::vector<int>& recvNbElements);

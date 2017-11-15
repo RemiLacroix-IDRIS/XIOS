@@ -18,12 +18,23 @@ namespace ep_lib {
   {
     if(!comm.is_ep)
       return ::MPI_Send(buf, count, to_mpi_type(datatype), dest, tag, to_mpi_comm(comm.mpi_comm));
+    if(comm.is_intercomm)
+    {
+      MPI_Request request;
+      MPI_Status status;
+      MPI_Isend(buf, count, datatype, dest, tag, comm, &request);
+      MPI_Wait(&request, &status);
+    }
+    else
+    {
+      int ep_src_loc  = comm.ep_comm_ptr->size_rank_info[1].first;
+      int ep_dest_loc = comm.ep_comm_ptr->comm_list->rank_map->at(dest).first;
+      int mpi_tag     = tag_combine(tag, ep_src_loc, ep_dest_loc);
+      int mpi_dest    = comm.ep_comm_ptr->comm_list->rank_map->at(dest).second;
 
-    MPI_Request request;
-    MPI_Status status;
-    MPI_Isend(buf, count, datatype, dest, tag, comm, &request);
-    MPI_Wait(&request, &status);
-
+      ::MPI_Send(buf, count, to_mpi_type(datatype), mpi_dest, mpi_tag, to_mpi_comm(comm.mpi_comm));
+      //printf("call mpi_send for intracomm, dest = %d, tag = %d\n", dest, tag);
+    }
     //check_sum_send(buf, count, datatype, dest, tag, comm);
 
     return 0;

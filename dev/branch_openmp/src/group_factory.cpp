@@ -3,17 +3,16 @@
 namespace xios
 {
    /// ////////////////////// Définitions ////////////////////// ///
-   StdString *CGroupFactory::CurrContext_ptr = new StdString;
+   StdString CGroupFactory::CurrContext("");
 
    void CGroupFactory::SetCurrentContextId(const StdString & context)
-   {  
-      if(CGroupFactory::CurrContext_ptr == NULL ) CGroupFactory::CurrContext_ptr = new StdString; 
-      CGroupFactory::CurrContext_ptr->assign(context);
+   { 
+      CGroupFactory::CurrContext = context;
    }
 
    StdString & CGroupFactory::GetCurrentContextId(void)
    { 
-      return (*CGroupFactory::CurrContext_ptr);
+      return (CGroupFactory::CurrContext);
    }
 
 } // namespace xios

@@ -5,38 +5,34 @@
 //#include "sample_tree.hpp"
 #include "mpi_cascade.hpp"
 #include "mpi.hpp"
-#ifdef _usingEP
-#include "ep_declaration.hpp"
-#endif
-
 namespace sphereRemap {
 
 class CParallelTree
 {
 public:
-	CParallelTree(ep_lib::MPI_Comm comm);
-	~CParallelTree();
+  CParallelTree(ep_lib::MPI_Comm comm);
+  ~CParallelTree();
 
-	void build(vector<Node>& node, vector<Node>& node2);
+  void build(vector<Node>& node, vector<Node>& node2);
 
-	void routeNodes(vector<int>& route, vector<Node>& nodes, int level = 0);
-	void routeIntersections(vector<vector<int> >& route, vector<Node>& nodes, int level = 0);
+  void routeNodes(vector<int>& route, vector<Node>& nodes, int level = 0);
+  void routeIntersections(vector<vector<int> >& route, vector<Node>& nodes, int level = 0);
 
-	int nbLocalElements;
-	Elt* localElements;
+  int nbLocalElements;
+  Elt* localElements;
 
-	CTree localTree;
+  CTree localTree;
 
 private:
-	void updateCirclesForRouting(Coord rootCentre, double rootRadius, int level = 0);
-	void buildSampleTreeCascade(vector<Node>& sampleNodes, int level = 0);
-	void buildLocalTree(const vector<Node>& node, const vector<int>& route);
-	void buildRouteTree();
+  void updateCirclesForRouting(Coord rootCentre, double rootRadius, int level = 0);
+  void buildSampleTreeCascade(vector<Node>& sampleNodes, int level = 0);
+  void buildLocalTree(const vector<Node>& node, const vector<int>& route);
+  void buildRouteTree();
 
-	//CSampleTree sampleTree;
-	vector<CSampleTree> treeCascade; // first for sample tree, then for routing tree
-	CMPICascade cascade;
-        ep_lib::MPI_Comm communicator ;
+  //CSampleTree sampleTree;
+  vector<CSampleTree> treeCascade; // first for sample tree, then for routing tree
+  CMPICascade cascade;
+  ep_lib::MPI_Comm communicator ;
 
 };
 

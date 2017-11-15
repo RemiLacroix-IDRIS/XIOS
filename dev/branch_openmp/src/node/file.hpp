@@ -3,6 +3,7 @@
 
 /// XIOS headers ///
 #include "xios_spl.hpp"
+#include "mpi_std.hpp"
 #include "field.hpp"
 #include "data_output.hpp"
 #include "data_input.hpp"
@@ -10,10 +11,6 @@
 #include "date.hpp"
 #include "attribute_enum.hpp"
 #include "attribute_enum_impl.hpp"
-#include "mpi.hpp"
-#ifdef _usingEP
-#include "ep_declaration.hpp"
-#endif
 
 namespace xios {
 
@@ -109,7 +106,7 @@ namespace xios {
          void solveAllRefOfEnabledFields(bool sendToServer);
          void buildFilterGraphOfEnabledFields(CGarbageCollector& gc);
          void prefetchEnabledReadModeFields();
-         void prefetchEnabledReadModeFieldsIfNeeded();
+         void doPostTimestepOperationsForEnabledReadModeFields();
 
          // Add component into file
          CField* addField(const string& id = "");

@@ -11,6 +11,7 @@
 
 #include <map>
 #include <vector>
+#include "mpi_std.hpp"
 #include "generic_algorithm_transformation.hpp"
 #include "transformation_enum.hpp"
 #include "duration.hpp"

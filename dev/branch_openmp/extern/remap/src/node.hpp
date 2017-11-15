@@ -14,8 +14,8 @@ namespace sphereRemap {
 
 struct Circle
 {
-  Coord centre;
-  double radius;
+	Coord centre;
+	double radius;
 };
 
 const int MIN_NODE_SZ = 5;
@@ -115,23 +115,23 @@ typedef Node* NodePtr;
 
 struct Node
 {
-  int level; /* FIXME leafs are 0 and root is max level? */
-  int leafCount; /* number of leafs that are descendants of this node (the elements in it's cycle) */
-  Coord centre;
-  double radius;
-  NodePtr parent, ref;
-  std::vector<NodePtr> child;
-  std::list<NodePtr> intersectors;
-  bool reinserted;
-  int updateCount;  // double var;
-  CBasicTree* tree;
-  void *data;
-  int route;
+	int level; /* FIXME leafs are 0 and root is max level? */
+	int leafCount; /* number of leafs that are descendants of this node (the elements in it's cycle) */
+	Coord centre;
+	double radius;
+	NodePtr parent, ref;
+	std::vector<NodePtr> child;
+	std::list<NodePtr> intersectors;
+	bool reinserted;
+	int updateCount;  // double var;
+	CBasicTree* tree;
+	void *data;
+	int route;
   bool toDelete ;
 
-  Node() : level(0), leafCount(1), centre(ORIGIN), radius(0), reinserted(false), updateCount(0), toDelete(false) {}
-  Node(const Coord& centre, double radius, void *data)
-    : level(0), leafCount(1), centre(centre), radius(radius), reinserted(false), updateCount(0), data(data), toDelete(false) {}
+	Node() : level(0), leafCount(1), centre(ORIGIN), radius(0), reinserted(false), updateCount(0), toDelete(false) {}
+	Node(const Coord& centre, double radius, void *data)
+		: level(0), leafCount(1), centre(centre), radius(radius), reinserted(false), updateCount(0), data(data), toDelete(false) {}
 
 //#ifdef DEBUG
 ////	void *operator new[](size_t size)
@@ -177,28 +177,28 @@ struct Node
 //	}
 //#endif
 
-  void move(const NodePtr node);
-  void remove(const NodePtr node);
-  void inflate(const NodePtr node);
-  void update();
+	void move(const NodePtr node);
+	void remove(const NodePtr node);
+	void inflate(const NodePtr node);
+	void update();
   void output(std::ostream& flux, int level, int color) ;
-  NodePtr closest(std::vector<NodePtr>& list, int n = CLOSEST);
-  NodePtr farthest(std::vector<NodePtr>& list);
-  void findClosest(int level, NodePtr src, double& minDist, NodePtr &closest);
+	NodePtr closest(std::vector<NodePtr>& list, int n = CLOSEST);
+	NodePtr farthest(std::vector<NodePtr>& list);
+	void findClosest(int level, NodePtr src, double& minDist, NodePtr &closest);
 
-  void search(NodePtr node);
-  bool centreInside(Node &node);
-  bool intersects(NodePtr node);
-  bool isInside(Node &node);
-  int incluCheck();
+	void search(NodePtr node);
+	bool centreInside(Node &node);
+	bool intersects(NodePtr node);
+	bool isInside(Node &node);
+	int incluCheck();
   void checkParent(void) ;
-  void printChildren();
-  void assignRoute(std::vector<int>::iterator& rank, int level);
-  void assignCircleAndPropagateUp(Coord *centres, double *radia, int level);
-  void printLevel(int level);
-  void routeNode(NodePtr node, int level);
-  void routingIntersecting(std::vector<Node>* routingList, NodePtr node);
-  void routeIntersection(std::vector<int>& routes, NodePtr node);
+	void printChildren();
+	void assignRoute(std::vector<int>::iterator& rank, int level);
+	void assignCircleAndPropagateUp(Coord *centres, double *radia, int level);
+	void printLevel(int level);
+	void routeNode(NodePtr node, int level);
+	void routingIntersecting(std::vector<Node>* routingList, NodePtr node);
+	void routeIntersection(std::vector<int>& routes, NodePtr node);
   void getNodeLevel(int level,std::list<NodePtr>& NodeList) ;
   bool removeDeletedNodes(int assignLevel) ;
   void free_descendants();

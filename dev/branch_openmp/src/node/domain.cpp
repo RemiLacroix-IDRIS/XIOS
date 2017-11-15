@@ -25,7 +25,7 @@
 
 namespace xios {
 
-   /// ////////////////////// Dfinitions ////////////////////// ///
+   /// ////////////////////// Définitions ////////////////////// ///
 
    CDomain::CDomain(void)
       : CObjectTemplate<CDomain>(), CDomainAttributes()
@@ -65,9 +65,8 @@ namespace xios {
    }
 
    //std::map<StdString, ETranformationType> CDomain::transformationMapList_ = std::map<StdString, ETranformationType>();
-   //bool CDomain::_dummyTransformationMapList = CDomain::initializeTransformationMap(CDomain::transformationMapList_);
-
    std::map<StdString, ETranformationType> *CDomain::transformationMapList_ptr = 0;
+   //bool CDomain::_dummyTransformationMapList = CDomain::initializeTransformationMap(CDomain::transformationMapList_);
 
    bool CDomain::initializeTransformationMap(std::map<StdString, ETranformationType>& m)
    {
@@ -87,7 +86,6 @@ namespace xios {
      (*CDomain::transformationMapList_ptr)["compute_connectivity_domain"] = TRANS_COMPUTE_CONNECTIVITY_DOMAIN;
      (*CDomain::transformationMapList_ptr)["expand_domain"] = TRANS_EXPAND_DOMAIN;
    }
-
 
    const std::set<StdString> & CDomain::getRelFiles(void) const
    {
@@ -444,6 +442,7 @@ namespace xios {
       default:
       break;
      }
+     completeLonLatClient() ;
 
    }
 
@@ -635,7 +634,7 @@ namespace xios {
    void CDomain::AllgatherRectilinearLonLat(CArray<double,1>& lon, CArray<double,1>& lat, CArray<double,1>& lon_g, CArray<double,1>& lat_g)
    {
 	  CContext* context = CContext::getCurrent();
-          CContextClient* client = context->client;
+      CContextClient* client = context->client;
 	  lon_g.resize(ni_glo) ;
 	  lat_g.resize(nj_glo) ;
 
@@ -1494,14 +1493,14 @@ namespace xios {
       this->checkLonLat();
 
       if (context->hasClient)
-      { // Ct client uniquement
+      { // Côté client uniquement
          this->checkMask();
          this->checkDomainData();
          this->checkCompression();
          this->computeLocalMask() ;
       }
       else
-      { // Ct serveur uniquement
+      { // Côté serveur uniquement
       }
 
       this->isClientChecked = true;
@@ -1534,7 +1533,7 @@ namespace xios {
       this->checkArea();
 
       if (context->hasClient)
-      { // Ct client uniquement
+      { // Côté client uniquement
          this->checkMask();
          this->checkDomainData();
          this->checkCompression();
@@ -1542,7 +1541,7 @@ namespace xios {
 
       }
       else
-      { // Ct serveur uniquement
+      { // Côté serveur uniquement
       }
 
       if (context->hasClient)
@@ -1725,7 +1724,6 @@ namespace xios {
     CClientServerMapping* clientServerMap = new CClientServerMappingDistributed(serverDescription.getGlobalIndexRange(),
                                                                                 client->intraComm);
     clientServerMap->computeServerIndexMapping(globalIndexDomain);
-    
     const CClientServerMapping::GlobalIndexMap& globalIndexDomainOnServer = clientServerMap->getGlobalIndexOnServer();
 
     CClientServerMapping::GlobalIndexMap::const_iterator it  = globalIndexDomainOnServer.begin(),
@@ -2364,8 +2362,10 @@ namespace xios {
 
         nodeElementName = node.getElementName();
         if(transformationMapList_ptr == 0) initializeTransformationMap();
-        std::map<StdString, ETranformationType>::const_iterator ite = (*transformationMapList_ptr).end(), it;
-        it = (*transformationMapList_ptr).find(nodeElementName);
+        //std::map<StdString, ETranformationType>::const_iterator ite = transformationMapList_.end(), it;
+        std::map<StdString, ETranformationType>::const_iterator ite = transformationMapList_ptr->end(), it;
+        //it = transformationMapList_.find(nodeElementName);
+        it = transformationMapList_ptr->find(nodeElementName);
         if (ite != it)
         {
           transformationMap_.push_back(std::make_pair(it->second, CTransformation<CDomain>::createTransformation(it->second,

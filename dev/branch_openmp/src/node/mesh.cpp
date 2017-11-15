@@ -5,6 +5,7 @@
 */
 
 #include "mesh.hpp"
+using namespace ep_lib;
 
 namespace xios {
 
@@ -30,12 +31,11 @@ namespace xios {
     if (pEdgeGlobalIndex != NULL) delete pEdgeGlobalIndex;
   }
 
-  std::map <StdString, CMesh> CMesh::meshList = std::map <StdString, CMesh>();
-  std::map <StdString, vector<int> > CMesh::domainList = std::map <StdString, vector<int> >();
+  //std::map <StdString, CMesh> CMesh::meshList = std::map <StdString, CMesh>();
+  //std::map <StdString, vector<int> > CMesh::domainList = std::map <StdString, vector<int> >();
 
   std::map <StdString, CMesh> *CMesh::meshList_ptr = 0;
   std::map <StdString, vector<int> > *CMesh::domainList_ptr = 0;
-
 
 ///---------------------------------------------------------------
 /*!
@@ -44,61 +44,40 @@ namespace xios {
  * \param [in] meshName  The name of a mesh ("name" attribute of a domain).
  * \param [in] nvertex Number of verteces (1 for nodes, 2 for edges, 3 and up for faces).
  */
-
-/* bkp
-  CMesh* CMesh::getMesh (StdString meshName, int nvertex)
-  {
-    CMesh::domainList[meshName].push_back(nvertex);
-
-    if ( CMesh::meshList.begin() != CMesh::meshList.end() )
-    {
-      for (std::map<StdString, CMesh>::iterator it=CMesh::meshList.begin(); it!=CMesh::meshList.end(); ++it)
-      {
-        if (it->first == meshName)
-          return &meshList[meshName];
-        else
-        {
-          CMesh newMesh;
-          CMesh::meshList.insert( make_pair(meshName, newMesh) );
-          return &meshList[meshName];
-        }
-      }
-    }
-    else
-    {
-      CMesh newMesh;
-      CMesh::meshList.insert( make_pair(meshName, newMesh) );
-      return &meshList[meshName];
-    }
-  }
-*/
-
   CMesh* CMesh::getMesh (StdString meshName, int nvertex)
   {
     if(CMesh::domainList_ptr == NULL) CMesh::domainList_ptr = new std::map <StdString, vector<int> >();
     if(CMesh::meshList_ptr == NULL)   CMesh::meshList_ptr   = new std::map <StdString, CMesh>();
 
-    (*CMesh::domainList_ptr)[meshName].push_back(nvertex);
+    //CMesh::domainList[meshName].push_back(nvertex);
+    CMesh::domainList_ptr->at(meshName).push_back(nvertex);
 
-    if ( (*CMesh::meshList_ptr).begin() != (*CMesh::meshList_ptr).end() )
+    //if ( CMesh::meshList.begin() != CMesh::meshList.end() )
+    if ( CMesh::meshList_ptr->begin() != CMesh::meshList_ptr->end() )
     {
-      for (std::map<StdString, CMesh>::iterator it=(*CMesh::meshList_ptr).begin(); it!=(*CMesh::meshList_ptr).end(); ++it)
+      //for (std::map<StdString, CMesh>::iterator it=CMesh::meshList.begin(); it!=CMesh::meshList.end(); ++it)
+      for (std::map<StdString, CMesh>::iterator it=CMesh::meshList_ptr->begin(); it!=CMesh::meshList_ptr->end(); ++it)
       {
         if (it->first == meshName)
-          return &((*CMesh::meshList_ptr)[meshName]);
+          //return &meshList[meshName];
+          return &meshList_ptr->at(meshName);
         else
         {
           CMesh newMesh;
-          (*CMesh::meshList_ptr).insert( make_pair(meshName, newMesh) );
-          return &((*CMesh::meshList_ptr)[meshName]);
+          //CMesh::meshList.insert( make_pair(meshName, newMesh) );
+          CMesh::meshList_ptr->insert( make_pair(meshName, newMesh) );
+          //return &meshList[meshName];
+          return &meshList_ptr->at(meshName);
         }
       }
     }
     else
     {
       CMesh newMesh;
-      (*CMesh::meshList_ptr).insert( make_pair(meshName, newMesh) );
-      return &((*CMesh::meshList_ptr)[meshName]);
+      //CMesh::meshList.insert( make_pair(meshName, newMesh) );
+      CMesh::meshList_ptr->insert( make_pair(meshName, newMesh) );
+      //return &meshList[meshName];
+      return &meshList_ptr->at(meshName);
     }
   }
 
@@ -523,7 +502,7 @@ namespace xios {
  * \param [in] bounds_lon Array of boundary longitudes. Its size depends on the element type.
  * \param [in] bounds_lat Array of boundary latitudes. Its size depends on the element type.
  */
-  void CMesh::createMeshEpsilon(const ep_lib::MPI_Comm& comm,
+  void CMesh::createMeshEpsilon(const MPI_Comm& comm,
                                 const CArray<double, 1>& lonvalue, const CArray<double, 1>& latvalue,
                                 const CArray<double, 2>& bounds_lon, const CArray<double, 2>& bounds_lat)
   {
@@ -1723,7 +1702,7 @@ namespace xios {
    * \param [out] nghbFaces 2D array of storing global indexes of neighboring cells and their owner procs.
    */
 
-  void CMesh::getGloNghbFacesNodeType(const ep_lib::MPI_Comm& comm, const CArray<int, 1>& face_idx,
+  void CMesh::getGloNghbFacesNodeType(const MPI_Comm& comm, const CArray<int, 1>& face_idx,
                                const CArray<double, 2>& bounds_lon, const CArray<double, 2>& bounds_lat,
                                CArray<int, 2>& nghbFaces)
   {
@@ -1879,7 +1858,7 @@ namespace xios {
    * \param [out] nghbFaces 2D array of storing global indexes of neighboring cells and their owner procs.
    */
 
-  void CMesh::getGloNghbFacesEdgeType(const ep_lib::MPI_Comm& comm, const CArray<int, 1>& face_idx,
+  void CMesh::getGloNghbFacesEdgeType(const MPI_Comm& comm, const CArray<int, 1>& face_idx,
                                const CArray<double, 2>& bounds_lon, const CArray<double, 2>& bounds_lat,
                                CArray<int, 2>& nghbFaces)
   {
@@ -2060,7 +2039,7 @@ namespace xios {
    * \param [out] nghbFaces 2D array containing neighboring faces and owner ranks.
    */
 
-  void CMesh::getGlobalNghbFaces(const int nghbType, const ep_lib::MPI_Comm& comm,
+  void CMesh::getGlobalNghbFaces(const int nghbType, const MPI_Comm& comm,
                                  const CArray<int, 1>& face_idx,
                                  const CArray<double, 2>& bounds_lon, const CArray<double, 2>& bounds_lat,
                                  CArray<int, 2>& nghbFaces)

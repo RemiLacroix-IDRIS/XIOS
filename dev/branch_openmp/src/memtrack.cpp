@@ -43,6 +43,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <sstream>
 #include <string>
+
 #include <execinfo.h>
 
 #include "memtrack.hpp"
@@ -75,7 +76,6 @@ namespace MemTrack
     {
         private:    // static member variables
             static BlockHeader *ourFirstNode;
-            #pragma omp threadprivate(ourFirstNode)
     
         private:    // member variables
             BlockHeader *myPrevNode;

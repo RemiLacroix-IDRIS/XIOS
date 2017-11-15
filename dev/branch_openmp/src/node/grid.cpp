@@ -1113,7 +1113,7 @@ namespace xios {
           outGlobalIndexOnServer(idx) = itIndex->first;
           outLocalIndexToServer(idx) = itIndex->second;
         }
-
+        
         const std::list<int>& ranks = client->getRanksServerLeader();
         for (std::list<int>::const_iterator itRank = ranks.begin(), itRankEnd = ranks.end(); itRank != itRankEnd; ++itRank)
         {
@@ -1749,6 +1749,7 @@ namespace xios {
       {
         pDom->solveRefInheritance(apply);
         pDom->solveInheritanceTransformation();
+        //cout<<"pDom check"<<endl;
       }
     }
 

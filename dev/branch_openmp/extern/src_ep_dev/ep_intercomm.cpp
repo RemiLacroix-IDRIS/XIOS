@@ -46,6 +46,9 @@ namespace ep_lib
       MPI_Irecv(&leader_ranks[3], 3, static_cast< ::MPI_Datatype>(MPI_INT), remote_leader, tag, peer_comm, &request[1]);
 
       MPI_Waitall(2, request, status);
+
+      //MPI_Send(&leader_ranks[0], 3, static_cast< ::MPI_Datatype>(MPI_INT), remote_leader, tag, peer_comm);
+      //MPI_Recv(&leader_ranks[3], 3, static_cast< ::MPI_Datatype>(MPI_INT), remote_leader, tag, peer_comm, &status[1]);
     }
 
 
