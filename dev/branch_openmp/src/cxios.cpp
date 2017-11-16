@@ -14,10 +14,10 @@ using namespace ep_lib;
 
 namespace xios
 {
-  string CXios::rootFile="./iodef.xml" ;
-  string CXios::xiosCodeId="xios.x" ;
-  string CXios::clientFile="./xios_client";
-  string CXios::serverFile="./xios_server";
+  const string CXios::rootFile="./iodef.xml" ;
+  const string CXios::xiosCodeId="xios.x" ;
+  const string CXios::clientFile="./xios_client";
+  const string CXios::serverFile="./xios_server";
 
   bool CXios::isClient ;
   bool CXios::isServer ;
@@ -36,7 +36,15 @@ namespace xios
   void CXios::initialize()
   {
     set_new_handler(noMemory);
-    parseFile(rootFile);
+    int tmp_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &tmp_rank);
+    #pragma omp critical
+    {
+      std::cout<<"thread "<<tmp_rank<<"("<<omp_get_thread_num()<<")"<<" parsing rootfile"<<std::endl;
+      parseFile(rootFile);
+      std::cout<<"thread "<<tmp_rank<<"("<<omp_get_thread_num()<<")"<<" parsed rootfile"<<std::endl;
+    }
+    #pragma omp barrier
     parseXiosConfig();
   }
 
@@ -77,7 +85,7 @@ namespace xios
         
     if(isServer) 
     { 
-      num_ep = omp_get_num_threads();
+      num_ep = 1;
     }
         
     MPI_Info info;

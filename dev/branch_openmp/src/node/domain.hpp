@@ -216,9 +216,10 @@ namespace xios {
        private:
          static bool initializeTransformationMap(std::map<StdString, ETranformationType>& m);
          static bool initializeTransformationMap();
-         //static std::map<StdString, ETranformationType> transformationMapList_;
          static std::map<StdString, ETranformationType> *transformationMapList_ptr;
+         #pragma omp threadprivate(transformationMapList_ptr)
          static bool _dummyTransformationMapList;
+         #pragma omp threadprivate(_dummyTransformationMapList)
 
          DECLARE_REF_FUNC(Domain,domain)
 

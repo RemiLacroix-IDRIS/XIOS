@@ -7,37 +7,39 @@
 
 namespace xios
 {
-   /// ////////////////////// Déclarations ////////////////////// ///
-   class CIndent
-   {
-      public :
+  /// ////////////////////// Déclarations ////////////////////// ///
+  class CIndent
+  {
+    public :
 
-         /// Méthodes statiques ///
-         static StdOStream & NIndent  (StdOStream & out);
-         static StdOStream & IncIndent(StdOStream & out);
-         static StdOStream & DecEndl  (StdOStream & out);
+      /// Méthodes statiques ///
+      static StdOStream & NIndent  (StdOStream & out);
+      static StdOStream & IncIndent(StdOStream & out);
+      static StdOStream & DecEndl  (StdOStream & out);
 
-      private :
+    private :
 
-         /// Propriétés  statiques ///
-         static unsigned int Indent;
-         static StdString    Increm;
-         static bool         WithLine;
+      /// Propriétés  statiques ///
+      static unsigned int Indent;
+      #pragma omp threadprivate(Indent)
+      static StdString    Increm;
+      #pragma omp threadprivate(Increm)
+      static bool         WithLine;
+      #pragma omp threadprivate(WithLine)
 
-   }; // class CIndent
+  }; // class CIndent
 
-    ///--------------------------------------------------------------
+  ///--------------------------------------------------------------
     
-   class CIndentedXml
-   {
-      public :
+  class CIndentedXml
+  {
+    public :
+      /// Méthode statique ///
+      static StdString Indented(const StdString & content);
 
-         /// Méthode statique ///
-         static StdString Indented(const StdString & content);
+  }; // class CIndentedXml
 
-   }; // class CIndentedXml
-
-    ///--------------------------------------------------------------
+  ///--------------------------------------------------------------
 
 } // namespace xios
 

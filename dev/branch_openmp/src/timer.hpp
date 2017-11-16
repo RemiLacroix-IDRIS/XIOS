@@ -21,6 +21,7 @@ namespace xios
       double getCumulatedTime(void);
       //static std::map<std::string,CTimer> allTimer;
       static std::map<std::string,CTimer> *allTimer_ptr;
+      #pragma omp threadprivate(allTimer_ptr)
       static double getTime(void);
       static CTimer& get(std::string name);
       static std::string getAllCumulatedTime(void) ;

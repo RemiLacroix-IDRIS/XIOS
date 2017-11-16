@@ -58,6 +58,7 @@ namespace xios {
       static bool registerTrans();
       static CTransformation<CScalar>* create(const StdString& id, xml::CXMLNode* node);
       static bool _dummyRegistered;
+      #pragma omp threadprivate(_dummyRegistered)
   }; // class CReduceAxisToScalar
 
   DECLARE_GROUP(CReduceAxisToScalar);

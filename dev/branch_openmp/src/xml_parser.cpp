@@ -10,7 +10,7 @@ namespace xios
 {
    namespace xml
    {
-      /// ////////////////////// Définitions ////////////////////// ///
+      /// ////////////////////// Dfinitions ////////////////////// ///
 
       void CXMLParser::ParseFile(const StdString & filename, const std::set<StdString>& parseContextList)
       {

@@ -22,9 +22,9 @@ using namespace ep_lib;
 
 namespace xios {
 
-  shared_ptr<CContextGroup> CContext::root;
+  shared_ptr<CContextGroup> * CContext::root_ptr = 0;
 
-   /// ////////////////////// Définitions ////////////////////// ///
+   /// ////////////////////// Dfinitions ////////////////////// ///
 
    CContext::CContext(void)
       : CObjectTemplate<CContext>(), CContextAttributes()
@@ -58,8 +58,9 @@ namespace xios {
    */
    CContextGroup* CContext::getRoot(void)
    {
-      if (root.get()==NULL) root=shared_ptr<CContextGroup>(new CContextGroup(xml::CXMLNode::GetRootName()));
-      return root.get();
+      //std::cout<<omp_get_thread_num()<<" get root name = "<<xml::CXMLNode::GetRootName()<<std::endl;
+      if (root_ptr==0) root_ptr = new shared_ptr<CContextGroup>(new CContextGroup(xml::CXMLNode::GetRootName()));
+      return root_ptr->get();
    }
 
    //----------------------------------------------------------------
@@ -181,7 +182,7 @@ namespace xios {
           << SuperClassAttribute::toString() << ">" << std::endl;
       if (!this->hasChild())
       {
-         //oss << "<!-- No definition -->" << std::endl; // fait planter l'incrémentation
+         //oss << "<!-- No definition -->" << std::endl; // fait planter l'incrmentation
       }
       else
       {
@@ -554,11 +555,11 @@ namespace xios {
 
    void CContext::solveAllInheritance(bool apply) // default : apply = true
    {
-     // Résolution des héritages descendants (càd des héritages de groupes)
+     // Rsolution des hritages descendants (cd des hritages de groupes)
      // pour chacun des contextes.
       solveDescInheritance(apply);
 
-     // Résolution des héritages par référence au niveau des fichiers.
+     // Rsolution des hritages par rfrence au niveau des fichiers.
       const vector<CFile*> allFiles=CFile::getAll();
       const vector<CGrid*> allGrids= CGrid::getAll();
 
@@ -582,9 +583,9 @@ namespace xios {
       const CDate& initDate = calendar->getInitDate();
 
       for (unsigned int i = 0; i < allFiles.size(); i++)
-         if (!allFiles[i]->enabled.isEmpty()) // Si l'attribut 'enabled' est défini.
+         if (!allFiles[i]->enabled.isEmpty()) // Si l'attribut 'enabled' est dfini.
          {
-            if (allFiles[i]->enabled.getValue()) // Si l'attribut 'enabled' est fixé à vrai.
+            if (allFiles[i]->enabled.getValue()) // Si l'attribut 'enabled' est fix  vrai.
             {
               if ((initDate + allFiles[i]->output_freq.getValue()) < (initDate + this->getCalendar()->getTimeStep()))
               {
@@ -609,7 +610,7 @@ namespace xios {
          }
 
       if (enabledFiles.size() == 0)
-         DEBUG(<<"Aucun fichier ne va être sorti dans le contexte nommé \""
+         DEBUG(<<"Aucun fichier ne va tre sorti dans le contexte nomm \""
                << getId() << "\" !");
    }
 
@@ -846,7 +847,7 @@ namespace xios {
       // Warning: This must be done after solving the inheritance and before the rest of post-processing
       prepareTimeseries();
 
-      //Initialisation du vecteur 'enabledFiles' contenant la liste des fichiers à sortir.
+      //Initialisation du vecteur 'enabledFiles' contenant la liste des fichiers  sortir.
       this->findEnabledFiles();
       this->findEnabledReadModeFiles();
 
@@ -1256,7 +1257,7 @@ namespace xios {
     bool hasctxt = CContext::has(id);
     CContext* context = CObjectFactory::CreateObject<CContext>(id).get();
     getRoot();
-    if (!hasctxt) CGroupFactory::AddChild(root, context->getShared());
+    if (!hasctxt) CGroupFactory::AddChild(*root_ptr, context->getShared());
 
 #define DECLARE_NODE(Name_, name_) \
     C##Name_##Definition::create(C##Name_##Definition::GetDefName());

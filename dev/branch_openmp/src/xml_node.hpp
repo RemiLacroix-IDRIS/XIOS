@@ -9,49 +9,50 @@
 
 namespace xios
 {
-   namespace xml
-   {
-      /// ////////////////////// Déclarations ////////////////////// ///
-      typedef xios_map<StdString, StdString> THashAttributes;
+  namespace xml
+  {
+    /// ////////////////////// Déclarations ////////////////////// ///
+    typedef xios_map<StdString, StdString> THashAttributes;
 
-      class CXMLNode
-      {
-         public :
+    class CXMLNode
+    {
+      public :
 
-            /// Constructeurs ///
-            CXMLNode(rapidxml::xml_node<char> * const root);
+        /// Constructeurs ///
+        CXMLNode(rapidxml::xml_node<char> * const root);
 
-            /// Destructeur ///
-            ~CXMLNode(void);
+        /// Destructeur ///
+        ~CXMLNode(void);
 
-            /// Accesseurs ///
-            StdString getElementName(void) const;
-            THashAttributes getAttributes(void) const;
+        /// Accesseurs ///
+        StdString getElementName(void) const;
+        THashAttributes getAttributes(void) const;
 
-            /// Mutateurs ///
-            bool goToNextElement(void);
-            bool goToChildElement(void);
-            bool goToParentElement(void);
-            bool getContent(StdString & content);
+        /// Mutateurs ///
+        bool goToNextElement(void);
+        bool goToChildElement(void);
+        bool goToParentElement(void);
+        bool getContent(StdString & content);
 
-            /// Accesseurs statiques ///
-            static const StdString & GetRootName(void);
+        /// Accesseurs statiques ///
+        static const StdString & GetRootName(void);
 
-         private :
+      private :
 
-            /// Constructeurs ///
-            CXMLNode(void);                        // Not implemented yet.
-            CXMLNode(const CXMLNode & node);       // Not implemented yet.
-            CXMLNode(const CXMLNode * const node); // Not implemented yet.
+        /// Constructeurs ///
+        CXMLNode(void);                        // Not implemented yet.
+        CXMLNode(const CXMLNode & node);       // Not implemented yet.
+        CXMLNode(const CXMLNode * const node); // Not implemented yet.
 
-            rapidxml::xml_node<char> * node;
-            int level;
+        rapidxml::xml_node<char> * node;
+        int level;
 
-            static StdString RootName;
+        static StdString RootName;
+        #pragma omp threadprivate(RootName)
 
-      }; //class CXMLParser
-
-   }// namespace xml
+    }; //class CXMLParser
+ 
+  }// namespace xml
 } // namespace xios
 
 #endif // __XIOS_CXMLNode__
