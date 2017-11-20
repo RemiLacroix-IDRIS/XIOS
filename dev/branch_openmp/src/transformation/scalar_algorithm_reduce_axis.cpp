@@ -14,8 +14,6 @@
 #include "grid_transformation_factory_impl.hpp"
 #include "reduction.hpp"
 
-#include "reduction.hpp"
-
 namespace xios {
 CGenericAlgorithmTransformation* CScalarAlgorithmReduceAxis::create(CGrid* gridDst, CGrid* gridSrc,
                                                                      CTransformation<CScalar>* transformation,

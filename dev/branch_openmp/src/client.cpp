@@ -185,7 +185,10 @@ namespace xios
         delete [] buff ;
 
         MPI_Intercomm_create(contextComm,0,CXios::globalComm,serverLeader,10+globalRank,&contextInterComm) ;
-        info(10)<<"Register new Context : "<<id<<endl ;
+        #pragma omp critical (std_output)
+        {
+          //info(10)<<"Register new Context : "<<id<<endl ;
+        }
 
         MPI_Comm inter ;
         MPI_Intercomm_merge(contextInterComm,0,&inter) ;

@@ -113,8 +113,6 @@ void CDomainAlgorithmInterpolate::computeRemap()
   int nVertexSrc, nVertexDest;
   nVertexSrc = nVertexDest = constNVertex;
 
-
-
   // First of all, try to retrieve the boundary values of domain source and domain destination
   int localDomainSrcSize = domainSrc_->i_index.numElements();
   int niSrc = domainSrc_->ni.getValue(), njSrc = domainSrc_->nj.getValue();
@@ -282,7 +280,6 @@ void CDomainAlgorithmInterpolate::computeRemap()
     globalIndex = i_ind + j_ind * domainSrc_->ni_glo;
     globalSrc[idx] = globalIndex;
   }
-
 
   for (int idx = 0; idx < nDstLocal; ++idx)
   {

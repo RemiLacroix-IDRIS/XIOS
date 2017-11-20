@@ -101,8 +101,10 @@ This function opens a new netcdf file on parallel file system
 */
 int CNetCdfInterface::openPar(const StdString& fileName, int oMode, MPI_Comm comm, MPI_Info info, int& ncId)
 {
-  //int status = xios::nc_open_par(fileName.c_str(), oMode, comm, info, &ncId);
-  int status = xios::nc_open_par(fileName.c_str(), oMode, comm, MPI_INFO_NULL.mpi_info, &ncId);
+  int status;
+  #pragma omp critical (_netcdf)
+  status = xios::nc_open_par(fileName.c_str(), oMode, comm, MPI_INFO_NULL.mpi_info, &ncId);
+  
   if (NC_NOERR != status)
   {
     StdString errormsg(nc_strerror(status));

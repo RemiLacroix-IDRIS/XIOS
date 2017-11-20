@@ -22,7 +22,7 @@ using namespace ep_lib;
 
 namespace xios {
 
-  shared_ptr<CContextGroup> * CContext::root_ptr = 0;
+  boost::shared_ptr<CContextGroup> * CContext::root_ptr = 0;
 
    /// ////////////////////// Dfinitions ////////////////////// ///
 
@@ -58,8 +58,7 @@ namespace xios {
    */
    CContextGroup* CContext::getRoot(void)
    {
-      //std::cout<<omp_get_thread_num()<<" get root name = "<<xml::CXMLNode::GetRootName()<<std::endl;
-      if (root_ptr==0) root_ptr = new shared_ptr<CContextGroup>(new CContextGroup(xml::CXMLNode::GetRootName()));
+      if(root_ptr == 0) root_ptr = new boost::shared_ptr<CContextGroup>(new CContextGroup(xml::CXMLNode::GetRootName()));
       return root_ptr->get();
    }
 

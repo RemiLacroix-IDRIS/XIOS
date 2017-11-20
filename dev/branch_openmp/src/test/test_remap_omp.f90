@@ -52,7 +52,7 @@ PROGRAM test_remap_omp
   CALL MPI_COMM_SIZE(MPI_COMM_WORLD,size,ierr)
   if(rank < size-2) then
  
-  !$omp parallel default(private) 
+  !$omp parallel default(firstprivate) 
 
 !!! XIOS Initialization (get the local communicator)
 

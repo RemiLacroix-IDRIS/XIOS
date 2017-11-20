@@ -482,7 +482,7 @@ namespace xios {
 
          if (isOpen) data_out->closeFile();
 
-        data_out = shared_ptr<CDataOutput>(new CNc4DataOutput(this, oss.str(), append, useClassicFormat, useCFConvention,
+        data_out = boost::shared_ptr<CDataOutput>(new CNc4DataOutput(this, oss.str(), append, useClassicFormat, useCFConvention,
                                                               fileComm, multifile, isCollective, time_counter_name));
         isOpen = true;
 
@@ -597,8 +597,8 @@ namespace xios {
       bool isCollective = par_access.isEmpty() || par_access == par_access_attr::collective;
 
       if (isOpen) data_out->closeFile();
-      if (time_counter_name.isEmpty()) data_in = shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), fileComm, multifile, isCollective));
-      else data_in = shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), fileComm, multifile, isCollective, time_counter_name));
+      if (time_counter_name.isEmpty()) data_in = boost::shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), fileComm, multifile, isCollective));
+      else data_in = boost::shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), fileComm, multifile, isCollective, time_counter_name));
       isOpen = true;
     }
   }
@@ -645,8 +645,10 @@ namespace xios {
         enabledFields[idx]->solveGenerateGrid();
 
         // Read necessary value from file
-        this->data_in->readFieldAttributesValues(enabledFields[idx]);
-
+        #pragma omp critical (_func)
+        {
+          this->data_in->readFieldAttributesValues(enabledFields[idx]);
+        }
         // Fill attributes for base reference
         enabledFields[idx]->solveGridDomainAxisBaseRef();
      }

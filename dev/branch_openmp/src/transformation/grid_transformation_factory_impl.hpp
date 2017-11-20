@@ -56,6 +56,7 @@ public:
 
   typedef std::map<ETranformationType, CreateTransformationCallBack> CallBackMap;
   static CallBackMap* transformationCreationCallBacks_;
+  #pragma omp threadprivate(transformationCreationCallBacks_)
   static bool registerTransformation(ETranformationType transType, CreateTransformationCallBack createFn);
   static bool unregisterTransformation(ETranformationType transType);
   static bool initializeTransformation_;

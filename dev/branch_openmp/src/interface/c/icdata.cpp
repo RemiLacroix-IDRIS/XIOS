@@ -55,7 +55,7 @@ extern "C"
       ep_lib::MPI_Comm local_comm;
       ep_lib::MPI_Comm return_comm;
       
-      ep_lib::fc_comm_map.clear();
+      //ep_lib::fc_comm_map.clear();
 
       if (!cstr2string(client_id, len_client_id, str)) return;
 

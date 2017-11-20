@@ -43,10 +43,8 @@ namespace xios {
    CAxis::~CAxis(void)
    { /* Ne rien faire de plus */ }
 
-   //std::map<StdString, ETranformationType> CAxis::transformationMapList_ = std::map<StdString, ETranformationType>();
    std::map<StdString, ETranformationType> *CAxis::transformationMapList_ptr = 0;
-   //bool CAxis::dummyTransformationMapList_ = CAxis::initializeTransformationMap(CAxis::transformationMapList_);
-   
+
    bool CAxis::initializeTransformationMap(std::map<StdString, ETranformationType>& m)
    {
      m["zoom_axis"] = TRANS_ZOOM_AXIS;
@@ -498,7 +496,7 @@ namespace xios {
       {
         globalAxisZoom[nZoomCount] = globalZoomIndex;
         ++nZoomCount;
-      } 
+      }
     }
 
     std::set<int> writtenInd;
@@ -976,7 +974,7 @@ namespace xios {
         msg << this->getId();
         msg << ni << begin << end;
         msg << global_zoom_begin.getValue() << global_zoom_n.getValue();
-        msg << isCompressible_;        
+        msg << isCompressible_;
         msg << zoomIndex;
         if (zoomIndex)
           msg << global_zoom_index.getValue();
@@ -1155,11 +1153,10 @@ namespace xios {
         { nodeId = node.getAttributes()["id"]; }
 
         nodeElementName = node.getElementName();
-        //std::map<StdString, ETranformationType>::const_iterator ite = transformationMapList_.end(), it;
+
         if(transformationMapList_ptr == 0) initializeTransformationMap();
-        std::map<StdString, ETranformationType>::const_iterator ite = transformationMapList_ptr->end(), it;
-        //it = transformationMapList_.find(nodeElementName);
-        it = transformationMapList_ptr->find(nodeElementName);
+        std::map<StdString, ETranformationType>::const_iterator ite = (*CAxis::transformationMapList_ptr).end(), it;
+        it = (*CAxis::transformationMapList_ptr).find(nodeElementName);
         if (ite != it)
         {
           transformationMap_.push_back(std::make_pair(it->second, CTransformation<CAxis>::createTransformation(it->second,

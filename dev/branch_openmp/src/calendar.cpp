@@ -116,7 +116,7 @@ namespace xios
 
       const CDate& CCalendar::update(int step)
       {
-        info(20) << "update step : " << step << " timestep " << this->timestep << std::endl;
+        //info(20) << "update step : " << step << " timestep " << this->timestep << std::endl;
         return (this->currentDate = this->getInitDate() + step * this->timestep);
       }
 

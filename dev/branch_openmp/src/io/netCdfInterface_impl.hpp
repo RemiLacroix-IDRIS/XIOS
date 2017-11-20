@@ -84,7 +84,9 @@ namespace xios
   template<typename T>
   int CNetCdfInterface::getVaraType(int ncid, int varId, const StdSize* start, const StdSize* count, T* data)
   {
-    int status = ncGetVaraType(ncid, varId, start, count, data);
+    int status;
+    #pragma omp critical (_netcdf)
+    status = ncGetVaraType(ncid, varId, start, count, data);
     if (NC_NOERR != status)
     {
       StdStringStream sstr;

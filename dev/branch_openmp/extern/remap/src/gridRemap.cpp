@@ -10,6 +10,7 @@ Coord readPole(std::istream &is)
 }
 
 CRemapGrid srcGrid;
+
 CRemapGrid tgtGrid;
 
 }
