@@ -21,7 +21,7 @@ using namespace sphereRemap ;
 /* mapper is a ponter to a global class instance whoes members are allocated in the first step (finding the sizes of the weight arrays)
    and deallocated during the second step (computing the weights) */
 Mapper *mapper;
-
+#pragma omp threadprivate(mapper)
 
 /** xxx_bounds_yyy is of length n_vert_per_cell_xxx*n_cell_xxx
    This function computes the weights and returns number of weights is returned through the last argument.

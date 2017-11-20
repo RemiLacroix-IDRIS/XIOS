@@ -14,6 +14,12 @@
 
 namespace sphereRemap {
 
+extern CRemapGrid srcGrid;
+#pragma omp threadprivate(srcGrid)
+
+extern CRemapGrid tgtGrid;
+#pragma omp threadprivate(tgtGrid)
+
 using namespace std;
 
 /** returns index of edge of a that is shared with b,

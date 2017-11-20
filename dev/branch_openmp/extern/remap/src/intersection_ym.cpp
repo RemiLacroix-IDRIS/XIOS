@@ -13,6 +13,13 @@
 
 namespace sphereRemap {
 
+extern CRemapGrid srcGrid;
+#pragma omp threadprivate(srcGrid)
+
+extern CRemapGrid tgtGrid;
+#pragma omp threadprivate(tgtGrid)
+
+
 using namespace std;
 using namespace ClipperLib ;
 

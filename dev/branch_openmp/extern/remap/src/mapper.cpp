@@ -15,6 +15,13 @@ using namespace ep_lib;
 
 namespace sphereRemap {
 
+extern CRemapGrid srcGrid;
+#pragma omp threadprivate(srcGrid)
+
+extern CRemapGrid tgtGrid;
+#pragma omp threadprivate(tgtGrid)
+
+
 /* A subdivition of an array into N sub-arays
    can be represented by the length of the N arrays
    or by the offsets when each of the N arrays starts.

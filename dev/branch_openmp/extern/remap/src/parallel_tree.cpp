@@ -15,6 +15,12 @@ using namespace ep_lib;
 
 namespace sphereRemap {
 
+extern CRemapGrid srcGrid;
+#pragma omp threadprivate(srcGrid)
+
+extern CRemapGrid tgtGrid;
+#pragma omp threadprivate(tgtGrid)
+
 static const int assignLevel = 2;
 
 // only the circle is packed, rest of node will be initialized on unpacking
