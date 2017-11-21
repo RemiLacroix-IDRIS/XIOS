@@ -8,7 +8,6 @@
 namespace xios {
 
 CReductionAlgorithm::CallBackMap* CReductionAlgorithm::reductionCreationCallBacks_ = 0;
-//std::map<StdString,EReductionType> CReductionAlgorithm::ReductionOperations = std::map<StdString,EReductionType>();
 std::map<StdString,EReductionType> *CReductionAlgorithm::ReductionOperations_ptr = 0;
 
 bool CReductionAlgorithm::initReductionOperation(std::map<StdString,EReductionType>& m)
@@ -51,7 +50,7 @@ bool CReductionAlgorithm::initReductionOperation()
 }
 
 //bool CReductionAlgorithm::_dummyInit = CReductionAlgorithm::initReductionOperation(CReductionAlgorithm::ReductionOperations);
-bool CReductionAlgorithm::_dummyInit = CReductionAlgorithm::initReductionOperation();
+//bool CReductionAlgorithm::_dummyInit = CReductionAlgorithm::initReductionOperation();
 
 CReductionAlgorithm* CReductionAlgorithm::createOperation(EReductionType reduceType)
 {

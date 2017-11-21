@@ -12,7 +12,6 @@
 #include "reduce_axis_to_scalar.hpp"
 #include "grid.hpp"
 #include "grid_transformation_factory_impl.hpp"
-#include "reduction.hpp"
 
 namespace xios {
 CGenericAlgorithmTransformation* CScalarAlgorithmReduceAxis::create(CGrid* gridDst, CGrid* gridSrc,
@@ -72,15 +71,20 @@ CScalarAlgorithmReduceAxis::CScalarAlgorithmReduceAxis(CScalar* scalarDestinatio
 
   }
   
+  if(CReductionAlgorithm::ReductionOperations_ptr == 0) 
+  {
+    CReductionAlgorithm::initReductionOperation();
+  }
+  
   //if (CReductionAlgorithm::ReductionOperations.end() == CReductionAlgorithm::ReductionOperations.find(op))
-  if (CReductionAlgorithm::ReductionOperations_ptr->end() == CReductionAlgorithm::ReductionOperations_ptr->find(op))
+  if ((*CReductionAlgorithm::ReductionOperations_ptr).end() == (*CReductionAlgorithm::ReductionOperations_ptr).find(op))
     ERROR("CScalarAlgorithmReduceAxis::CScalarAlgorithmReduceAxis(CAxis* axisDestination, CAxis* axisSource, CReduceAxisToScalar* algo)",
        << "Operation '" << op << "' not found. Please make sure to use a supported one"
        << "Axis source " <<axisSource->getId() << std::endl
        << "Scalar destination " << scalarDestination->getId());
 
   //reduction_ = CReductionAlgorithm::createOperation(CReductionAlgorithm::ReductionOperations[op]);
-  reduction_ = CReductionAlgorithm::createOperation(CReductionAlgorithm::ReductionOperations_ptr->at(op));
+  reduction_ = CReductionAlgorithm::createOperation((*CReductionAlgorithm::ReductionOperations_ptr)[op]);
 }
 
 void CScalarAlgorithmReduceAxis::apply(const std::vector<std::pair<int,double> >& localIndex, const double* dataInput, CArray<double,1>& dataOut,

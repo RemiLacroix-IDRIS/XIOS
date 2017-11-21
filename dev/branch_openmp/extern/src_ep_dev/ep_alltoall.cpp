@@ -58,6 +58,8 @@ namespace ep_lib
       delete[] tmp_recvbuf;
       delete[] tmp_sendbuf;
     }
+    
+    MPI_Barrier(comm);
 
     return 0;
   }

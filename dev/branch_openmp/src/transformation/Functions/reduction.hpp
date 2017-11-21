@@ -15,7 +15,7 @@
 
 namespace xios {
 
-/*!
+/*!  
   \class CReductionAlgorithm
   Interface for all reduction alogrithms.
 */

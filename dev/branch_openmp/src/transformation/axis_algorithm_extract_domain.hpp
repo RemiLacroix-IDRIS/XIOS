@@ -12,6 +12,7 @@
 #include "axis_algorithm_transformation.hpp"
 #include "transformation.hpp"
 
+#include "reduction.hpp"
 namespace xios {
 
 class CAxis;
@@ -24,7 +25,7 @@ class CReductionAlgorithm;
   \class CAxisAlgorithmExtractDomain
   Extract a domain to an axis
 */
-class CAxisAlgorithmExtractDomain : public CAxisAlgorithmTransformation
+class CAxisAlgorithmExtractDomain : public CAxisAlgorithmTransformation, public CReductionAlgorithm
 {
 public:
   CAxisAlgorithmExtractDomain(CAxis* axisDestination, CDomain* domainSource, CExtractDomainToAxis* algo);
