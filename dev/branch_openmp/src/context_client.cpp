@@ -399,11 +399,11 @@ namespace xios
      StdSize totalBuf = 0;
      for (itMap = itbMap; itMap != iteMap; ++itMap)
      {
-       report(10) << " Memory report : Context <" << context->getId() << "> : client side : memory used for buffer of each connection to server" << endl
-                  << "  +) To server with rank " << itMap->first << " : " << itMap->second << " bytes " << endl;
+       //report(10) << " Memory report : Context <" << context->getId() << "> : client side : memory used for buffer of each connection to server" << endl
+       //           << "  +) To server with rank " << itMap->first << " : " << itMap->second << " bytes " << endl;
        totalBuf += itMap->second;
      }
-     report(0) << " Memory report : Context <" << context->getId() << "> : client side : total memory used for buffer " << totalBuf << " bytes" << endl;
+     //report(0) << " Memory report : Context <" << context->getId() << "> : client side : total memory used for buffer " << totalBuf << " bytes" << endl;
 
      releaseBuffers();
    }

@@ -98,6 +98,8 @@ namespace ep_lib
 
     MPI_Gather_local(&key, 1, MPI_INT, key_loc.data(), 0, comm);
     MPI_Bcast_local(key_loc.data(), num_ep, MPI_INT, 0, comm);
+    
+    std::sort(key_loc.begin(), key_loc.end());
 
     for(int i=0; i<num_ep; i++)
     {

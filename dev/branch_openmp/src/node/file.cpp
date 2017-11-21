@@ -595,11 +595,19 @@ namespace xios {
       oss << ".nc";
 
       bool isCollective = par_access.isEmpty() || par_access == par_access_attr::collective;
-
-      if (isOpen) data_out->closeFile();
-      if (time_counter_name.isEmpty()) data_in = boost::shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), fileComm, multifile, isCollective));
-      else data_in = boost::shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), fileComm, multifile, isCollective, time_counter_name));
-      isOpen = true;
+      #ifdef _usingEP
+        //printf("multifile was %d\n", multifile);
+        //multifile = true;
+        if (isOpen) data_out->closeFile();
+        if (time_counter_name.isEmpty()) data_in = boost::shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), fileComm, multifile, isCollective));
+        else data_in = boost::shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), fileComm, multifile, isCollective, time_counter_name));
+        isOpen = true;
+      #elif _usingMPI
+        if (isOpen) data_out->closeFile();
+        if (time_counter_name.isEmpty()) data_in = boost::shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), fileComm, multifile, isCollective));
+        else data_in = boost::shared_ptr<CDataInput>(new CNc4DataInput(oss.str(), fileComm, multifile, isCollective, time_counter_name));
+        isOpen = true;
+      #endif
     }
   }
 
@@ -654,7 +662,7 @@ namespace xios {
      }
 
      // Now everything is ok, close it
-     close();
+     //close();
    }
 
 

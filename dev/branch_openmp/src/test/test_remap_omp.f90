@@ -94,6 +94,9 @@ PROGRAM test_remap_omp
   ALLOCATE(lval(llm))
   ALLOCATE(lval1(interpolatedLlm))
   ALLOCATE(lval2(llm2))
+  lval2 = 0
+  lval=0
+  lval1=0
 
   ierr=NF90_INQ_VARID(ncid,"lon",varid)
   ierr=NF90_GET_VAR(ncid,varid, src_lon, start=(/src_ibegin+1/),count=(/src_ni/))

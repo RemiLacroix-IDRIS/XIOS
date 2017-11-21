@@ -404,9 +404,12 @@ void CDomainAlgorithmInterpolate::processPole(std::map<int,std::vector<std::pair
 {
   CContext* context = CContext::getCurrent();
   CContextClient* client=context->client;
+  int mykey;
+  ep_lib::MPI_Comm_rank(client->intraComm, &mykey);
 
   ep_lib::MPI_Comm poleComme;
-  ep_lib::MPI_Comm_split(client->intraComm, interMapValuePole.empty() ? 0 : 1, 0, &poleComme);
+  //ep_lib::MPI_Comm_split(client->intraComm, interMapValuePole.empty() ? 0 : 1, 0, &poleComme);
+  ep_lib::MPI_Comm_split(client->intraComm, interMapValuePole.empty() ? 0 : 1, mykey, &poleComme);
   if (!poleComme.is_null())
   {
     int nbClientPole;
@@ -422,7 +425,6 @@ void CDomainAlgorithmInterpolate::processPole(std::map<int,std::vector<std::pair
     std::vector<int> recvCount(nbClientPole,0);
     std::vector<int> displ(nbClientPole,0);
     ep_lib::MPI_Allgather(&nbWeight,1,MPI_INT,&recvCount[0],1,MPI_INT,poleComme) ;
-
     displ[0]=0;
     for(int n=1;n<nbClientPole;++n) displ[n]=displ[n-1]+recvCount[n-1] ;
     int recvSize=displ[nbClientPole-1]+recvCount[nbClientPole-1] ;

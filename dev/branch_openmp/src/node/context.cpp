@@ -1204,9 +1204,9 @@ namespace xios {
    //! Update calendar in each time step
    void CContext::updateCalendar(int step)
    {
-      info(50) << "updateCalendar : before : " << calendar->getCurrentDate() << endl;
+      //info(50) << "updateCalendar : before : " << calendar->getCurrentDate() << endl;
       calendar->update(step);
-      info(50) << "updateCalendar : after : " << calendar->getCurrentDate() << endl;
+      //info(50) << "updateCalendar : after : " << calendar->getCurrentDate() << endl;
 #ifdef XIOS_MEMTRACK_LIGHT
       info(50) << " Current memory used by XIOS : "<<  MemTrack::getCurrentMemorySize()*1.0/(1024*1024)<<" Mbyte, at timestep "<<step<<" of context "<<this->getId()<<endl ;
 #endif

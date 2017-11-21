@@ -127,18 +127,21 @@ This function closes a netcdf file, given its id
 */
 int CNetCdfInterface::close(int ncId)
 {
-  int status = nc_close(ncId);
-  if (NC_NOERR != status)
+  int status = NC_NOERR;
+  #pragma omp master
   {
-    StdString errormsg(nc_strerror(status));
-    StdStringStream sstr;
-    sstr << "Error when calling function nc_close(ncId)" << std::endl
-         << errormsg << std::endl
-         << "Unable to close file, given its id: " << ncId << std::endl;
-    StdString e = sstr.str();
-    throw CNetCdfException(e);
+    status = nc_close(ncId);
+    if (NC_NOERR != status)
+    {
+      StdString errormsg(nc_strerror(status));
+      StdStringStream sstr;
+      sstr << "Error when calling function nc_close(ncId)" << std::endl
+           << errormsg << std::endl
+           << "Unable to close file, given its id: " << ncId << std::endl;
+      StdString e = sstr.str();
+      throw CNetCdfException(e);
+    }
   }
-
   return status;
 }
 

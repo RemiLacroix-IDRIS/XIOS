@@ -131,41 +131,42 @@ vector<double> Mapper::computeWeights(int interpOrder, bool renormalize, bool qu
   computeIntersection(&targetElements[0], targetElements.size());
   timings.push_back(cputime() - tic);
 
-	tic = cputime();
-	if (interpOrder == 2) {
-		if (mpiRank == 0 && verbose) cout << "Computing grads ..." << endl;
-		buildMeshTopology();
-		computeGrads();
-	}
-	timings.push_back(cputime() - tic);
+  tic = cputime();
+  if (interpOrder == 2) 
+  {
+    if (mpiRank == 0 && verbose) cout << "Computing grads ..." << endl;
+    buildMeshTopology();
+    computeGrads();
+  }
+  timings.push_back(cputime() - tic);
 
-	/* Prepare computation of weights */
-	/* compute number of intersections which for the first order case
-           corresponds to the number of edges in the remap matrix */
-	int nIntersections = 0;
-	for (int j = 0; j < targetElements.size(); j++)
-	{
-		Elt &elt = targetElements[j];
-		for (list<Polyg*>::iterator it = elt.is.begin(); it != elt.is.end(); it++)
-			nIntersections++;
-	}
-	/* overallocate for NMAX neighbours for each elements */
-	remapMatrix = new double[nIntersections*NMAX];
-	srcAddress = new int[nIntersections*NMAX];
-	srcRank = new int[nIntersections*NMAX];
-	dstAddress = new int[nIntersections*NMAX];
+  /* Prepare computation of weights */
+  /* compute number of intersections which for the first order case
+     corresponds to the number of edges in the remap matrix */
+  int nIntersections = 0;
+  for (int j = 0; j < targetElements.size(); j++)
+  {
+    Elt &elt = targetElements[j];
+    for (list<Polyg*>::iterator it = elt.is.begin(); it != elt.is.end(); it++)
+      nIntersections++;
+  }
+  /* overallocate for NMAX neighbours for each elements */
+  remapMatrix = new double[nIntersections*NMAX];
+  srcAddress = new int[nIntersections*NMAX];
+  srcRank = new int[nIntersections*NMAX];
+  dstAddress = new int[nIntersections*NMAX];
   sourceWeightId =new long[nIntersections*NMAX];
   targetWeightId =new long[nIntersections*NMAX];
 
 
-	if (mpiRank == 0 && verbose) cout << "Remapping..." << endl;
-	tic = cputime();
-	nWeights = remap(&targetElements[0], targetElements.size(), interpOrder, renormalize, quantity);
-	timings.push_back(cputime() - tic);
+  if (mpiRank == 0 && verbose) cout << "Remapping..." << endl;
+  tic = cputime();
+  nWeights = remap(&targetElements[0], targetElements.size(), interpOrder, renormalize, quantity);
+  timings.push_back(cputime() - tic);
 
   for (int i = 0; i < targetElements.size(); i++) targetElements[i].delete_intersections();
 
-	return timings;
+  return timings;
 }
 
 /**
@@ -176,226 +177,227 @@ vector<double> Mapper::computeWeights(int interpOrder, bool renormalize, bool qu
 */
 int Mapper::remap(Elt *elements, int nbElements, int order, bool renormalize, bool quantity)
 {
-	int mpiSize, mpiRank;
-	MPI_Comm_size(communicator, &mpiSize);
-	MPI_Comm_rank(communicator, &mpiRank);
+  int mpiSize, mpiRank;
+  MPI_Comm_size(communicator, &mpiSize);
+  MPI_Comm_rank(communicator, &mpiRank);
 
-	/* create list of intersections (super mesh elements) for each rank */
-	multimap<int, Polyg *> *elementList = new multimap<int, Polyg *>[mpiSize];
-	for (int j = 0; j < nbElements; j++)
-	{
-		Elt& e = elements[j];
-		for (list<Polyg *>::iterator it = e.is.begin(); it != e.is.end(); it++)
-			elementList[(*it)->id.rank].insert(pair<int, Polyg *>((*it)->id.ind, *it));
-	}
+  /* create list of intersections (super mesh elements) for each rank */
+  multimap<int, Polyg *> *elementList = new multimap<int, Polyg *>[mpiSize];
+  for (int j = 0; j < nbElements; j++)
+  {
+    Elt& e = elements[j];
+    for (list<Polyg *>::iterator it = e.is.begin(); it != e.is.end(); it++)
+    {
+      elementList[(*it)->id.rank].insert(pair<int, Polyg *>((*it)->id.ind, *it));
+      //std::cout<<"elementList["<<(*it)->id.rank<<"].size = "<< elementList[(*it)->id.rank].size()<<std::endl;
+    }
+  }
 
-	int *nbSendElement = new int[mpiSize];
-	int **sendElement = new int*[mpiSize]; /* indices of elements required from other rank */
-	double **recvValue = new double*[mpiSize];
-	double **recvArea = new double*[mpiSize];
-	Coord **recvGrad = new Coord*[mpiSize];
-	GloId **recvNeighIds = new GloId*[mpiSize]; /* ids of the of the source neighbours which also contribute through gradient */
-	for (int rank = 0; rank < mpiSize; rank++)
-	{
-		/* get size for allocation */
-		int last = -1; /* compares unequal to any index */
-		int index = -1; /* increased to starting index 0 in first iteration */
-		for (multimap<int, Polyg *>::iterator it = elementList[rank].begin(); it != elementList[rank].end(); ++it)
-		{
-			if (last != it->first)
-				index++;
-			(it->second)->id.ind = index;
-			last = it->first;
-		}
-		nbSendElement[rank] = index + 1;
+  int *nbSendElement = new int[mpiSize];
+  int **sendElement = new int*[mpiSize]; /* indices of elements required from other rank */
+  double **recvValue = new double*[mpiSize];
+  double **recvArea = new double*[mpiSize];
+  Coord **recvGrad = new Coord*[mpiSize];
+  GloId **recvNeighIds = new GloId*[mpiSize]; /* ids of the of the source neighbours which also contribute through gradient */
+  for (int rank = 0; rank < mpiSize; rank++)
+  {
+    /* get size for allocation */
+    int last = -1; /* compares unequal to any index */
+    int index = -1; /* increased to starting index 0 in first iteration */
+    for (multimap<int, Polyg *>::iterator it = elementList[rank].begin(); it != elementList[rank].end(); ++it)
+    {
+      if (last != it->first)
+        index++;
+      (it->second)->id.ind = index;
+      last = it->first;
+    }
+    nbSendElement[rank] = index + 1;
 
-		/* if size is non-zero allocate and collect indices of elements on other ranks that we intersect */
-		if (nbSendElement[rank] > 0)
-		{
-			sendElement[rank] = new int[nbSendElement[rank]];
-			recvValue[rank]   = new double[nbSendElement[rank]];
-			recvArea[rank]    = new double[nbSendElement[rank]];
-			if (order == 2)
-			{
-				recvNeighIds[rank] = new GloId[nbSendElement[rank]*(NMAX+1)];
-				recvGrad[rank]    = new Coord[nbSendElement[rank]*(NMAX+1)];
-			}
-			else
-				recvNeighIds[rank] = new GloId[nbSendElement[rank]];
+    /* if size is non-zero allocate and collect indices of elements on other ranks that we intersect */
+    if (nbSendElement[rank] > 0)
+    {
+      sendElement[rank] = new int[nbSendElement[rank]];
+      recvValue[rank]   = new double[nbSendElement[rank]];
+      recvArea[rank]    = new double[nbSendElement[rank]];
+      if (order == 2)
+      {
+        recvNeighIds[rank] = new GloId[nbSendElement[rank]*(NMAX+1)];
+        recvGrad[rank]    = new Coord[nbSendElement[rank]*(NMAX+1)];
+      }
+      else
+        recvNeighIds[rank] = new GloId[nbSendElement[rank]];
 
-			last = -1;
-			index = -1;
-			for (multimap<int, Polyg *>::iterator it = elementList[rank].begin(); it != elementList[rank].end(); ++it)
-			{
-				if (last != it->first)
-					index++;
-				sendElement[rank][index] = it->first;
-				last = it->first;
-			}
-		}
-	}
+      last = -1;
+      index = -1;
+      for (multimap<int, Polyg *>::iterator it = elementList[rank].begin(); it != elementList[rank].end(); ++it)
+      {
+        if (last != it->first)
+          index++;
+        sendElement[rank][index] = it->first;
+        last = it->first;
+      }
+    }
+  }
 
-	/* communicate sizes of source elements to be sent (index lists and later values and gradients) */
-	int *nbRecvElement = new int[mpiSize];
-	MPI_Alltoall(nbSendElement, 1, MPI_INT, nbRecvElement, 1, MPI_INT, communicator);
+  /* communicate sizes of source elements to be sent (index lists and later values and gradients) */
+  int *nbRecvElement = new int[mpiSize];
+  MPI_Alltoall(nbSendElement, 1, MPI_INT, nbRecvElement, 1, MPI_INT, communicator);
 
-	/* communicate indices of source elements on other ranks whoes value and gradient we need (since intersection) */
-	int nbSendRequest = 0;
-	int nbRecvRequest = 0;
-	int **recvElement = new int*[mpiSize];
-	double **sendValue = new double*[mpiSize];
-	double **sendArea = new double*[mpiSize];
-	Coord **sendGrad = new Coord*[mpiSize];
-	GloId **sendNeighIds = new GloId*[mpiSize];
-	MPI_Request *sendRequest = new MPI_Request[4*mpiSize];
-	MPI_Request *recvRequest = new MPI_Request[4*mpiSize];
-	for (int rank = 0; rank < mpiSize; rank++)
-	{
-		if (nbSendElement[rank] > 0)
-		{
-			MPI_Issend(sendElement[rank], nbSendElement[rank], MPI_INT, rank, 0, communicator, &sendRequest[nbSendRequest]);
-			nbSendRequest++;
-		}
+  /* communicate indices of source elements on other ranks whoes value and gradient we need (since intersection) */
+  int nbSendRequest = 0;
+  int nbRecvRequest = 0;
+  int **recvElement = new int*[mpiSize];
+  double **sendValue = new double*[mpiSize];
+  double **sendArea = new double*[mpiSize];
+  Coord **sendGrad = new Coord*[mpiSize];
+  GloId **sendNeighIds = new GloId*[mpiSize];
+  MPI_Request *sendRequest = new MPI_Request[4*mpiSize];
+  MPI_Request *recvRequest = new MPI_Request[4*mpiSize];
+  for (int rank = 0; rank < mpiSize; rank++)
+  {
+    if (nbSendElement[rank] > 0)
+    {
+      MPI_Issend(sendElement[rank], nbSendElement[rank], MPI_INT, rank, 0, communicator, &sendRequest[nbSendRequest]);
+      nbSendRequest++;
+    }
 
-		if (nbRecvElement[rank] > 0)
-		{
-			recvElement[rank] = new int[nbRecvElement[rank]];
-			sendValue[rank]   = new double[nbRecvElement[rank]];
-			sendArea[rank]   = new double[nbRecvElement[rank]];
-			if (order == 2)
-			{
-				sendNeighIds[rank] = new GloId[nbRecvElement[rank]*(NMAX+1)];
-				sendGrad[rank]    = new Coord[nbRecvElement[rank]*(NMAX+1)];
-			}
-			else
-			{
-				sendNeighIds[rank] = new GloId[nbRecvElement[rank]];
-			}
-			MPI_Irecv(recvElement[rank], nbRecvElement[rank], MPI_INT, rank, 0, communicator, &recvRequest[nbRecvRequest]);
-			nbRecvRequest++;
-		}
-	}
+    if (nbRecvElement[rank] > 0)
+    {
+      recvElement[rank] = new int[nbRecvElement[rank]];
+      sendValue[rank]   = new double[nbRecvElement[rank]];
+      sendArea[rank]   = new double[nbRecvElement[rank]];
+      if (order == 2)
+      {
+        sendNeighIds[rank] = new GloId[nbRecvElement[rank]*(NMAX+1)];
+        sendGrad[rank]    = new Coord[nbRecvElement[rank]*(NMAX+1)];
+      }
+      else
+      {
+        sendNeighIds[rank] = new GloId[nbRecvElement[rank]];
+      }
+      MPI_Irecv(recvElement[rank], nbRecvElement[rank], MPI_INT, rank, 0, communicator, &recvRequest[nbRecvRequest]);
+      nbRecvRequest++;
+    }
+  }
 
   MPI_Status *status = new MPI_Status[4*mpiSize];
 
   MPI_Waitall(nbSendRequest, sendRequest, status);
   MPI_Waitall(nbRecvRequest, recvRequest, status);
 
-	/* for all indices that have been received from requesting ranks: pack values and gradients, then send */
-	nbSendRequest = 0;
-	nbRecvRequest = 0;
-	for (int rank = 0; rank < mpiSize; rank++)
-	{
-		if (nbRecvElement[rank] > 0)
-		{
-			int jj = 0; // jj == j if no weight writing
-			for (int j = 0; j < nbRecvElement[rank]; j++)
-			{
-				sendValue[rank][j] = sstree.localElements[recvElement[rank][j]].val;
-				sendArea[rank][j] = sstree.localElements[recvElement[rank][j]].area;
-				if (order == 2)
-				{
-					sendGrad[rank][jj] = sstree.localElements[recvElement[rank][j]].grad;
-					sendNeighIds[rank][jj] = sstree.localElements[recvElement[rank][j]].src_id;
-					jj++;
-					for (int i = 0; i < NMAX; i++)
-					{
-						sendGrad[rank][jj] = sstree.localElements[recvElement[rank][j]].gradNeigh[i];
+  /* for all indices that have been received from requesting ranks: pack values and gradients, then send */
+  nbSendRequest = 0;
+  nbRecvRequest = 0;
+  for (int rank = 0; rank < mpiSize; rank++)
+  {
+    if (nbRecvElement[rank] > 0)
+    {
+      int jj = 0; // jj == j if no weight writing
+      for (int j = 0; j < nbRecvElement[rank]; j++)
+      {
+        sendValue[rank][j] = sstree.localElements[recvElement[rank][j]].val;
+        sendArea[rank][j] = sstree.localElements[recvElement[rank][j]].area;
+        if (order == 2)
+        {
+          sendGrad[rank][jj] = sstree.localElements[recvElement[rank][j]].grad;
+          sendNeighIds[rank][jj] = sstree.localElements[recvElement[rank][j]].src_id;
+          jj++;
+          for (int i = 0; i < NMAX; i++)
+          {
+            sendGrad[rank][jj] = sstree.localElements[recvElement[rank][j]].gradNeigh[i];
             sendNeighIds[rank][jj] = sstree.localElements[recvElement[rank][j]].neighId[i];
-						jj++;
-					}
-				}
-				else
-					sendNeighIds[rank][j] = sstree.localElements[recvElement[rank][j]].src_id;
-			}
-			MPI_Issend(sendValue[rank],  nbRecvElement[rank], MPI_DOUBLE, rank, 0, communicator, &sendRequest[nbSendRequest]);
-			nbSendRequest++;
-			MPI_Issend(sendArea[rank],  nbRecvElement[rank], MPI_DOUBLE, rank, 0, communicator, &sendRequest[nbSendRequest]);
-			nbSendRequest++;
-			if (order == 2)
-			{
-				MPI_Issend(sendGrad[rank], 3*nbRecvElement[rank]*(NMAX+1),
-								MPI_DOUBLE, rank, 0, communicator, &sendRequest[nbSendRequest]);
-				nbSendRequest++;
-				MPI_Issend(sendNeighIds[rank], 4*nbRecvElement[rank]*(NMAX+1), MPI_INT, rank, 0, communicator, &sendRequest[nbSendRequest]);
+            jj++;
+          }
+        }
+        else
+          sendNeighIds[rank][j] = sstree.localElements[recvElement[rank][j]].src_id;
+      }
+      MPI_Issend(sendValue[rank],  nbRecvElement[rank], MPI_DOUBLE, rank, 0, communicator, &sendRequest[nbSendRequest]);
+      nbSendRequest++;
+      MPI_Issend(sendArea[rank],  nbRecvElement[rank], MPI_DOUBLE, rank, 0, communicator, &sendRequest[nbSendRequest]);
+      nbSendRequest++;
+      if (order == 2)
+      {
+        MPI_Issend(sendGrad[rank], 3*nbRecvElement[rank]*(NMAX+1), MPI_DOUBLE, rank, 0, communicator, &sendRequest[nbSendRequest]);
+        nbSendRequest++;
+        MPI_Issend(sendNeighIds[rank], 4*nbRecvElement[rank]*(NMAX+1), MPI_INT, rank, 0, communicator, &sendRequest[nbSendRequest]);
 //ym  --> attention taille GloId
-				nbSendRequest++;
-			}
-			else
-			{
-				MPI_Issend(sendNeighIds[rank], 4*nbRecvElement[rank], MPI_INT, rank, 0, communicator, &sendRequest[nbSendRequest]);
+        nbSendRequest++;
+      }
+      else
+      {
+        MPI_Issend(sendNeighIds[rank], 4*nbRecvElement[rank], MPI_INT, rank, 0, communicator, &sendRequest[nbSendRequest]);
 //ym  --> attention taille GloId
-				nbSendRequest++;
-			}
-		}
-		if (nbSendElement[rank] > 0)
-		{
-			MPI_Irecv(recvValue[rank],  nbSendElement[rank], MPI_DOUBLE, rank, 0, communicator, &recvRequest[nbRecvRequest]);
-			nbRecvRequest++;
-			MPI_Irecv(recvArea[rank],  nbSendElement[rank], MPI_DOUBLE, rank, 0, communicator, &recvRequest[nbRecvRequest]);
-			nbRecvRequest++;
-			if (order == 2)
-			{
-				MPI_Irecv(recvGrad[rank], 3*nbSendElement[rank]*(NMAX+1),
-						MPI_DOUBLE, rank, 0, communicator, &recvRequest[nbRecvRequest]);
-				nbRecvRequest++;
-				MPI_Irecv(recvNeighIds[rank], 4*nbSendElement[rank]*(NMAX+1), MPI_INT, rank, 0, communicator, &recvRequest[nbRecvRequest]);
+        nbSendRequest++;
+      }
+    }
+    if (nbSendElement[rank] > 0)
+    {
+      MPI_Irecv(recvValue[rank],  nbSendElement[rank], MPI_DOUBLE, rank, 0, communicator, &recvRequest[nbRecvRequest]);
+      nbRecvRequest++;
+      MPI_Irecv(recvArea[rank],  nbSendElement[rank], MPI_DOUBLE, rank, 0, communicator, &recvRequest[nbRecvRequest]);
+      nbRecvRequest++;
+      if (order == 2)
+      {
+        MPI_Irecv(recvGrad[rank], 3*nbSendElement[rank]*(NMAX+1), MPI_DOUBLE, rank, 0, communicator, &recvRequest[nbRecvRequest]);
+        nbRecvRequest++;
+        MPI_Irecv(recvNeighIds[rank], 4*nbSendElement[rank]*(NMAX+1), MPI_INT, rank, 0, communicator, &recvRequest[nbRecvRequest]);
 //ym  --> attention taille GloId
-				nbRecvRequest++;
-			}
-			else
-			{
-				MPI_Irecv(recvNeighIds[rank], 4*nbSendElement[rank], MPI_INT, rank, 0, communicator, &recvRequest[nbRecvRequest]);
+        nbRecvRequest++;
+      }
+      else
+      {
+        MPI_Irecv(recvNeighIds[rank], 4*nbSendElement[rank], MPI_INT, rank, 0, communicator, &recvRequest[nbRecvRequest]);
 //ym  --> attention taille GloId
-				nbRecvRequest++;
-			}
-		}
-	}
+        nbRecvRequest++;
+      }
+    }
+  }
         
-        MPI_Waitall(nbSendRequest, sendRequest, status);
-	MPI_Waitall(nbRecvRequest, recvRequest, status);
+  MPI_Waitall(nbSendRequest, sendRequest, status);
+  MPI_Waitall(nbRecvRequest, recvRequest, status);
 	
 
-	/* now that all values and gradients are available use them to computed interpolated values on target
-	   and also to compute weights */
-	int i = 0;
-	for (int j = 0; j < nbElements; j++)
-	{
-		Elt& e = elements[j];
+  /* now that all values and gradients are available use them to computed interpolated values on target
+    and also to compute weights */
+  int i = 0;
+  for (int j = 0; j < nbElements; j++)
+  {
+    Elt& e = elements[j];
 
-		/* since for the 2nd order case source grid elements can contribute to a destination grid element over several "paths"
-		   (step1: gradient is computed using neighbours on same grid, step2: intersection uses several elements on other grid)
-		   accumulate them so that there is only one final weight between two elements */
-		map<GloId,double> wgt_map;
+    /* since for the 2nd order case source grid elements can contribute to a destination grid element over several "paths"
+    (step1: gradient is computed using neighbours on same grid, step2: intersection uses several elements on other grid)
+    accumulate them so that there is only one final weight between two elements */
+    map<GloId,double> wgt_map;
 
-		/* for destination element `e` loop over all intersetions/the corresponding source elements */
-		for (list<Polyg *>::iterator it = e.is.begin(); it != e.is.end(); it++)
-		{
-			/* it is the intersection element, so it->x and it->area are barycentre and area of intersection element (super mesh)
-			but it->id is id of the source element that it intersects */
-			int n1 = (*it)->id.ind;
-			int rank = (*it)->id.rank;
-			double fk = recvValue[rank][n1];
-			double srcArea = recvArea[rank][n1];
-			double w = (*it)->area;
+    /* for destination element `e` loop over all intersetions/the corresponding source elements */
+    for (list<Polyg *>::iterator it = e.is.begin(); it != e.is.end(); it++)
+    {
+      /* it is the intersection element, so it->x and it->area are barycentre and area of intersection element (super mesh)
+      but it->id is id of the source element that it intersects */
+      int n1 = (*it)->id.ind;
+      int rank = (*it)->id.rank;
+      double fk = recvValue[rank][n1];
+      double srcArea = recvArea[rank][n1];
+      double w = (*it)->area;
       if (quantity) w/=srcArea ;
 
-			/* first order: src value times weight (weight = supermesh area), later divide by target area */
-			int kk = (order == 2) ? n1 * (NMAX + 1) : n1;
-			GloId neighID = recvNeighIds[rank][kk];
-			wgt_map[neighID] += w;
+      /* first order: src value times weight (weight = supermesh area), later divide by target area */
+      int kk = (order == 2) ? n1 * (NMAX + 1) : n1;
+      GloId neighID = recvNeighIds[rank][kk];
+      wgt_map[neighID] += w;
 
-			if (order == 2)
-			{
-				for (int k = 0; k < NMAX+1; k++)
-				{
-					int kk = n1 * (NMAX + 1) + k;
-					GloId neighID = recvNeighIds[rank][kk];
-					if (neighID.ind != -1)  wgt_map[neighID] += w * scalarprod(recvGrad[rank][kk], (*it)->x);
-				}
+      if (order == 2)
+      {
+        for (int k = 0; k < NMAX+1; k++)
+        {
+          int kk = n1 * (NMAX + 1) + k;
+          GloId neighID = recvNeighIds[rank][kk];
+          if (neighID.ind != -1)  wgt_map[neighID] += w * scalarprod(recvGrad[rank][kk], (*it)->x);
+        }
 
-			}
-		}
+      }
+    }
 
     double renorm=0;
     if (renormalize) 
@@ -403,57 +405,57 @@ int Mapper::remap(Elt *elements, int nbElements, int order, bool renormalize, bo
     else renorm=1. ;
 
     for (map<GloId,double>::iterator it = wgt_map.begin(); it != wgt_map.end(); it++)
-		{
+    {
       if (quantity)  this->remapMatrix[i] = (it->second ) / renorm;
-			else this->remapMatrix[i] = (it->second / e.area) / renorm;
-			this->srcAddress[i] = it->first.ind;
-			this->srcRank[i] = it->first.rank;
-			this->dstAddress[i] = j;
+      else this->remapMatrix[i] = (it->second / e.area) / renorm;
+      this->srcAddress[i] = it->first.ind;
+      this->srcRank[i] = it->first.rank;
+      this->dstAddress[i] = j;
       this->sourceWeightId[i]= it->first.globalId ;
       this->targetWeightId[i]= targetGlobalId[j] ;
-			i++;
-		}
-	}
+      i++;
+    }
+  }
 
-	/* free all memory allocated in this function */
-	for (int rank = 0; rank < mpiSize; rank++)
-	{
-		if (nbSendElement[rank] > 0)
-		{
-			delete[] sendElement[rank];
-			delete[] recvValue[rank];
-			delete[] recvArea[rank];
-			if (order == 2)
-			{
-				delete[] recvGrad[rank];
-			}
-			delete[] recvNeighIds[rank];
-		}
-		if (nbRecvElement[rank] > 0)
-		{
-			delete[] recvElement[rank];
-			delete[] sendValue[rank];
-			delete[] sendArea[rank];
-			if (order == 2)
-				delete[] sendGrad[rank];
-			delete[] sendNeighIds[rank];
-		}
-	}
-	delete[] status;
-	delete[] sendRequest;
-	delete[] recvRequest;
-	delete[] elementList;
-	delete[] nbSendElement;
-	delete[] nbRecvElement;
-	delete[] sendElement;
-	delete[] recvElement;
-	delete[] sendValue;
-	delete[] recvValue;
-	delete[] sendGrad;
-	delete[] recvGrad;
-	delete[] sendNeighIds;
-	delete[] recvNeighIds;
-	return i;
+  /* free all memory allocated in this function */
+ /* for (int rank = 0; rank < mpiSize; rank++)
+  {
+    if (nbSendElement[rank] > 0)
+    {
+      delete[] sendElement[rank];
+      delete[] recvValue[rank];
+      delete[] recvArea[rank];
+      if (order == 2)
+      {
+        delete[] recvGrad[rank];
+      }
+      delete[] recvNeighIds[rank];
+    }
+    if (nbRecvElement[rank] > 0)
+    {
+      delete[] recvElement[rank];
+      delete[] sendValue[rank];
+      delete[] sendArea[rank];
+      if (order == 2)
+        delete[] sendGrad[rank];
+      delete[] sendNeighIds[rank];
+    }
+  }
+  delete[] status;
+  delete[] sendRequest;
+  delete[] recvRequest;
+  delete[] elementList;
+  delete[] nbSendElement;
+  delete[] nbRecvElement;
+  delete[] sendElement;
+  delete[] recvElement;
+  delete[] sendValue;
+  delete[] recvValue;
+  delete[] sendGrad;
+  delete[] recvGrad;
+  delete[] sendNeighIds;
+  delete[] recvNeighIds;*/
+  return i;
 }
 
 void Mapper::computeGrads()
