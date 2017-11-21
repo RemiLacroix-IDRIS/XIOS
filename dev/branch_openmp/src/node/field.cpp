@@ -517,9 +517,9 @@ namespace xios{
       }
       while (isDataLate && timer.getCumulatedTime() < CXios::recvFieldTimeout);
 
-      //if (isDataLate)
-      //  ERROR("void CField::checkForLateDataFromServer(void)",
-      //        << "Late data at timestep = " << currentDate);
+      if (isDataLate)
+        ERROR("void CField::checkForLateDataFromServer(void)",
+              << "Late data at timestep = " << currentDate);
     }
   }
 
