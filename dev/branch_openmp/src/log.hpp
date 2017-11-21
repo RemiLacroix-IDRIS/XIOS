@@ -4,6 +4,8 @@
 #include <string>
 #include <iostream>
 #include <string>
+#include <stdio.h>
+#include <omp.h>
 
 namespace xios
 {
@@ -13,17 +15,19 @@ namespace xios
   {
     public :
     CLog(const string& name_, std::streambuf* sBuff = cout.rdbuf())
-      : ostream(sBuff), level(0), name(name_), strBuf_(sBuff) {}
-    CLog& operator()(int l)
+      : ostream(sBuff), level(0), name(name_), strBuf_(sBuff) 
     {
-      if (l<=level)
-      {
-        rdbuf(strBuf_);
-        *this<<"-> "<<name<<" : " ;
-      }
-      else rdbuf(NULL) ;
-      return *this;
+      omp_init_lock( &mutex );
+      for(int i=0; i<16; i++)
+        strBuf_array[i] = sBuff;
     }
+
+    ~CLog()
+    {
+      omp_destroy_lock( &mutex );
+    }
+
+    CLog& operator()(int l);
     void setLevel(int l) {level=l; }
     int getLevel() {return level ;}
     bool isActive(void) { if (rdbuf()==NULL) return true ; else return false ;}
@@ -45,15 +49,24 @@ namespace xios
      * This function associates a new streambuf to the current log object
      * \param [in] pointer to new streambuf
     */
-    void changeStreamBuff(std::streambuf* sBuff) { strBuf_ = sBuff; rdbuf(sBuff); }
+    void changeStreamBuff(std::streambuf* sBuff) 
+    { 
+      strBuf_ = sBuff; 
+      strBuf_array[omp_get_thread_num()] = sBuff;
+      rdbuf(sBuff);
+    }
 
     int level ;
     string name ;
     std::streambuf* strBuf_;
+    std::streambuf* strBuf_array[16];
+    omp_lock_t mutex;
   };
 
   extern CLog info;
   extern CLog report;
   extern CLog error;
+
+  extern std::filebuf* info_FB[16];
 }
 #endif

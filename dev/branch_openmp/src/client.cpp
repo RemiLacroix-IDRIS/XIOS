@@ -25,6 +25,8 @@ namespace xios
     StdOFStream CClient::m_infoStream;
     StdOFStream CClient::m_errorStream;
 
+    StdOFStream CClient::array_infoStream[16];
+
     void CClient::initialize(const string& codeId,MPI_Comm& localComm,MPI_Comm& returnComm)
     {
       int initialized ;
@@ -185,9 +187,9 @@ namespace xios
         delete [] buff ;
 
         MPI_Intercomm_create(contextComm,0,CXios::globalComm,serverLeader,10+globalRank,&contextInterComm) ;
-        #pragma omp critical (std_output)
+        #pragma omp critical (_output)
         {
-          //info(10)<<"Register new Context : "<<id<<endl ;
+          info(10)<<"Register new Context : "<<id<<endl ;
         }
 
         MPI_Comm inter ;
@@ -253,17 +255,21 @@ namespace xios
         //else
         MPI_Finalize() ;
       }
+      #pragma omp critical (_output)
+      info(20) << "Client side context is finalized"<<endl ;
       
-      //info(20) << "Client side context is finalized"<<endl ;
-      //report(0) <<" Performance report : Whole time from XIOS init and finalize: "<< CTimer::get("XIOS init/finalize").getCumulatedTime()<<" s"<<endl ;
-      //report(0) <<" Performance report : total time spent for XIOS : "<< CTimer::get("XIOS").getCumulatedTime()<<" s"<<endl ;
-      //report(0)<< " Performance report : time spent for waiting free buffer : "<< CTimer::get("Blocking time").getCumulatedTime()<<" s"<<endl ;
-      //report(0)<< " Performance report : Ratio : "<< CTimer::get("Blocking time").getCumulatedTime()/CTimer::get("XIOS init/finalize").getCumulatedTime()*100.<<" %"<<endl ;
-      //report(0)<< " Performance report : This ratio must be close to zero. Otherwise it may be usefull to increase buffer size or numbers of server"<<endl ;
-//      report(0)<< " Memory report : Current buffer_size : "<<CXios::bufferSize<<endl ;
-      //report(0)<< " Memory report : Minimum buffer size required : " << CClientBuffer::maxRequestSize << " bytes" << endl ;
-      //report(0)<< " Memory report : increasing it by a factor will increase performance, depending of the volume of data wrote in file at each time step of the file"<<endl ;
-      //report(100)<<CTimer::getAllCumulatedTime()<<endl ;
+
+      /*#pragma omp critical (_output)
+      {
+        report(0) <<" Performance report : Whole time from XIOS init and finalize: "<< CTimer::get("XIOS init/finalize").getCumulatedTime()<<" s"<<endl ;
+        report(0) <<" Performance report : total time spent for XIOS : "<< CTimer::get("XIOS").getCumulatedTime()<<" s"<<endl ;
+        report(0)<< " Performance report : time spent for waiting free buffer : "<< CTimer::get("Blocking time").getCumulatedTime()<<" s"<<endl ;
+        report(0)<< " Performance report : Ratio : "<< CTimer::get("Blocking time").getCumulatedTime()/CTimer::get("XIOS init/finalize").getCumulatedTime()*100.<<" %"<<endl ;
+        report(0)<< " Performance report : This ratio must be close to zero. Otherwise it may be usefull to increase buffer size or numbers of server"<<endl ;
+        report(0)<< " Memory report : Minimum buffer size required : " << CClientBuffer::maxRequestSize << " bytes" << endl ;
+        report(0)<< " Memory report : increasing it by a factor will increase performance, depending of the volume of data wrote in file at each time step of the file"<<endl ;
+        report(100)<<CTimer::getAllCumulatedTime()<<endl ;
+      }*/
    }
 
    int CClient::getRank()
@@ -306,11 +312,12 @@ namespace xios
     */
     void CClient::openInfoStream(const StdString& fileName)
     {
-      std::filebuf* fb = m_infoStream.rdbuf();
-      openStream(fileName, ".out", fb);
+      info_FB[omp_get_thread_num()] = array_infoStream[omp_get_thread_num()].rdbuf();
+          
+      openStream(fileName, ".out", info_FB[omp_get_thread_num()]);
 
-      info.write2File(fb);
-      report.write2File(fb);
+      info.write2File(info_FB[omp_get_thread_num()]);
+      report.write2File(info_FB[omp_get_thread_num()]);
     }
 
     //! Write the info logs to standard output

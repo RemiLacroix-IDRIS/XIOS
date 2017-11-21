@@ -315,11 +315,13 @@ namespace xios{
 
     while (currentDate >= lastDataRequestedFromServer)
     {
-      //info(20) << "currentDate : " << currentDate << endl ;
-      //info(20) << "lastDataRequestedFromServer : " << lastDataRequestedFromServer << endl ;
-      //info(20) << "file->output_freq.getValue() : " << file->output_freq.getValue() << endl ;
-      //info(20) << "lastDataRequestedFromServer + file->output_freq.getValue() : " << lastDataRequestedFromServer + file->output_freq << endl ;
-
+      #pragma omp critical (_output)
+      {
+        info(20) << "currentDate : " << currentDate << endl ;
+        info(20) << "lastDataRequestedFromServer : " << lastDataRequestedFromServer << endl ;
+        info(20) << "file->output_freq.getValue() : " << file->output_freq.getValue() << endl ;
+        info(20) << "lastDataRequestedFromServer + file->output_freq.getValue() : " << lastDataRequestedFromServer + file->output_freq << endl ;
+      }
       dataRequested |= sendReadDataRequest(lastDataRequestedFromServer + file->output_freq);
     }
 

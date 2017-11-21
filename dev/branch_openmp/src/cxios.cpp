@@ -123,6 +123,7 @@ namespace xios
 
     if (printLogs2Files)
     {
+      #pragma omp critical
       CClient::openInfoStream(clientFile);
       CClient::openErrorStream(clientFile);
     }
@@ -138,6 +139,7 @@ namespace xios
      CClient::finalize() ;
      if (CClient::getRank()==0)
      {
+       #pragma omp critical (_output)
        info(80)<<"Write data base Registry"<<endl<<globalRegistry->toString()<<endl ;
        globalRegistry->toFile("xios_registry.bin") ;
        delete globalRegistry ;
