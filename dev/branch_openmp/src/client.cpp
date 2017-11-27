@@ -99,8 +99,11 @@ namespace xios
             int intraCommSize, intraCommRank ;
             MPI_Comm_size(intraComm,&intraCommSize) ;
             MPI_Comm_rank(intraComm,&intraCommRank) ;
-            info(50)<<"intercommCreate::client "<<rank<<" intraCommSize : "<<intraCommSize
-                 <<" intraCommRank :"<<intraCommRank<<"  clientLeader "<< serverLeader<<endl ;
+            #pragma omp critical (_output)
+            {
+              info(50)<<"intercommCreate::client "<<rank<<" intraCommSize : "<<intraCommSize
+                      <<" intraCommRank :"<<intraCommRank<<"  serverLeader "<< serverLeader<<endl ;
+            }
             MPI_Intercomm_create(intraComm,0,CXios::globalComm,serverLeader,0,&interComm) ;
           }
           else
@@ -184,7 +187,11 @@ namespace xios
         buffer<<msg ;
 
         MPI_Send((void*)buff,buffer.count(),MPI_CHAR,serverLeader,1,CXios::globalComm) ;
+        #pragma omp critical (_output)
+        std::cout<<"client "<<rank<<" send to server "<<serverLeader << buffer.count() <<"message with tag 1" << std::endl;
         delete [] buff ;
+
+        //MPI_Barrier(CXios::globalComm);
 
         MPI_Intercomm_create(contextComm,0,CXios::globalComm,serverLeader,10+globalRank,&contextInterComm) ;
         #pragma omp critical (_output)

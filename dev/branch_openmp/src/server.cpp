@@ -91,9 +91,11 @@ namespace xios
              int intraCommSize, intraCommRank ;
              MPI_Comm_size(intraComm,&intraCommSize) ;
              MPI_Comm_rank(intraComm,&intraCommRank) ;
-             info(50)<<"intercommCreate::server "<<rank<<" intraCommSize : "<<intraCommSize
-                     <<" intraCommRank :"<<intraCommRank<<"  clientLeader "<< clientLeader<<endl ;
-
+             #pragma omp critical (_output)
+             {
+               info(50)<<"intercommCreate::server "<<rank<<" intraCommSize : "<<intraCommSize
+                       <<" intraCommRank :"<<intraCommRank<<"  clientLeader "<< clientLeader<<endl ;
+             }
              MPI_Intercomm_create(intraComm,0,CXios::globalComm,clientLeader,0,&newComm) ;
              interComm.push_back(newComm) ;
            }
@@ -390,6 +392,8 @@ namespace xios
                << "Context '" << contextId << "' has already been registred");
 
        MPI_Comm contextIntercomm;
+       //MPI_Barrier(CXios::globalComm);
+       
        MPI_Intercomm_create(intraComm,0,CXios::globalComm,leaderRank,10+leaderRank,&contextIntercomm);
 
        MPI_Comm inter;
