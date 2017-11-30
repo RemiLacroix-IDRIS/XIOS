@@ -43,11 +43,14 @@ PROGRAM test_unstruct_complete
   INTEGER,ALLOCATABLE :: data_i_index(:)
   DOUBLE PRECISION,ALLOCATABLE :: field_A_compressed(:,:)
 
+  CALL MPI_INIT(ierr)
+  CALL init_wait
+
   CALL xios_initialize(id,return_comm=comm)
   CALL MPI_COMM_RANK(comm,mpi_rank,ierr)
   CALL MPI_COMM_SIZE(comm,mpi_size,ierr)
 
-  CALL init_wait
+  
 
   ncell_glo=0
   DO j=1,nlat
@@ -206,7 +209,7 @@ PROGRAM test_unstruct_complete
                                           data_i_index=data_i_index)
   CALL xios_set_domain_attr("domain_srf", lonvalue_1D=lon, latvalue_1D=lat)
   CALL xios_set_domain_attr("domain_srf", nvertex=4, bounds_lon_1D=bounds_lon, bounds_lat_1D=bounds_lat)
-!  CALL xios_set_compute_connectivity_domain_attr("compute", n_neighbor=n_local, local_neighbor=local_neighbor)
+  CALL xios_set_compute_connectivity_domain_attr("compute", n_neighbor=n_local, local_neighbor=local_neighbor)
 
 
 
@@ -247,9 +250,10 @@ PROGRAM test_unstruct_complete
   DEALLOCATE(field_A_compressed)
   DEALLOCATE(data_i_index)
 
-  CALL MPI_COMM_FREE(comm, ierr)
-
   CALL xios_finalize()
+  CALL MPI_COMM_FREE(comm, ierr)
+  
+  CALL MPI_FINALIZE(ierr)
 
 CONTAINS
 SUBROUTINE MSE_XIOS_GAUSS_GRID(NDGLG,NDLON,NPRGPNS, NPRGPEW,MYSETA, MYSETB)

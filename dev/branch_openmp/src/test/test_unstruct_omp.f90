@@ -1,8 +1,7 @@
-PROGRAM test_unstruct_omp
+PROGRAM test_unstruct_complete_omp
 
   USE xios
   USE mod_wait
-  use omp_lib
   IMPLICIT NONE
   INCLUDE "mpif.h"
   INTEGER :: mpi_rank
@@ -40,28 +39,28 @@ PROGRAM test_unstruct_omp
   DOUBLE PRECISION, PARAMETER :: Pi=3.14159265359
   INTEGER :: list_ind(nlon,nlat)
   INTEGER :: rank,j1,j2,np,ncell_x
-  INTEGER :: data_n_index, provided
+  INTEGER :: data_n_index
   INTEGER,ALLOCATABLE :: data_i_index(:)
   DOUBLE PRECISION,ALLOCATABLE :: field_A_compressed(:,:)
+  INTEGER :: provided
 
   CALL MPI_INIT_THREAD(3, provided, ierr)
     if(provided .NE. 3) then
       print*, "provided thread level = ", provided
       call MPI_Abort()
     endif
-  CALL init_wait
-  CALL MPI_COMM_RANK(MPI_COMM_WORLD,mpi_rank,ierr)
-  CALL MPI_COMM_SIZE(MPI_COMM_WORLD,mpi_size,ierr)
-  if(mpi_rank < mpi_size-2) then
 
-  !$omp parallel default(firstprivate) firstprivate(dtime)
+  
+  CALL init_wait
+
+  CALL MPI_COMM_RANK(MPI_COMM_WORLD,rank,ierr)
+  CALL MPI_COMM_SIZE(MPI_COMM_WORLD,size_loc,ierr)
+  if(rank < size_loc-2) then
 
   CALL xios_initialize(id,return_comm=comm)
   CALL MPI_COMM_RANK(comm,mpi_rank,ierr)
   CALL MPI_COMM_SIZE(comm,mpi_size,ierr)
 
-  mpi_rank = mpi_rank*omp_get_num_threads() + omp_get_thread_num()
-  mpi_size = mpi_size*omp_get_num_threads()
 
 
   ncell_glo=0
@@ -78,14 +77,6 @@ PROGRAM test_unstruct_omp
   ALLOCATE(i_index_glo(ncell_glo))
   ALLOCATE(field_A_glo(ncell_glo,llm))
   ALLOCATE(mask_glo(ncell_glo))
-
-  lon_glo(:) = 0
-  lat_glo(:) = 0
-  bounds_lon_glo(:,:) = 0
-  bounds_lat_glo(:,:) = 0
-  i_index_glo(:) = 0
-  field_A_glo(:,:) = 0
-  mask_glo(:) = 0
 
   ind=0
   DO j=1,nlat
@@ -188,16 +179,6 @@ PROGRAM test_unstruct_omp
   ALLOCATE(field_A_srf(ncell,llm))
   ALLOCATE(mask(ncell))
   ALLOCATE(n_local(ncell))
- 
-  i_index(:)=0
-  lon(:)=0
-  lat(:)=0
-  bounds_lon(:,:)=0
-  bounds_lat(:,:)=0
-  field_A_srf(:,:)=0
-  mask(:)=0
-  n_local(:)=0
-
   ncell=0
   data_n_index=0
   DO ind=1,ncell_glo
@@ -220,10 +201,6 @@ PROGRAM test_unstruct_omp
 
   ALLOCATE(field_A_compressed(data_n_index,llm))
   ALLOCATE(data_i_index(data_n_index))
-  field_A_compressed(:,:)=0
-  data_i_index(:)=0
-
-
   data_n_index=0
   DO ind=1,ncell
     IF (mask(ind)) THEN
@@ -255,9 +232,9 @@ PROGRAM test_unstruct_omp
 
   CALL xios_close_context_definition()
 
-  !CALL xios_get_compute_connectivity_domain_attr("compute", n_neighbor_max=nbMax)
-  !ALLOCATE(local_neighbor(nbMax,ncell))
-  !CALL xios_get_compute_connectivity_domain_attr("compute", n_neighbor=n_local, local_neighbor=local_neighbor)
+  CALL xios_get_compute_connectivity_domain_attr("compute", n_neighbor_max=nbMax)
+  ALLOCATE(local_neighbor(nbMax,ncell))
+  CALL xios_get_compute_connectivity_domain_attr("compute", n_neighbor=n_local, local_neighbor=local_neighbor)
 
    DO ts=1,24*10
      CALL xios_update_calendar(ts)
@@ -283,22 +260,18 @@ PROGRAM test_unstruct_omp
   DEALLOCATE(mask)
   DEALLOCATE(field_A_compressed)
   DEALLOCATE(data_i_index)
-  !DEALLOCATE(local_neighbor)
   
-
   CALL xios_finalize()
+    print*, "xios finalize OK", rank, size_loc
+    
+    !$omp master 
+    !call MPI_Barrier(comm)
+    CALL MPI_COMM_FREE(comm, ierr)
+    !$omp end master
 
-print *, mpi_rank, "Client : xios_finalize "
-
-  !$omp barrier
-
-  !$omp master 
-  CALL MPI_COMM_FREE(comm, ierr)
-  !$omp end master
-
-  !$omp barrier
-
-  !$omp end parallel
+    !$omp barrier
+    
+    !$omp end parallel
 
 
     else
@@ -306,8 +279,9 @@ print *, mpi_rank, "Client : xios_finalize "
     CALL xios_init_server
     print *, "Server : xios_finalize "
   
-    endif
+    endif  
 
+  CALL MPI_FINALIZE(ierr)
 
 CONTAINS
 SUBROUTINE MSE_XIOS_GAUSS_GRID(NDGLG,NDLON,NPRGPNS, NPRGPEW,MYSETA, MYSETB)
@@ -387,7 +361,7 @@ ENDDO
  DEALLOCATE(ZLATI,ZLONG)!,ZLATIC,ZLONGC)
 END SUBROUTINE MSE_XIOS_GAUSS_GRID
 
-END PROGRAM test_unstruct_omp
+END PROGRAM test_unstruct_complete_omp
 
 
 
