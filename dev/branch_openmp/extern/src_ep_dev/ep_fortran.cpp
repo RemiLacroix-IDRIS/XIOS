@@ -4,10 +4,11 @@
 #include <map>
 #include <utility>
 #include "ep_declaration.hpp"
+#include "ep_mpi.hpp"
 
-#ifdef _openmpi
-//#undef MPI_Fint
-#endif
+// #ifdef _openmpi
+// //#undef MPI_Fint
+// #endif
 
 namespace ep_lib
 {
@@ -17,9 +18,9 @@ namespace ep_lib
     Debug("MPI_Comm_c2f");
     int fint;
     #ifdef _intelmpi
-    fint = (::MPI_Fint)(comm.mpi_comm);
+    fint = (::MPI_Fint)(to_mpi_comm(comm.mpi_comm));
     #elif _openmpi
-    fint = ::MPI_Comm_c2f(static_cast< ::MPI_Comm>(comm.mpi_comm));
+    fint = ::MPI_Comm_c2f(to_mpi_comm(comm.mpi_comm));
     #endif
     
     std::map<std::pair<int, int>, MPI_Comm > ::iterator it;
@@ -61,10 +62,11 @@ namespace ep_lib
     #ifdef _openmpi
     ::MPI_Comm base_comm = ::MPI_Comm_f2c(comm);
     #elif _intelmpi
-    ::MPI_Comm base_comm = (::MPI_Comm)(comm);
+    ::MPI_Comm *base_comm = new ::MPI_Comm;
+    *base_comm = (::MPI_Comm)(comm);
     #endif
 
-    if(base_comm != static_cast< ::MPI_Comm>(MPI_COMM_NULL.mpi_comm))
+    if(base_comm != static_cast< ::MPI_Comm* >(MPI_COMM_NULL.mpi_comm))
     {
       if(omp_get_thread_num() == 0)
       {

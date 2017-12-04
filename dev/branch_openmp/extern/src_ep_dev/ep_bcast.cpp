@@ -30,9 +30,7 @@ namespace ep_lib
       comm.my_buffer->void_buffer[local_root] = buffer;
     }
 
-//    #pragma omp flush
     MPI_Barrier_local(comm);
-//    #pragma omp flush
 
     if(ep_rank_loc != local_root)
     {
@@ -49,7 +47,7 @@ namespace ep_lib
     if(!comm.is_ep)
     {
       #pragma omp single nowait
-      ::MPI_Bcast(buffer, count, static_cast< ::MPI_Datatype>(datatype), root, static_cast< ::MPI_Comm>(comm.mpi_comm));
+      ::MPI_Bcast(buffer, count, to_mpi_type(datatype), root, to_mpi_comm(comm.mpi_comm));
       return 0;
     }
 
@@ -61,7 +59,6 @@ namespace ep_lib
     int root_mpi_rank = comm.rank_map->at(root).second;
     int root_ep_rank_loc = comm.rank_map->at(root).first;
 
-    // printf("root_mpi_rank = %d\n", root_mpi_rank);    
 
     if((ep_rank_loc==0 && mpi_rank != root_mpi_rank ) || ep_rank == root)
     {

@@ -21,8 +21,7 @@ namespace ep_lib
 
     if(!comm.is_ep && comm.mpi_comm)
     {
-      ::MPI_Allgatherv(sendbuf, sendcount, to_mpi_type(sendtype), recvbuf, recvcounts, displs, to_mpi_type(recvtype), to_mpi_comm(comm.mpi_comm));
-      return 0;
+      return ::MPI_Allgatherv(sendbuf, sendcount, to_mpi_type(sendtype), recvbuf, recvcounts, displs, to_mpi_type(recvtype), to_mpi_comm(comm.mpi_comm));
     }
 
     if(!comm.mpi_comm) return 0;
@@ -79,7 +78,7 @@ namespace ep_lib
       std::vector<int>mpi_displs(mpi_size, 0);
 
       int local_sendcount = std::accumulate(local_recvcounts.begin(), local_recvcounts.end(), 0);
-      MPI_Allgather(&local_sendcount, 1, MPI_INT, mpi_recvcounts.data(), 1, MPI_INT, to_mpi_comm(comm.mpi_comm));
+      ::MPI_Allgather(&local_sendcount, 1, to_mpi_type(MPI_INT), mpi_recvcounts.data(), 1, to_mpi_type(MPI_INT), to_mpi_comm(comm.mpi_comm));
 
       for(int i=1; i<mpi_size; i++)
         mpi_displs[i] = mpi_displs[i-1] + mpi_recvcounts[i-1];

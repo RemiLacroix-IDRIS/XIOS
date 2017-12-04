@@ -34,11 +34,13 @@ namespace ep_lib
 
   int MPI_Intercomm_create_kernel(MPI_Comm local_comm, int local_leader, MPI_Comm peer_comm, int remote_leader, int tag, MPI_Comm *newintercomm);
   
-  #ifdef _intelmpi
-  int MPI_Intercomm_create_from_world(MPI_Comm local_comm, int local_leader, int peer_comm_ptr, int mpi_remote_leader, int tag, MPI_Comm *newintercomm);
-  #elif _openmpi
+  // #ifdef _intelmpi
+  // int MPI_Intercomm_create_from_world(MPI_Comm local_comm, int local_leader, int peer_comm_ptr, int mpi_remote_leader, int tag, MPI_Comm *newintercomm);
+  // #elif _openmpi
+  // int MPI_Intercomm_create_from_world(MPI_Comm local_comm, int local_leader, void* peer_comm_ptr, int mpi_remote_leader, int tag, MPI_Comm *newintercomm);
+  // #endif
+
   int MPI_Intercomm_create_from_world(MPI_Comm local_comm, int local_leader, void* peer_comm_ptr, int mpi_remote_leader, int tag, MPI_Comm *newintercomm);
-  #endif
   
   int MPI_Intercomm_create_unique_leader(MPI_Comm local_comm, int local_leader, MPI_Comm peer_comm, int remote_leader, int tag, MPI_Comm *newintercomm);
 

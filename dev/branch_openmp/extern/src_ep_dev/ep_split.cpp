@@ -1,6 +1,7 @@
 #include "ep_lib.hpp"
 #include <mpi.h>
 #include "ep_declaration.hpp"
+#include "ep_mpi.hpp"
 
 using namespace std;
 
@@ -133,7 +134,10 @@ namespace ep_lib
       }
     }
 
-    ::MPI_Comm split_mpi_comm[num_color];
+    ::MPI_Comm **split_mpi_comm;
+    split_mpi_comm = new ::MPI_Comm* [num_color];
+    for(int ii=0; ii<num_color; ii++)
+      split_mpi_comm[ii] = new ::MPI_Comm;
 
     for(int j=0; j<num_color; j++)
     {
@@ -142,7 +146,7 @@ namespace ep_lib
         int master_color = 1;
         if(matched_number_loc[j] == 0) master_color = MPI_UNDEFINED;
 
-        ::MPI_Comm_split(static_cast< ::MPI_Comm>(comm.mpi_comm), master_color, mpi_rank, &split_mpi_comm[j]);
+        ::MPI_Comm_split(to_mpi_comm(comm.mpi_comm), master_color, mpi_rank, split_mpi_comm[j]);
         
         comm.ep_comm_ptr->comm_list->mpi_bridge = split_mpi_comm[j];
       }

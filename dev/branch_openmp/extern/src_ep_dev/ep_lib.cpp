@@ -245,9 +245,9 @@ MPI_Op to_mpi_op(ep_lib::MPI_Op op)
   return static_cast< MPI_Op >(op);
 }
 
-MPI_Comm to_mpi_comm(int comm)
+MPI_Comm to_mpi_comm(void* comm)
 {
-  return static_cast< MPI_Comm >(comm);
+  return *(static_cast< MPI_Comm* >(comm));
 }  
 
 

@@ -21,12 +21,8 @@ namespace ep_lib
 
     if(!comm.is_ep && comm.mpi_comm)
     {
-      ::MPI_Allgather(const_cast<void*>(sendbuf), sendcount, static_cast< ::MPI_Datatype>(sendtype), recvbuf, recvcount, static_cast< ::MPI_Datatype>(recvtype),
-                      static_cast< ::MPI_Comm>(comm.mpi_comm));
-      return 0;
+      return ::MPI_Allgather(const_cast<void*>(sendbuf), sendcount, to_mpi_type(sendtype), recvbuf, recvcount, to_mpi_type(recvtype), to_mpi_comm(comm.mpi_comm));
     }
-
-    if(!comm.mpi_comm) return 0;
 
     assert(sendcount == recvcount);
 

@@ -1,6 +1,7 @@
 #include "ep_lib.hpp"
 #include <mpi.h>
 #include "ep_declaration.hpp"
+#include "ep_mpi.hpp"
 
 namespace ep_lib
 {
@@ -10,9 +11,9 @@ namespace ep_lib
 
     if(! comm->is_ep)
     {
-      if(comm->mpi_comm != static_cast< ::MPI_Comm>(MPI_COMM_NULL.mpi_comm))
+      if(comm->mpi_comm != static_cast< ::MPI_Comm*>(MPI_COMM_NULL.mpi_comm))
       {
-        ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm>(comm->mpi_comm);
+        ::MPI_Comm mpi_comm = to_mpi_comm(comm->mpi_comm);
 
         ::MPI_Comm_free(&mpi_comm);
         Debug("comm is MPI, freed\n");
@@ -67,10 +68,10 @@ namespace ep_lib
           }
         }
 
-        if(  comm->mpi_comm != static_cast< ::MPI_Comm>(MPI_COMM_NULL.mpi_comm) 
-          && comm->mpi_comm != static_cast< ::MPI_Comm>(MPI_COMM_WORLD.mpi_comm))
+        if(  comm->mpi_comm != static_cast< ::MPI_Comm*>(MPI_COMM_NULL.mpi_comm) 
+          && comm->mpi_comm != static_cast< ::MPI_Comm*>(MPI_COMM_WORLD.mpi_comm))
         {
-          ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm>(comm->mpi_comm);
+          ::MPI_Comm mpi_comm = to_mpi_comm(comm->mpi_comm);
           ::MPI_Comm_free(&mpi_comm);
           Debug("mpi_comm freed\n");
         }
@@ -133,9 +134,9 @@ namespace ep_lib
         }
       }
 
-      if(comm->mpi_comm != static_cast< ::MPI_Comm>(MPI_COMM_NULL.mpi_comm))
+      if(comm->mpi_comm != static_cast< ::MPI_Comm*>(MPI_COMM_NULL.mpi_comm))
       {
-        ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm>(comm->mpi_comm);
+        ::MPI_Comm mpi_comm = to_mpi_comm(comm->mpi_comm);
         ::MPI_Comm_free(&mpi_comm);
         Debug("mpi_comm freed\n");
       }

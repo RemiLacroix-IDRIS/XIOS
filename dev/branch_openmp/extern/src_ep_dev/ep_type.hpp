@@ -152,11 +152,13 @@ namespace ep_lib
     public:
 
 
-    #ifdef _intelmpi
-    int mpi_inter_comm;
-    #elif _openmpi
+    // #ifdef _intelmpi
+    // int mpi_inter_comm;
+    // #elif _openmpi
+    // void * mpi_inter_comm;
+    // #endif
+
     void * mpi_inter_comm;
-    #endif
 
     RANK_MAP *intercomm_rank_map;
     RANK_MAP *local_rank_map;
@@ -257,11 +259,13 @@ namespace ep_lib
   {
     public:
 
-    #ifdef _intelmpi
-    int mpi_comm;
-    #elif _openmpi
+    // #ifdef _intelmpi
+    // int mpi_comm;
+    // #elif _openmpi
+    // void * mpi_comm;
+    // #endif
+
     void * mpi_comm;
-    #endif
 
     bool is_ep;
     bool is_intercomm;
@@ -275,11 +279,13 @@ namespace ep_lib
     MPI_Comm *mem_bridge;
 
 
-    #ifdef _intelmpi
-    int mpi_bridge;
-    #elif _openmpi
+    // #ifdef _intelmpi
+    // int mpi_bridge;
+    // #elif _openmpi
+    // void * mpi_bridge;
+    // #endif
+
     void * mpi_bridge;
-    #endif
 
     MPI_Comm()
     {
@@ -293,22 +299,36 @@ namespace ep_lib
       mpi_bridge = NULL;
     }
 
-    #ifdef _intelmpi
-    MPI_Comm(int comm)
-    {
-      is_ep = false;
-      is_intercomm = false;
-      my_buffer = NULL;
-      ep_barrier = NULL;
-      rank_map = NULL;
-      ep_comm_ptr = NULL;
-      mem_bridge = NULL;
-      mpi_bridge = NULL;
-      mpi_comm = comm;
-    }
+    // #ifdef _intelmpi
+    // MPI_Comm(int comm)
+    // {
+    //   is_ep = false;
+    //   is_intercomm = false;
+    //   my_buffer = NULL;
+    //   ep_barrier = NULL;
+    //   rank_map = NULL;
+    //   ep_comm_ptr = NULL;
+    //   mem_bridge = NULL;
+    //   mpi_bridge = NULL;
+    //   mpi_comm = comm;
+    // }
 
-    #elif _openmpi
+    // #elif _openmpi
 
+    // MPI_Comm(void* comm)
+    // {
+    //   is_ep = false;
+    //   is_intercomm = false;
+    //   my_buffer = NULL;
+    //   ep_barrier = NULL;
+    //   rank_map = NULL;
+    //   ep_comm_ptr = NULL;
+    //   mem_bridge = NULL;
+    //   mpi_bridge = NULL;
+    //   mpi_comm = comm;
+    // }
+    // #endif
+    
     MPI_Comm(void* comm)
     {
       is_ep = false;
@@ -321,8 +341,6 @@ namespace ep_lib
       mpi_bridge = NULL;
       mpi_comm = comm;
     }
-    #endif
-
 
     bool operator == (MPI_Comm right)
     {

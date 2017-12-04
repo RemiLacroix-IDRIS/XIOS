@@ -1,7 +1,7 @@
 #include "ep_lib.hpp"
 #include <mpi.h>
 #include "ep_declaration.hpp"
-
+#include "ep_mpi.hpp"
 
 namespace ep_lib
 {
@@ -25,7 +25,7 @@ namespace ep_lib
 
     if(id == 0)
     {
-      ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm >(comm.mpi_comm);
+      ::MPI_Comm mpi_comm = to_mpi_comm(comm.mpi_comm);
       ::MPI_Abort(mpi_comm, errorcode);
     }
     return 0;

@@ -1,6 +1,7 @@
 #include "ep_lib.hpp"
 #include <mpi.h>
 #include "ep_declaration.hpp"
+#include "ep_mpi.hpp"
 
 using namespace std;
 
@@ -38,21 +39,18 @@ namespace ep_lib
       leader_ranks[1] = mpi_size;
       MPI_Comm_rank(peer_comm, &leader_ranks[2]);
 
-      //printf("leader_ranks = %d, %d, %d\n", leader_ranks[0], leader_ranks[1], leader_ranks[2]);
       MPI_Request request[2];
       MPI_Status status[2];
 
-      MPI_Isend(&leader_ranks[0], 3, static_cast< ::MPI_Datatype>(MPI_INT), remote_leader, tag, peer_comm, &request[0]);
-      MPI_Irecv(&leader_ranks[3], 3, static_cast< ::MPI_Datatype>(MPI_INT), remote_leader, tag, peer_comm, &request[1]);
+      MPI_Isend(&leader_ranks[0], 3, MPI_INT, remote_leader, tag, peer_comm, &request[0]);
+      MPI_Irecv(&leader_ranks[3], 3, MPI_INT, remote_leader, tag, peer_comm, &request[1]);
 
       MPI_Waitall(2, request, status);
 
-      //MPI_Send(&leader_ranks[0], 3, static_cast< ::MPI_Datatype>(MPI_INT), remote_leader, tag, peer_comm);
-      //MPI_Recv(&leader_ranks[3], 3, static_cast< ::MPI_Datatype>(MPI_INT), remote_leader, tag, peer_comm, &status[1]);
     }
 
 
-    MPI_Bcast(leader_ranks, 6, static_cast< ::MPI_Datatype>(MPI_INT), local_leader, local_comm);
+    MPI_Bcast(leader_ranks, 6, MPI_INT, local_leader, local_comm);
 
     
     MPI_Barrier(local_comm);
@@ -131,26 +129,26 @@ namespace ep_lib
           {
             new_tag_in_world = TAG++;
           }
-          MPI_Bcast(&new_tag_in_world, 1, static_cast< ::MPI_Datatype> (MPI_INT), new_local_leader, local_comm);
-          if(ep_rank == local_leader) MPI_Send(&new_tag_in_world, 1, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag, peer_comm);
+          MPI_Bcast(&new_tag_in_world, 1, MPI_INT, new_local_leader, local_comm);
+          if(ep_rank == local_leader) MPI_Send(&new_tag_in_world, 1, MPI_INT, remote_leader, tag, peer_comm);
         }
         else
         {
           if(ep_rank == local_leader)
           {
             MPI_Status status;
-            MPI_Recv(&new_tag_in_world, 1, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag, peer_comm, &status);
+            MPI_Recv(&new_tag_in_world, 1, MPI_INT, remote_leader, tag, peer_comm, &status);
           }
-          MPI_Bcast(&new_tag_in_world, 1, static_cast< ::MPI_Datatype> (MPI_INT), new_local_leader, local_comm);
+          MPI_Bcast(&new_tag_in_world, 1, MPI_INT, new_local_leader, local_comm);
         }
 
 
         if(ep_rank == new_local_leader)
         {
-          ::MPI_Comm_rank(static_cast< ::MPI_Comm >(MPI_COMM_WORLD.mpi_comm), &leader_in_world[0]);
+          ::MPI_Comm_rank(to_mpi_comm(MPI_COMM_WORLD.mpi_comm), &leader_in_world[0]);
         }
 
-        MPI_Bcast(&leader_in_world[0], 1, static_cast< ::MPI_Datatype> (MPI_INT), new_local_leader, local_comm);
+        MPI_Bcast(&leader_in_world[0], 1, MPI_INT, new_local_leader, local_comm);
 
 
         if(ep_rank == local_leader)
@@ -158,8 +156,8 @@ namespace ep_lib
           MPI_Request request[2];
           MPI_Status status[2];
 
-          MPI_Isend(&leader_in_world[0], 1, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag, peer_comm, &request[0]);
-          MPI_Irecv(&leader_in_world[1], 1, static_cast< ::MPI_Datatype> (MPI_INT), remote_leader, tag, peer_comm, &request[1]);
+          MPI_Isend(&leader_in_world[0], 1, MPI_INT, remote_leader, tag, peer_comm, &request[0]);
+          MPI_Irecv(&leader_in_world[1], 1, MPI_INT, remote_leader, tag, peer_comm, &request[1]);
 
           MPI_Waitall(2, request, status);
         }
@@ -170,7 +168,7 @@ namespace ep_lib
 
         if(ep_rank == local_leader) Debug("calling MPI_Intercomm_create_from_world\n");
 
-        return MPI_Intercomm_create_from_world(local_comm, new_local_leader, static_cast< ::MPI_Comm >(MPI_COMM_WORLD.mpi_comm), leader_in_world[1], new_tag_in_world, newintercomm);
+        return MPI_Intercomm_create_from_world(local_comm, new_local_leader, MPI_COMM_WORLD.mpi_comm, leader_in_world[1], new_tag_in_world, newintercomm);
         
       }
     }
@@ -189,9 +187,9 @@ namespace ep_lib
       *flag = comm.is_intercomm;
       return 0;
     } 
-    else if(comm.mpi_comm != static_cast< ::MPI_Comm>(MPI_COMM_NULL.mpi_comm))
+    else if(comm.mpi_comm != static_cast< ::MPI_Comm*>(MPI_COMM_NULL.mpi_comm))
     {
-      ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm> (comm.mpi_comm);
+      ::MPI_Comm mpi_comm = to_mpi_comm(comm.mpi_comm);
       
       ::MPI_Comm_test_inter(mpi_comm, flag);
       return 0;  

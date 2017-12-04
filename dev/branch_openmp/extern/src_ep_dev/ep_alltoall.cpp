@@ -18,7 +18,7 @@ namespace ep_lib
     assert(sendcount == recvcount);
 
     ::MPI_Aint datasize, llb;
-    ::MPI_Type_get_extent(static_cast< ::MPI_Datatype>(sendtype), &llb, &datasize);
+    ::MPI_Type_get_extent(to_mpi_type(sendtype), &llb, &datasize);
 
     int count = sendcount;
     
@@ -33,8 +33,6 @@ namespace ep_lib
     if(ep_rank == 0) tmp_recvbuf = new void*[count * ep_size * ep_size * datasize];
 
     MPI_Gather(sendbuf, count*ep_size, sendtype, tmp_recvbuf, count*ep_size, recvtype, 0, comm);
-
-    
     
     // reorder tmp_buf
     void* tmp_sendbuf;
@@ -45,8 +43,6 @@ namespace ep_lib
     {
       for(int j=0; j<ep_size; j++)
       {
-        //printf("tmp_recv[%d] = tmp_send[%d]\n", i*ep_size*count + j*count, j*ep_size*count + i*count);
-
         memcpy(tmp_sendbuf + j*ep_size*count*datasize + i*count*datasize, tmp_recvbuf + i*ep_size*count*datasize + j*count*datasize, count*datasize);
       }
     }

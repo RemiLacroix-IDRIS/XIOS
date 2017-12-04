@@ -25,8 +25,6 @@ namespace ep_lib
     int ep_rank_loc = comm.ep_comm_ptr->size_rank_info[1].first;
     int num_ep = comm.ep_comm_ptr->size_rank_info[1].second;
 
-    //if(ep_rank_loc == local_root) printf("local_gatherv : recvcounts = %d %d\n\n", recvcounts[0], recvcounts[1]);
-    //if(ep_rank_loc == local_root) printf("local_gatherv : displs = %d %d\n\n", displs[0], displs[1]);
 
     #pragma omp critical (_gatherv)
     comm.my_buffer->void_buffer[ep_rank_loc] = const_cast< void* >(sendbuf);
@@ -49,9 +47,8 @@ namespace ep_lib
   
     if(!comm.is_ep)
     {
-      ::MPI_Gatherv(const_cast<void*>(sendbuf), sendcount, static_cast< ::MPI_Datatype>(sendtype), recvbuf, const_cast<int*>(input_recvcounts), const_cast<int*>(input_displs),
-                    static_cast< ::MPI_Datatype>(recvtype), root, static_cast< ::MPI_Comm>(comm.mpi_comm));
-      return 0;
+      return ::MPI_Gatherv(const_cast<void*>(sendbuf), sendcount, to_mpi_type(sendtype), recvbuf, const_cast<int*>(input_recvcounts), const_cast<int*>(input_displs),
+                    to_mpi_type(recvtype), root, to_mpi_comm(comm.mpi_comm));
     }
 
 
@@ -113,7 +110,6 @@ namespace ep_lib
     if(mpi_rank == root_mpi_rank) MPI_Gatherv_local(sendbuf, sendcount, sendtype, local_recvbuf, local_recvcounts.data(), local_displs.data(), root_ep_loc, comm);
     else                          MPI_Gatherv_local(sendbuf, sendcount, sendtype, local_recvbuf, local_recvcounts.data(), local_displs.data(), 0, comm);
 
-    //if(is_master) printf("local_recvbuf = %d %d %d %d\n", static_cast<int*>(local_recvbuf)[0], static_cast<int*>(local_recvbuf)[1], static_cast<int*>(local_recvbuf)[2], static_cast<int*>(local_recvbuf)[3]);
 
     void* tmp_recvbuf;
     int tmp_recvbuf_size = std::accumulate(recvcounts, recvcounts+ep_size, 0);

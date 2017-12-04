@@ -1,6 +1,7 @@
 #include "ep_lib.hpp"
 #include <mpi.h>
 #include "ep_declaration.hpp"
+#include "ep_mpi.hpp"
 
 using namespace std;
 
@@ -83,7 +84,7 @@ namespace ep_lib {
     MPI_Gather(&my_ep_rank, 1, MPI_INT, reorder, 1, MPI_INT, 0, *newintracomm);
     if(intra_ep_rank_loc == 0)
     {
-      ::MPI_Bcast(reorder, intra_ep_size, static_cast< ::MPI_Datatype> (MPI_INT), 0, static_cast< ::MPI_Comm>(newintracomm->mpi_comm));
+      ::MPI_Bcast(reorder, intra_ep_size, to_mpi_type(MPI_INT), 0, to_mpi_comm(newintracomm->mpi_comm));
 
       vector< pair<int, int> > tmp_rank_map(intra_ep_size);
 
@@ -141,15 +142,15 @@ namespace ep_lib {
     MPI_Barrier(inter_comm);
 
 
-    ::MPI_Comm mpi_intracomm;
+    ::MPI_Comm *mpi_intracomm = new ::MPI_Comm;
     MPI_Comm *ep_intracomm;
 
     if(ep_rank_loc == 0)
     {
 
-      ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm>(inter_comm.ep_comm_ptr->intercomm->mpi_inter_comm);
+      ::MPI_Comm mpi_comm = to_mpi_comm(inter_comm.ep_comm_ptr->intercomm->mpi_inter_comm);
 
-      ::MPI_Intercomm_merge(mpi_comm, high, &mpi_intracomm);
+      ::MPI_Intercomm_merge(mpi_comm, high, mpi_intracomm);
       MPI_Info info;
       MPI_Comm_create_endpoints(mpi_intracomm, num_ep, info, ep_intracomm);
 

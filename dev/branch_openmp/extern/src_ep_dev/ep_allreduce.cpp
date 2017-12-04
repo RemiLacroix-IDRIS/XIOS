@@ -37,7 +37,7 @@ namespace ep_lib
 
     ::MPI_Aint datasize, lb;
 
-    ::MPI_Type_get_extent(static_cast< ::MPI_Datatype>(datatype), &lb, &datasize);
+    ::MPI_Type_get_extent(to_mpi_type(datatype), &lb, &datasize);
 
     bool is_master = ep_rank_loc==0;
 
