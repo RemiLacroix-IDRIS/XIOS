@@ -5,6 +5,6 @@
 
 MPI_Datatype to_mpi_type(ep_lib::MPI_Datatype type);
 MPI_Op       to_mpi_op(ep_lib::MPI_Op op);
-MPI_Comm     to_mpi_comm(void* comm);
+MPI_Comm     to_mpi_comm(int* comm);
 
 #endif // EP_MPI_HPP_INCLUDED

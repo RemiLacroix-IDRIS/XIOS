@@ -37,7 +37,7 @@ namespace ep_lib
       Debug("Message probing for intracomm\n");
       
 
-      #ifdef _openmpi
+      //#ifdef _openmpi
       #pragma omp critical (_mpi_call)
       {
         ::MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, to_mpi_comm(comm.mpi_comm), &flag, &status);
@@ -50,21 +50,19 @@ namespace ep_lib
 
         }
       }
-      #elif _intelmpi
-      #pragma omp critical (_mpi_call)
-      {
-        ::MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, to_mpi_comm(comm.mpi_comm), &flag, &status);
-        if(flag)
-        {
-          Debug("find message in mpi comm \n");
-          mpi_source = status.MPI_SOURCE;
-          int tag = status.MPI_TAG;
-          ::MPI_Mprobe(mpi_source, tag, to_mpi_comm(comm.mpi_comm), &message, &status);
-
-        }
-      }
-      //::MPI_Improbe(MPI_ANY_SOURCE, MPI_ANY_TAG, to_mpi_comm(comm.mpi_comm), &flag, &message, &status); 
-      #endif
+      //#elif _intelmpi
+      //#pragma omp critical (_mpi_call)
+      //{
+      //  ::MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, to_mpi_comm(comm.mpi_comm), &flag, &status);
+      //  if(flag)
+      //  {
+      //    Debug("find message in mpi comm \n");
+      //    mpi_source = status.MPI_SOURCE;
+      //    int tag = status.MPI_TAG;
+      //    ::MPI_Mprobe(mpi_source, tag, to_mpi_comm(comm.mpi_comm), &message, &status);
+      //  }
+      //}
+      //#endif
       
       if(flag)
       {
@@ -117,7 +115,7 @@ namespace ep_lib
     {
       Debug("Message probing for intracomm\n");
 
-      #ifdef _openmpi
+      //#ifdef _openmpi
       #pragma omp critical (_mpi_call)
       {
         ::MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, to_mpi_comm(comm.ep_comm_ptr->intercomm->mpi_inter_comm), &flag, &status);
@@ -130,21 +128,7 @@ namespace ep_lib
 
         }
       }
-      #elif _intelmpi
-      #pragma omp critical (_mpi_call)
-      {
-        ::MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, to_mpi_comm(comm.ep_comm_ptr->intercomm->mpi_inter_comm), &flag, &status);
-        if(flag)
-        {
-          Debug("find message in mpi comm \n");
-          mpi_source = status.MPI_SOURCE;
-          int tag = status.MPI_TAG;
-          ::MPI_Mprobe(mpi_source, tag, to_mpi_comm(comm.ep_comm_ptr->intercomm->mpi_inter_comm), &message, &status);
-
-        }
-      }
-      //::MPI_Improbe(MPI_ANY_SOURCE, MPI_ANY_TAG, to_mpi_comm(comm.ep_comm_ptr->intercomm->mpi_inter_comm), &flag, &message, &status);       
-      #endif
+      
 
       if(flag)
       {
@@ -184,7 +168,7 @@ namespace ep_lib
     {
       Debug("Message probing for intracomm\n");
      
-      #ifdef _openmpi
+      //#ifdef _openmpi
       #pragma omp critical (_mpi_call)
       {
         ::MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, to_mpi_comm(comm.mpi_comm), &flag, &status);
@@ -197,21 +181,7 @@ namespace ep_lib
 
         }
       }
-      #elif _intelmpi
-      #pragma omp critical (_mpi_call)
-      {
-        ::MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, to_mpi_comm(comm.mpi_comm), &flag, &status);
-        if(flag)
-        {
-          Debug("find message in mpi comm \n");
-          mpi_source = status.MPI_SOURCE;
-          int tag = status.MPI_TAG;
-          ::MPI_Mprobe(mpi_source, tag, to_mpi_comm(comm.mpi_comm), &message, &status);
-
-        }
-      }
-      //::MPI_Improbe(MPI_ANY_SOURCE, MPI_ANY_TAG, to_mpi_comm(comm.mpi_comm), &flag, &message, &status);       
-      #endif
+      
 
       if(flag)
       {

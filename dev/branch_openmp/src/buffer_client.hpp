@@ -39,7 +39,7 @@ namespace xios
       ep_lib::MPI_Request request;
 
       CBufferOut* retBuffer;
-      const ep_lib::MPI_Comm interComm;
+      ep_lib::MPI_Comm interComm;
   };
 }
 #endif

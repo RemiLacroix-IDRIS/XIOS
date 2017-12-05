@@ -17,11 +17,11 @@ namespace ep_lib
   {
     Debug("MPI_Comm_c2f");
     int fint;
-    #ifdef _intelmpi
+    //#ifdef _intelmpi
     fint = (::MPI_Fint)(to_mpi_comm(comm.mpi_comm));
-    #elif _openmpi
-    fint = ::MPI_Comm_c2f(to_mpi_comm(comm.mpi_comm));
-    #endif
+    //#elif _openmpi
+    //fint = ::MPI_Comm_c2f(to_mpi_comm(comm.mpi_comm));
+    //#endif
     
     std::map<std::pair<int, int>, MPI_Comm > ::iterator it;
     
@@ -59,14 +59,14 @@ namespace ep_lib
     }
        
       
-    #ifdef _openmpi
-    ::MPI_Comm base_comm = ::MPI_Comm_f2c(comm);
-    #elif _intelmpi
+    //#ifdef _openmpi
+    //::MPI_Comm base_comm = ::MPI_Comm_f2c(comm);
+    //#elif _intelmpi
     ::MPI_Comm *base_comm = new ::MPI_Comm;
     *base_comm = (::MPI_Comm)(comm);
-    #endif
+    //#endif
 
-    if(base_comm != static_cast< ::MPI_Comm* >(MPI_COMM_NULL.mpi_comm))
+    if(*base_comm != to_mpi_comm(MPI_COMM_NULL.mpi_comm))
     {
       if(omp_get_thread_num() == 0)
       {

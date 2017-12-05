@@ -14,9 +14,9 @@ namespace xios
 {
   size_t CClientBuffer::maxRequestSize = 0;
 
-  CClientBuffer::CClientBuffer(MPI_Comm interComm, int serverRank, StdSize bufferSize, StdSize estimatedMaxEventSize, StdSize maxBufferedEvents)
-    : interComm(interComm)
-    , serverRank(serverRank)
+  CClientBuffer::CClientBuffer(MPI_Comm in_interComm, int serverRank, StdSize bufferSize, StdSize estimatedMaxEventSize, StdSize maxBufferedEvents): 
+    //interComm(interComm)
+    serverRank(serverRank)
     , bufferSize(bufferSize)
     , estimatedMaxEventSize(estimatedMaxEventSize)
     , maxEventSize(0)
@@ -26,6 +26,9 @@ namespace xios
     , maxBufferedEvents(maxBufferedEvents)
     , pending(false)
   {
+    interComm = in_interComm;
+    *(interComm.mpi_comm) = *(in_interComm.mpi_comm);
+    *(interComm.ep_comm_ptr->intercomm->mpi_inter_comm) = *(in_interComm.ep_comm_ptr->intercomm->mpi_inter_comm);
     buffer[0] = new char[bufferSize]; // transform it with MPI_ALLOC_MEM later
     buffer[1] = new char[bufferSize];
     retBuffer = new CBufferOut(buffer[current], bufferSize);

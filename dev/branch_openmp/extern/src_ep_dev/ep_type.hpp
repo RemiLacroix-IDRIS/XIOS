@@ -56,16 +56,9 @@ namespace ep_lib
   {
     public:
 
-      #ifdef _intelmpi
       int ep_datatype;
-      #elif _openmpi
-      void * ep_datatype;
-      #endif
-      
       int ep_src;
       int ep_tag;
-
-      
       void* mpi_status;
   };
 
@@ -73,24 +66,13 @@ namespace ep_lib
   {
     public:
 
-      #ifdef _intelmpi
       int mpi_message;
-      #elif _openmpi
-      void * mpi_message;
-      #endif
-
       int ep_src;
       int ep_tag;
-
       void* mpi_status;
 
       MPI_Message() {}
-
-      #ifdef _intelmpi
       MPI_Message(int message): mpi_message(message) {}
-      #elif _openmpi
-      MPI_Message(void* message): mpi_message(message) {}
-      #endif
   };
 
   typedef std::list<MPI_Message > Message_list;
@@ -151,14 +133,7 @@ namespace ep_lib
   {
     public:
 
-
-    // #ifdef _intelmpi
-    // int mpi_inter_comm;
-    // #elif _openmpi
-    // void * mpi_inter_comm;
-    // #endif
-
-    void * mpi_inter_comm;
+    int *mpi_inter_comm;
 
     RANK_MAP *intercomm_rank_map;
     RANK_MAP *local_rank_map;
@@ -171,35 +146,10 @@ namespace ep_lib
     MPI_Comm *local_comm;
     int intercomm_tag;
 
-    ep_intercomm()
-    {
-      intercomm_rank_map = NULL;
-      local_rank_map = NULL;
-      remote_rank_map = NULL;
-    }
-
-
-    bool operator == (ep_intercomm right)
-    {
-      bool a = intercomm_rank_map == right.intercomm_rank_map;
-      bool b = local_rank_map == right.local_rank_map;
-      bool c = remote_rank_map == right.remote_rank_map;
-      bool d = mpi_inter_comm == right.mpi_inter_comm;
-      bool e = size_rank_info == right.size_rank_info;
-      bool f = intercomm_tag == right.intercomm_tag;
-      return a&&b&&c&&d&&e&&f;
-    }
-
-    bool operator != (ep_intercomm right)
-    {
-      bool a = intercomm_rank_map != right.intercomm_rank_map;
-      bool b = local_rank_map != right.local_rank_map;
-      bool c = remote_rank_map != right.remote_rank_map;
-      bool d = mpi_inter_comm != right.mpi_inter_comm;
-      bool e = size_rank_info != right.size_rank_info;
-      bool f = intercomm_tag != right.intercomm_tag;
-      return a||b||c||d||e||f;
-    }
+    ep_intercomm();
+    bool operator == (ep_intercomm right);
+    bool operator != (ep_intercomm right);
+    
 
 
   };
@@ -223,29 +173,10 @@ namespace ep_lib
 
     ep_intercomm *intercomm;
 
-    ep_communicator()
-    {
-      comm_list = NULL;
-      message_queue = NULL;
-      intercomm = NULL;
-    }
-
-    bool operator == (ep_communicator right)
-    {
-      bool a = size_rank_info == right.size_rank_info;
-      bool b = comm_label == right.comm_label;
-      bool c = intercomm == right.intercomm;
-      return a&&b&&c;
-    }
-
-    bool operator != (ep_communicator right)
-    {
-      bool a = size_rank_info != right.size_rank_info;
-      bool b = comm_label != right.comm_label;
-      bool c = intercomm != right.intercomm;
-      return a||b||c;
-    }
-
+    ep_communicator();
+    bool operator == (ep_communicator right);
+    bool operator != (ep_communicator right);
+    
   };
 
 
@@ -259,108 +190,24 @@ namespace ep_lib
   {
     public:
 
-    // #ifdef _intelmpi
-    // int mpi_comm;
-    // #elif _openmpi
-    // void * mpi_comm;
-    // #endif
-
-    void * mpi_comm;
-
     bool is_ep;
     bool is_intercomm;
 
     BUFFER     *my_buffer;
     OMPbarrier *ep_barrier;
     RANK_MAP   *rank_map;
-
+    int* mpi_comm;
     EP_Comm ep_comm_ptr;
-
     MPI_Comm *mem_bridge;
+    int* mpi_bridge;
+
+    MPI_Comm();  
+    //MPI_Comm(const MPI_Comm &comm);
+    MPI_Comm(int* comm);
 
 
-    // #ifdef _intelmpi
-    // int mpi_bridge;
-    // #elif _openmpi
-    // void * mpi_bridge;
-    // #endif
-
-    void * mpi_bridge;
-
-    MPI_Comm()
-    {
-      is_ep = true;
-      is_intercomm = false;
-      my_buffer = NULL;
-      ep_barrier = NULL;
-      rank_map = NULL;
-      ep_comm_ptr = NULL;
-      mem_bridge = NULL;
-      mpi_bridge = NULL;
-    }
-
-    // #ifdef _intelmpi
-    // MPI_Comm(int comm)
-    // {
-    //   is_ep = false;
-    //   is_intercomm = false;
-    //   my_buffer = NULL;
-    //   ep_barrier = NULL;
-    //   rank_map = NULL;
-    //   ep_comm_ptr = NULL;
-    //   mem_bridge = NULL;
-    //   mpi_bridge = NULL;
-    //   mpi_comm = comm;
-    // }
-
-    // #elif _openmpi
-
-    // MPI_Comm(void* comm)
-    // {
-    //   is_ep = false;
-    //   is_intercomm = false;
-    //   my_buffer = NULL;
-    //   ep_barrier = NULL;
-    //   rank_map = NULL;
-    //   ep_comm_ptr = NULL;
-    //   mem_bridge = NULL;
-    //   mpi_bridge = NULL;
-    //   mpi_comm = comm;
-    // }
-    // #endif
-    
-    MPI_Comm(void* comm)
-    {
-      is_ep = false;
-      is_intercomm = false;
-      my_buffer = NULL;
-      ep_barrier = NULL;
-      rank_map = NULL;
-      ep_comm_ptr = NULL;
-      mem_bridge = NULL;
-      mpi_bridge = NULL;
-      mpi_comm = comm;
-    }
-
-    bool operator == (MPI_Comm right)
-    {
-      bool a = is_ep == right.is_ep;
-      bool b = is_intercomm == right.is_intercomm;
-      bool c = mpi_comm == right.mpi_comm;
-      bool d = is_ep ? ep_comm_ptr == right.ep_comm_ptr : true;
-      return a&&b&&c&&d;
-    }
-
-    bool operator != (MPI_Comm right)
-    {
-      bool a = is_ep != right.is_ep;
-      bool b = is_intercomm != right.is_intercomm;
-      bool c = mpi_comm != right.mpi_comm;
-      bool d = is_ep ? ep_comm_ptr != right.ep_comm_ptr : true;
-
-      return a||b||c||d;
-    }
-
+    bool operator == (MPI_Comm right);
+    bool operator != (MPI_Comm right);
     bool is_null();
 
   };
@@ -370,19 +217,10 @@ namespace ep_lib
   {
     public:
 
-      #ifdef _intelmpi
       int mpi_info;
-      #elif _openmpi
-      void * mpi_info;
-      #endif
 
       MPI_Info(){ }
-      
-      #ifdef _intelmpi
       MPI_Info(int info): mpi_info(info) {}
-      #elif _openmpi
-      MPI_Info(void* info): mpi_info(info) {}
-      #endif
   };
 
 
@@ -390,44 +228,21 @@ namespace ep_lib
   {
     public:
 
-      #ifdef _intelmpi
       int mpi_request;
-      #elif _openmpi
-      void * mpi_request;
-      #endif
 
       int type;	//! type of the non-blocking communication. 1: Isend; 2:Irecv; 3:Imrecv; 4:Issend
       void* buf;
 
       int ep_src;
       int ep_tag;
-      #ifdef _intelmpi
       int ep_datatype;
-      #elif _openmpi
-      void * ep_datatype;
-      #endif
 
       MPI_Comm comm;	//! EP communicator related to the communication
 
       MPI_Request() {}
-
-      #ifdef _intelmpi
       MPI_Request(int request): mpi_request(request) {}
-      #elif _openmpi
-      MPI_Request(void* request): mpi_request(request) {}
-      #endif
+      bool operator == (MPI_Request right);
 
-
-    bool operator == (MPI_Request right)
-    {
-      //bool a = mpi_request == right.mpi_request;
-      bool b = type == right.type;
-      bool c = buf == right.buf;
-      bool d = ep_src == right.ep_src;
-      bool e = ep_tag == right.ep_tag;
-      bool f = ep_datatype == right.ep_datatype;
-      return b&&c&&d&&e&&f;
-    }
   };
 
   

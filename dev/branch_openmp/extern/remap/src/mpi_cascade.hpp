@@ -11,8 +11,9 @@ namespace sphereRemap {
 class CCascadeLevel
 {
 public:
-  CCascadeLevel(ep_lib::MPI_Comm comm) : comm(comm)
+  CCascadeLevel(ep_lib::MPI_Comm in_comm) : comm(in_comm)
   {
+    ep_lib::MPI_Comm_dup(in_comm, &comm);
     ep_lib::MPI_Comm_size(comm, &size);
     ep_lib::MPI_Comm_rank(comm, &rank);
   }

@@ -17,7 +17,12 @@ void cptOffsetsFromLengths(const int *lengths, int *offsets, int sz);
 class Mapper
 {
 public:
-       Mapper(ep_lib::MPI_Comm comm) : communicator(comm), verbose(SILENT), neighbourElements(NULL), sstree(comm) {}
+       //Mapper(ep_lib::MPI_Comm comm) : communicator(comm), verbose(SILENT), neighbourElements(NULL), sstree(comm) {}
+       Mapper(ep_lib::MPI_Comm comm) : verbose(SILENT), neighbourElements(NULL), sstree(comm) 
+       {
+         ep_lib::MPI_Comm_dup(comm, &communicator);
+       }
+
        ~Mapper();
        void setVerbosity(verbosity v) {verbose=v ;}
 

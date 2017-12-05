@@ -92,7 +92,7 @@ namespace xios
     #pragma omp master
     {
       MPI_Comm *ep_comm;
-      MPI_Comm_create_endpoints(MPI_COMM_WORLD, num_ep, info, ep_comm);  // servers should reach here too.
+      MPI_Comm_create_endpoints(MPI_COMM_WORLD.mpi_comm, num_ep, info, ep_comm);  // servers should reach here too.
       passage = ep_comm;  
     }
         

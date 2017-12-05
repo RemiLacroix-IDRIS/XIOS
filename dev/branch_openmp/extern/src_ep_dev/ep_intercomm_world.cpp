@@ -537,7 +537,7 @@ namespace ep_lib
 
 
   // #elif _intelmpi
-  int MPI_Intercomm_create_from_world(MPI_Comm local_comm, int local_leader, void* peer_comm_ptr, int mpi_remote_leader, int tag, MPI_Comm *newintercomm)
+  int MPI_Intercomm_create_from_world(MPI_Comm local_comm, int local_leader, int* peer_comm_ptr, int mpi_remote_leader, int tag, MPI_Comm *newintercomm)
   {
     int ep_rank, ep_rank_loc, mpi_rank;
     int ep_size, num_ep, mpi_size;

@@ -26,6 +26,11 @@ namespace xios
       context = parent;
       intraComm = intraComm_;
       interComm = interComm_;
+      *(intraComm.mpi_comm) = *(intraComm_.mpi_comm);
+      *(interComm.mpi_comm) = *(interComm_.mpi_comm);
+      *(interComm.ep_comm_ptr->intercomm->mpi_inter_comm) = *(interComm_.ep_comm_ptr->intercomm->mpi_inter_comm);
+      //MPI_Comm_dup(intraComm_, &intraComm);
+      //MPI_Comm_dup(interComm_, &interComm);
       MPI_Comm_rank(intraComm, &clientRank);
       MPI_Comm_size(intraComm, &clientSize);
 

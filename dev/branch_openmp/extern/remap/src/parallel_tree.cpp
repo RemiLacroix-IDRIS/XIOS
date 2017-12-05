@@ -120,12 +120,13 @@ static void transferRoutedIntersections(CMPIRouting& MPIRoute, const vector<Node
 //cout << MPIRoute.mpiRank << " ROUTE " << nRecv << ": " << nodeSend.size() << " " << nodeRecv.size() << "    ";
 }
 
-//CParallelTree::CParallelTree(MPI_Comm comm) : communicator(comm), cascade(MIN_NODE_SZ*MIN_NODE_SZ, comm)
-CParallelTree::CParallelTree(MPI_Comm comm) : communicator(comm), cascade(MAX_NODE_SZ*MAX_NODE_SZ*2, comm)
+//CParallelTree::CParallelTree(MPI_Comm comm) : communicator(comm), cascade(MIN_NODE_SZ*MIN_NODE_SZ*2, comm)
+CParallelTree::CParallelTree(MPI_Comm comm) : cascade(MAX_NODE_SZ*MAX_NODE_SZ*2, comm)
 {
-	treeCascade.reserve(cascade.num_levels);
-	for (int lev = 0; lev < cascade.num_levels; lev++)
-		treeCascade.push_back(CSampleTree(cascade.level[lev].group_size, assignLevel));
+  MPI_Comm_dup(comm, &communicator);
+  treeCascade.reserve(cascade.num_levels);
+  for (int lev = 0; lev < cascade.num_levels; lev++)
+    treeCascade.push_back(CSampleTree(cascade.level[lev].group_size, assignLevel));
 }
 
 void CParallelTree::buildSampleTreeCascade(vector<Node>& sampleNodes /*route field will be modified*/, int level)
