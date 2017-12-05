@@ -48,7 +48,7 @@ namespace ep_lib
   // int MPI_Comm_create_endpoints(int mpi_comm, int num_ep, MPI_Info info, MPI_Comm *& out_comm_hdls); // from MPI to create endpoints
   // #endif
   
-  int MPI_Comm_create_endpoints(int* base_comm_ptr, int num_ep, MPI_Info info, MPI_Comm *& out_comm_hdls); // from EP to create endpoints
+  int MPI_Comm_create_endpoints(void* base_comm_ptr, int num_ep, MPI_Info info, MPI_Comm *& out_comm_hdls); // from EP to create endpoints
 
   int MPI_Send(void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm);
   int MPI_Ssend(void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm);

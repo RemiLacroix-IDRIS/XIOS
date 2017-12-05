@@ -178,7 +178,7 @@ namespace ep_lib {
   // #endif
   
   
-  int MPI_Comm_create_endpoints(int* base_comm_ptr, int num_ep, MPI_Info info, MPI_Comm *& out_comm_hdls)
+  int MPI_Comm_create_endpoints(void* base_comm_ptr, int num_ep, MPI_Info info, MPI_Comm *& out_comm_hdls)
   {
 
     int base_rank;
@@ -199,7 +199,7 @@ namespace ep_lib {
       out_comm_hdls[idx].is_ep = true;
       out_comm_hdls[idx].is_intercomm = false;
       out_comm_hdls[idx].ep_comm_ptr = new ep_communicator;     
-      *(out_comm_hdls[idx].mpi_comm) = *base_comm_ptr;
+      *(static_cast< ::MPI_Comm*>(out_comm_hdls[idx].mpi_comm)) = *(static_cast< ::MPI_Comm*>(base_comm_ptr));
       out_comm_hdls[idx].ep_comm_ptr->comm_list = out_comm_hdls;
       out_comm_hdls[idx].ep_comm_ptr->comm_label = 0;
     }

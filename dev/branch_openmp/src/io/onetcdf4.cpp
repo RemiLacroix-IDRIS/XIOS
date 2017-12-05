@@ -57,7 +57,7 @@ namespace xios
          {
             CTimer::get("Files : create").resume();
             if (wmpi)
-               CNetCdfInterface::createPar(filename, mode, static_cast<MPI_Comm>(*(comm->mpi_comm)), info_null.mpi_info, this->ncidp);
+               CNetCdfInterface::createPar(filename, mode, *(static_cast<MPI_Comm*>(comm->mpi_comm)), info_null.mpi_info, this->ncidp);
                //CNetCdfInterface::createPar(filename, mode, *(static_cast<MPI_Comm*>(comm->mpi_comm)), info_null.mpi_info, this->ncidp);
             else
                CNetCdfInterface::create(filename, mode, this->ncidp);
@@ -70,7 +70,7 @@ namespace xios
             mode |= NC_WRITE;
             CTimer::get("Files : open").resume();
             if (wmpi)
-               CNetCdfInterface::openPar(filename, mode, static_cast<MPI_Comm>(*(comm->mpi_comm)), info_null.mpi_info, this->ncidp);
+               CNetCdfInterface::openPar(filename, mode, *(static_cast<MPI_Comm*>(comm->mpi_comm)), info_null.mpi_info, this->ncidp);
                //CNetCdfInterface::openPar(filename, mode, *(static_cast<MPI_Comm*>(comm->mpi_comm)), info_null.mpi_info, this->ncidp);
             else
                CNetCdfInterface::open(filename, mode, this->ncidp);

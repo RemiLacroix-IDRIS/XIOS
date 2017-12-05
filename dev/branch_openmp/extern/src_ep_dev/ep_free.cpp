@@ -79,6 +79,7 @@ namespace ep_lib
        if(comm != NULL) {delete[] comm->ep_comm_ptr->comm_list; Debug("comm freed\n");}
 
       }
+
       return 0;
     }
 
@@ -141,16 +142,18 @@ namespace ep_lib
         Debug("mpi_comm freed\n");
       }
 
-      // if(comm->ep_comm_ptr->intercomm->mpi_inter_comm != MPI_COMM_NULL_STD)
-      // {
-         // ::MPI_Comm mpi_comm = static_cast< ::MPI_Comm>(comm->ep_comm_ptr->comm_list->ep_comm_ptr->intercomm->mpi_inter_comm);
-         // ::MPI_Comm_free(&mpi_comm);
-      //   Debug("mpi_intercomm freed\n");
-      // }
+      if(comm->ep_comm_ptr->intercomm->mpi_inter_comm != static_cast< ::MPI_Comm*>(MPI_COMM_NULL.mpi_comm))
+      {
+        ::MPI_Comm mpi_comm = to_mpi_comm(comm->ep_comm_ptr->comm_list->ep_comm_ptr->intercomm->mpi_inter_comm);
+        ::MPI_Comm_free(&mpi_comm);
+        Debug("mpi_intercomm freed\n");
+      }
 
      if(comm != NULL) {delete[] comm->ep_comm_ptr->comm_list; Debug("comm freed\n");}
 
     }
+
+    
     
     return 0;
   }

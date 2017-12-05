@@ -133,7 +133,7 @@ namespace ep_lib
   {
     public:
 
-    int *mpi_inter_comm;
+    void *mpi_inter_comm;
 
     RANK_MAP *intercomm_rank_map;
     RANK_MAP *local_rank_map;
@@ -147,6 +147,7 @@ namespace ep_lib
     int intercomm_tag;
 
     ep_intercomm();
+    //~ep_intercomm(){delete mpi_inter_comm;}
     bool operator == (ep_intercomm right);
     bool operator != (ep_intercomm right);
     
@@ -196,14 +197,14 @@ namespace ep_lib
     BUFFER     *my_buffer;
     OMPbarrier *ep_barrier;
     RANK_MAP   *rank_map;
-    int* mpi_comm;
+    void* mpi_comm;
     EP_Comm ep_comm_ptr;
     MPI_Comm *mem_bridge;
     int* mpi_bridge;
 
     MPI_Comm();  
-    //MPI_Comm(const MPI_Comm &comm);
-    MPI_Comm(int* comm);
+    MPI_Comm(void* comm);
+    //~MPI_Comm(){delete mpi_comm;}
 
 
     bool operator == (MPI_Comm right);

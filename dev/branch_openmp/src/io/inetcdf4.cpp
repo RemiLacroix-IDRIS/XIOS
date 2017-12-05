@@ -22,7 +22,7 @@ namespace xios
     // The file format will be detected automatically by NetCDF, it is safe to always set NC_MPIIO
     // even if Parallel NetCDF ends up being used.
     if (mpi)
-      CNetCdfInterface::openPar(filename, NC_NOWRITE | NC_MPIIO, static_cast<MPI_Comm>(*(comm->mpi_comm)), info_null.mpi_info, this->ncidp);
+      CNetCdfInterface::openPar(filename, NC_NOWRITE | NC_MPIIO, *(static_cast<MPI_Comm*>(comm->mpi_comm)), info_null.mpi_info, this->ncidp);
       //CNetCdfInterface::openPar(filename, NC_NOWRITE | NC_MPIIO, *(static_cast<MPI_Comm*>(comm->mpi_comm)), info_null.mpi_info, this->ncidp);
     else
       CNetCdfInterface::open(filename, NC_NOWRITE, this->ncidp);
