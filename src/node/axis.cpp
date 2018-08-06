@@ -1282,16 +1282,18 @@ namespace xios {
     index.resize(nbIndexGlob);
     globalLocalIndexMap_.rehash(std::ceil(index.numElements()/globalLocalIndexMap_.max_load_factor()));
     nbIndexGlob = 0;
+    int nbIndLoc = 0;
     for (idx = 0; idx < nbReceived; ++idx)
     {
       CArray<int,1>& tmp = vec_indi[idx];
       for (ind = 0; ind < tmp.numElements(); ++ind)
       {
          gloInd = tmp(ind);
+         nbIndLoc = (gloInd % n_glo) - begin;
          if (0 == globalLocalIndexMap_.count(gloInd))
          {
-           index(nbIndexGlob) = gloInd % n_glo;           
-           globalLocalIndexMap_[gloInd] = nbIndexGlob;  
+           index(nbIndLoc) = gloInd % n_glo;           
+           globalLocalIndexMap_[gloInd] = nbIndLoc;  
            ++nbIndexGlob;
          } 
       } 
