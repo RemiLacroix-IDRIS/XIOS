@@ -977,7 +977,8 @@ One of the ways is to convert this array into 1-dimension one and every process 
        }
 
      nbIndexOnServer = 0;
-     for (size_t j = 0; j < globalIndexElementOnServerMap.size(); ++j)
+//     for (size_t j = 0; j < globalIndexElementOnServerMap.size(); ++j)
+     for (size_t j = 0; j < globalIndexElementOnClient.numElements(); ++j)
      {
        it = globalIndexElementOnServerMap.find(globalIndexElementOnClient(j));
        if (it != ite)
@@ -1304,11 +1305,7 @@ One of the ways is to convert this array into 1-dimension one and every process 
   void CGrid::computeClientIndexScalarGrid()
   {
     CContext* context = CContext::getCurrent();    
-//    int nbSrvPools = (context->hasServer) ? (context->hasClient ? context->clientPrimServer.size() : 1) : 1; // This should be changed soon
-//    for (int p = 0; p < nbSrvPools; ++p)
     {
-//      CContextClient* client = (context->hasServer) ? (context->hasClient ? context->clientPrimServer[p] : context->client)
-//                                                    : context->client;
       CContextClient* client = context->client;
 
       int rank = client->clientRank;

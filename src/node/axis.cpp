@@ -656,7 +656,7 @@ namespace xios {
          if (connectedServerRank_[nbServer].empty())
           connectedServerRank_[nbServer].push_back(client->clientRank % client->serverSize);
 
-         nbSenders[nbServer] = CClientServerMapping::computeConnectedClients(client->serverSize, client->clientSize, client->intraComm, connectedServerRank_[nbServer]);
+        nbSenders[nbServer] = CClientServerMapping::computeConnectedClients(client->serverSize, client->clientSize, client->intraComm, connectedServerRank_[nbServer]);
 
         delete clientServerMap;
       }
@@ -702,6 +702,22 @@ namespace xios {
           ++nbWritten;
         }                 
       }
+
+//    localIndexToWriteOnServer.resize(writtenGlobalIndex.numElements());
+//    nbWritten = 0;
+//    for (itSrv = itSrvb; itSrv != itSrve; ++itSrv)
+//    {
+//      indGlo = *itSrv;
+//      if (ite != globalLocalIndexMap_.find(indGlo))
+//      {
+//        localIndexToWriteOnServer(nbWritten) = globalLocalIndexMap_[indGlo];
+//      }
+//      else
+//      {
+//        localIndexToWriteOnServer(nbWritten) = -1;
+//      }
+//      ++nbWritten;
+//    }
 
       localIndexToWriteOnServer.resize(writtenGlobalIndex.numElements());
 //      localIndexToWriteOnServer.resize(nbWritten);
@@ -1292,8 +1308,10 @@ namespace xios {
          nbIndLoc = (gloInd % n_glo) - begin;
          if (0 == globalLocalIndexMap_.count(gloInd))
          {
-           index(nbIndLoc) = gloInd % n_glo;           
-           globalLocalIndexMap_[gloInd] = nbIndLoc;  
+           index(nbIndexGlob) = gloInd % n_glo;
+           globalLocalIndexMap_[gloInd] = nbIndexGlob;
+//           index(nbIndLoc) = gloInd % n_glo; 
+//           globalLocalIndexMap_[gloInd] = nbIndLoc;  
            ++nbIndexGlob;
          } 
       } 
@@ -1344,11 +1362,11 @@ namespace xios {
       }
     }
     
-    int nbCompressedData = 0; 
+    int nbCompressedData = 0;
     for (idx = 0; idx < nonCompressedData.numElements(); ++idx)
     {
       if (0 <= nonCompressedData(idx))
-        ++nbCompressedData;        
+        ++nbCompressedData;
     }
 
     data_index.resize(nbCompressedData);
@@ -1358,7 +1376,7 @@ namespace xios {
       if (0 <= nonCompressedData(idx))
       {
         data_index(nbCompressedData) = idx % n;
-        ++nbCompressedData;        
+        ++nbCompressedData;
       }
     }
 
@@ -1475,7 +1493,7 @@ namespace xios {
       clients.push_back(contextClient) ;
       clientsSet.insert(contextClient);
     }
-}
+  }
 
   void CAxis::parse(xml::CXMLNode & node)
   {

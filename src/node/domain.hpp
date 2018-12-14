@@ -141,7 +141,7 @@ namespace xios {
          CArray<double, 2> bounds_lonvalue, bounds_latvalue;
          CArray<double, 1> areavalue;
 
-         CArray<size_t,1> localIndexToWriteOnServer;         
+         CArray<int,1> localIndexToWriteOnServer;
 
          CArray<bool, 1> domainMask; // mask_1d, mask_2d -> domainMask
          CArray<bool, 1> localMask; // domainMask + indexing

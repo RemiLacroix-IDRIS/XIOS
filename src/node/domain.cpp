@@ -32,7 +32,7 @@ namespace xios {
       , isRedistributed_(false), hasPole(false), doZoomByIndex_(false)
       , lonvalue(), latvalue(), bounds_lonvalue(), bounds_latvalue()
       , globalLocalIndexMap_(), computedWrittenIndex_(false)
-	  , clients()
+      , clients()
    {
    }
 
@@ -44,7 +44,7 @@ namespace xios {
       , isRedistributed_(false), hasPole(false), doZoomByIndex_(false)
       , lonvalue(), latvalue(), bounds_lonvalue(), bounds_latvalue()
       , globalLocalIndexMap_(), computedWrittenIndex_(false)
-	  , clients()
+      , clients()
    {
     }
 
@@ -159,12 +159,6 @@ namespace xios {
 
        // size estimation for sendIndex (and sendArea which is always smaller or equal)
        size_t sizeIndexEvent = 2 * sizeof(size_t) + 2 * CArray<int,1>::size(idxCount);
-       // if (isCompressible_)
-       // {
-       //   std::map<int, std::vector<int> >::const_iterator itWritten = indWrittenSrv_.find(rank);
-       //   size_t writtenIdxCount = (itWritten != itWrittenIndexEnd) ? itWritten->second.size() : 0;
-       //   sizeIndexEvent += CArray<int,1>::size(writtenIdxCount);
-       // }
 
        // size estimation for sendLonLat
        size_t sizeLonLatEvent = CArray<double,1>::size(idxCount);
@@ -183,8 +177,7 @@ namespace xios {
 
    bool CDomain::isEmpty(void) const
    {
-      return ((this->zoom_i_index.isEmpty()) || (0 == this->zoom_i_index.numElements()));
-
+     return ((this->i_index.isEmpty()) || (0 == this->i_index.numElements()));
    }
 
    //----------------------------------------------------------------
@@ -1454,14 +1447,14 @@ namespace xios {
          ERROR("CDomain::checkBounds(void)",
                << "[ id = " << this->getId() << " , context = '" << CObjectFactory::GetCurrentContextId() << " ] "
                << "'bounds_lon_1d' dimension is not compatible with 'nvertex'." << std::endl
-               << "'bounds_lon_1d' dimension is " << bounds_lon_1d.extent(1)
+               << "'bounds_lon_1d' dimension is " << bounds_lon_1d.extent(0)
                << " but nvertex is " << nvertex.getValue() << ".");
 
        if (!bounds_lon_2d.isEmpty() && nvertex.getValue() != bounds_lon_2d.extent(0))
          ERROR("CDomain::checkBounds(void)",
                << "[ id = " << this->getId() << " , context = '" << CObjectFactory::GetCurrentContextId() << " ] "
                << "'bounds_lon_2d' dimension is not compatible with 'nvertex'." << std::endl
-               << "'bounds_lon_2d' dimension is " << bounds_lon_2d.extent(2)
+               << "'bounds_lon_2d' dimension is " << bounds_lon_2d.extent(0)
                << " but nvertex is " << nvertex.getValue() << ".");
 
        if (!bounds_lon_1d.isEmpty() && lonvalue_1d.isEmpty())
@@ -1478,14 +1471,14 @@ namespace xios {
          ERROR("CDomain::checkBounds(void)",
                << "[ id = " << this->getId() << " , context = '" << CObjectFactory::GetCurrentContextId() << " ] "
                << "'bounds_lat_1d' dimension is not compatible with 'nvertex'." << std::endl
-               << "'bounds_lat_1d' dimension is " << bounds_lat_1d.extent(1)
+               << "'bounds_lat_1d' dimension is " << bounds_lat_1d.extent(0)
                << " but nvertex is " << nvertex.getValue() << ".");
 
        if (!bounds_lat_2d.isEmpty() && nvertex.getValue() != bounds_lat_2d.extent(0))
          ERROR("CDomain::checkBounds(void)",
                << "[ id = " << this->getId() << " , context = '" << CObjectFactory::GetCurrentContextId() << " ] "
                << "'bounds_lat_2d' dimension is not compatible with 'nvertex'." << std::endl
-               << "'bounds_lat_2d' dimension is " << bounds_lat_2d.extent(2)
+               << "'bounds_lat_2d' dimension is " << bounds_lat_2d.extent(0)
                << " but nvertex is " << nvertex.getValue() << ".");
 
        if (!bounds_lat_1d.isEmpty() && latvalue_1d.isEmpty())
@@ -1900,18 +1893,7 @@ namespace xios {
       CArray<size_t,1>::const_iterator itSrvb = writtenGlobalIndex.begin(),
                                        itSrve = writtenGlobalIndex.end(), itSrv;
 
-//      for (itSrv = itSrvb; itSrv != itSrve; ++itSrv)
-//      {
-//        indGlo = *itSrv;
-//        if (ite != globalLocalIndexMap_.find(indGlo))
-//        {
-//          ++nbWritten;
-//        }
-//      }
-
-//      localIndexToWriteOnServer.resize(nbWritten);
       localIndexToWriteOnServer.resize(writtenGlobalIndex.numElements());
-
       nbWritten = 0;
       for (itSrv = itSrvb; itSrv != itSrve; ++itSrv)
       {
@@ -1919,59 +1901,13 @@ namespace xios {
         if (ite != globalLocalIndexMap_.find(indGlo))
         {
           localIndexToWriteOnServer(nbWritten) = globalLocalIndexMap_[indGlo];
-          ++nbWritten;
         }
         else
         {
-          localIndexToWriteOnServer(nbWritten) = 0;
-          ++nbWritten;
+          localIndexToWriteOnServer(nbWritten) = -1;
         }
+        ++nbWritten;
       }
-      
-      // if (isCompressible())
-      // {
-      //   nbWritten = 0;
-      //   boost::unordered_map<size_t,size_t> localGlobalIndexMap;
-      //   for (itSrv = itSrvb; itSrv != itSrve; ++itSrv)
-      //   {
-      //     indGlo = *itSrv;
-      //     if (ite != globalLocalIndexMap_.find(indGlo))
-      //     {
-      //       localGlobalIndexMap[localIndexToWriteOnServer(nbWritten)] = indGlo;
-      //       ++nbWritten;
-      //     }                 
-      //   }
-
-      //   nbWritten = 0;
-      //   for (int idx = 0; idx < data_i_index.numElements(); ++idx)
-      //   {
-      //     if (localGlobalIndexMap.end() != localGlobalIndexMap.find(data_i_index(idx)))
-      //     {
-      //       ++nbWritten;
-      //     }
-      //   }
-
-      //   compressedIndexToWriteOnServer.resize(nbWritten);
-      //   nbWritten = 0;
-      //   for (int idx = 0; idx < data_i_index.numElements(); ++idx)
-      //   {
-      //     if (localGlobalIndexMap.end() != localGlobalIndexMap.find(data_i_index(idx)))
-      //     {
-      //       compressedIndexToWriteOnServer(nbWritten) = localGlobalIndexMap[data_i_index(idx)];
-      //       ++nbWritten;
-      //     }
-      //   }
-
-      //   numberWrittenIndexes_ = nbWritten;
-      //   if (isDistributed())
-      //   {            
-      //     MPI_Allreduce(&numberWrittenIndexes_, &totalNumberWrittenIndexes_, 1, MPI_INT, MPI_SUM, server->intraComm);
-      //     MPI_Scan(&numberWrittenIndexes_, &offsetWrittenIndexes_, 1, MPI_INT, MPI_SUM, server->intraComm);
-      //     offsetWrittenIndexes_ -= numberWrittenIndexes_;
-      //   }
-      //   else
-      //     totalNumberWrittenIndexes_ = numberWrittenIndexes_;
-      // }      
    }
 
   void CDomain::computeWrittenCompressedIndex(MPI_Comm writtenComm)
@@ -2509,8 +2445,12 @@ namespace xios {
     }
     
     globalLocalIndexMap_.rehash(std::ceil(nbIndGlob/globalLocalIndexMap_.max_load_factor()));
-    i_index.resize(nbIndGlob);
-    j_index.resize(nbIndGlob);   
+//    i_index.resize(nbIndGlob);
+//    j_index.resize(nbIndGlob);
+    i_index.resize(ni*nj);
+    j_index.resize(ni*nj);
+    i_index = -1;
+    j_index = -1;
     int nbIndexGlobMax = nbIndGlob, nbIndLoc;
 
     nbIndGlob = 0;
@@ -2527,31 +2467,38 @@ namespace xios {
            jIndex = (index/ni_glo)-jbegin;
            jIndex = (jIndex < 0) ? 0 : jIndex;
            nbIndLoc = iIndex + ni * jIndex;
-           if (nbIndLoc < nbIndexGlobMax)
-           {
-             i_index(nbIndLoc) = index % ni_glo;
-             j_index(nbIndLoc) = index / ni_glo;
-             globalLocalIndexMap_[index] = nbIndLoc;  
-             ++nbIndGlob;
-           }
-           // i_index(nbIndGlob) = index % ni_glo;
-           // j_index(nbIndGlob) = index / ni_glo;
-           // globalLocalIndexMap_[index] = nbIndGlob;  
-           // ++nbIndGlob;
+           i_index(nbIndLoc) = index % ni_glo;
+           j_index(nbIndLoc) = index / ni_glo;
+           globalLocalIndexMap_[index] = nbIndLoc;
+//           i_index(nbIndGlob) = index % ni_glo;
+//           j_index(nbIndGlob) = index / ni_glo;
+//           globalLocalIndexMap_[index] = nbIndGlob;
+           ++nbIndGlob;
+//           if (nbIndLoc < nbIndexGlobMax)
+//          {
+//             i_index(nbIndLoc) = index % ni_glo;
+//             j_index(nbIndLoc) = index / ni_glo;
+//             globalLocalIndexMap_[index] = nbIndLoc;  
+//             ++nbIndGlob;
+//           }
+//           // i_index(nbIndGlob) = index % ni_glo;
+//           // j_index(nbIndGlob) = index / ni_glo;
+//           // globalLocalIndexMap_[index] = nbIndGlob;  
+//           // ++nbIndGlob;
          } 
       } 
     } 
 
-    if (nbIndGlob==0)
-    {
-      i_index.resize(nbIndGlob);
-      j_index.resize(nbIndGlob);
-    }
-    else
-    {
-      i_index.resizeAndPreserve(nbIndGlob);
-      j_index.resizeAndPreserve(nbIndGlob);
-    }
+//    if (nbIndGlob==0)
+//    {
+//      i_index.resize(nbIndGlob);
+//      j_index.resize(nbIndGlob);
+//    }
+//    else
+//    {
+//      i_index.resizeAndPreserve(nbIndGlob);
+//      j_index.resizeAndPreserve(nbIndGlob);
+//    }
   }
 
   /*!
@@ -2660,8 +2607,10 @@ namespace xios {
                << "something must be wrong with mask index "<< std::endl;
 
     nbMaskInd = globalLocalIndexMap_.size();
-    mask_1d.resize(nbMaskInd);
-    domainMask.resize(nbMaskInd);
+//    mask_1d.resize(nbMaskInd);
+//    domainMask.resize(nbMaskInd);
+    mask_1d.resize(ni*nj);
+    domainMask.resize(ni*nj);
     mask_1d = false;
     
     for (i = 0; i < nbReceived; ++i)
@@ -2736,11 +2685,15 @@ namespace xios {
                  << "something must be wrong with longitude index "<< std::endl;
 
       nbLonInd = globalLocalIndexMap_.size();
-      lonvalue.resize(nbLonInd);
+//      lonvalue.resize(nbLonInd);
+      lonvalue.resize(ni*nj);
+      lonvalue = -1.0;
       if (hasBounds)
       {
-        bounds_lonvalue.resize(nvertex,nbLonInd);
-        bounds_lonvalue = 0.;
+//        bounds_lonvalue.resize(nvertex,nbLonInd);
+//        bounds_lonvalue = 0.;
+        bounds_lonvalue.resize(nvertex,ni*nj);
+        bounds_lonvalue = -1.0;
       }
 
       nbLonInd = 0;
@@ -2820,11 +2773,14 @@ namespace xios {
                 << "something must be wrong with latitude index "<< std::endl;
 
       nbLatInd = globalLocalIndexMap_.size();
-      latvalue.resize(nbLatInd);
+//      latvalue.resize(nbLatInd);
+      latvalue.resize(ni*nj);
       if (hasBounds)
       {
-        bounds_latvalue.resize(nvertex,nbLatInd);
-        bounds_latvalue = 0. ;
+//        bounds_latvalue.resize(nvertex,nbLatInd);
+//        bounds_latvalue = 0. ;
+        bounds_latvalue.resize(nvertex,ni*nj);
+        bounds_latvalue = -1. ;
       }
 
       nbLatInd = 0;
@@ -2902,8 +2858,10 @@ namespace xios {
                  << "something must be wrong with area index "<< std::endl;
 
       nbAreaInd = globalLocalIndexMap_.size();
-      areavalue.resize(nbAreaInd);
-      nbAreaInd = 0;      
+//      areavalue.resize(nbAreaInd);
+//      nbAreaInd = 0;
+      areavalue.resize(ni*nj);
+      nbAreaInd = -1.0;
       for (i = 0; i < nbReceived; ++i)
       {
         CArray<int,1>& tmpInd = indGlob_[recvClientRanks_[i]];
@@ -3014,11 +2972,6 @@ namespace xios {
          lInd = globalLocalIndexMap_[size_t(tmpInd(ind))];
          dataIIndex(lInd) = (-1 == dataIIndex(lInd)) ? tmpI(ind) : dataIIndex(lInd); // Only fill in dataIndex if there is no data
          dataJIndex(lInd) = (-1 == dataJIndex(lInd)) ? tmpJ(ind) : dataJIndex(lInd);  
-
-         if (!domainMask(lInd))   // Include mask info into data index on the RECEIVE getServerDimensionSizes    
-         {
-           dataIIndex(lInd) = dataJIndex(lInd) = -1;
-         }
       } 
     }
 

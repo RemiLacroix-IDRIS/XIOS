@@ -123,8 +123,8 @@ namespace xios {
          bool zoomByIndex();
 
       public: 
-        bool hasValue;        
-        CArray<size_t,1> localIndexToWriteOnServer;        
+        bool hasValue;
+        CArray<int,1> localIndexToWriteOnServer;
 
       private:
          void checkData();
