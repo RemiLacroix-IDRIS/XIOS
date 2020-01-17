@@ -36,7 +36,7 @@ CGenericAlgorithmTransformation* CDomainAlgorithmComputeConnectivity::create(CGr
 
 bool CDomainAlgorithmComputeConnectivity::registerTrans()
 {
-  CGridTransformationFactory<CDomain>::registerTransformation(TRANS_COMPUTE_CONNECTIVITY_DOMAIN, create);
+  return CGridTransformationFactory<CDomain>::registerTransformation(TRANS_COMPUTE_CONNECTIVITY_DOMAIN, create);
 }
 
 CDomainAlgorithmComputeConnectivity::CDomainAlgorithmComputeConnectivity(CDomain* domainDestination, CDomain* domainSource,

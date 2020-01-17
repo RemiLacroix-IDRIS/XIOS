@@ -34,7 +34,7 @@ CGenericAlgorithmTransformation* CScalarAlgorithmReduceScalar::create(CGrid* gri
 
 bool CScalarAlgorithmReduceScalar::registerTrans()
 {
-  CGridTransformationFactory<CScalar>::registerTransformation(TRANS_REDUCE_SCALAR_TO_SCALAR, create);
+  return CGridTransformationFactory<CScalar>::registerTransformation(TRANS_REDUCE_SCALAR_TO_SCALAR, create);
 }
 
 CScalarAlgorithmReduceScalar::CScalarAlgorithmReduceScalar(CScalar* scalarDestination, CScalar* scalarSource, CReduceScalarToScalar* algo)

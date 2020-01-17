@@ -33,7 +33,7 @@ CGenericAlgorithmTransformation* CAxisAlgorithmTemporalSplitting::create(CGrid* 
 
 bool CAxisAlgorithmTemporalSplitting::registerTrans()
 {
-  CGridTransformationFactory<CAxis>::registerTransformation(TRANS_TEMPORAL_SPLITTING, create);
+  return CGridTransformationFactory<CAxis>::registerTransformation(TRANS_TEMPORAL_SPLITTING, create);
 }
 
 

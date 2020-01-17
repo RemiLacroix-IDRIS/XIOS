@@ -31,7 +31,7 @@ CGenericAlgorithmTransformation* CDomainAlgorithmReorder::create(CGrid* gridDst,
 
 bool CDomainAlgorithmReorder::registerTrans()
 {
-  CGridTransformationFactory<CDomain>::registerTransformation(TRANS_REORDER_DOMAIN, create);
+  return CGridTransformationFactory<CDomain>::registerTransformation(TRANS_REORDER_DOMAIN, create);
 }
 
 CDomainAlgorithmReorder::CDomainAlgorithmReorder(CDomain* domainDestination, CDomain* domainSource, CReorderDomain* reorderDomain)

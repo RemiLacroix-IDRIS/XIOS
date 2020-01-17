@@ -76,6 +76,7 @@ namespace xios {
      m["compute_connectivity_domain"] = TRANS_COMPUTE_CONNECTIVITY_DOMAIN;
      m["expand_domain"] = TRANS_EXPAND_DOMAIN;
      m["reorder_domain"] = TRANS_REORDER_DOMAIN;
+     return true ;
    }
 
    const std::set<StdString> & CDomain::getRelFiles(void) const

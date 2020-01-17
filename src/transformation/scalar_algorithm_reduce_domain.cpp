@@ -38,7 +38,7 @@ CGenericAlgorithmTransformation* CScalarAlgorithmReduceDomain::create(CGrid* gri
 
 bool CScalarAlgorithmReduceDomain::registerTrans()
 {
-  CGridTransformationFactory<CScalar>::registerTransformation(TRANS_REDUCE_DOMAIN_TO_SCALAR, create);
+  return CGridTransformationFactory<CScalar>::registerTransformation(TRANS_REDUCE_DOMAIN_TO_SCALAR, create);
 }
 
 CScalarAlgorithmReduceDomain::CScalarAlgorithmReduceDomain(CScalar* scalarDestination, CDomain* domainSource, CReduceDomainToScalar* algo)

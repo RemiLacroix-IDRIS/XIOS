@@ -36,7 +36,7 @@ CGenericAlgorithmTransformation* CAxisAlgorithmReduceAxis::create(CGrid* gridDst
 
 bool CAxisAlgorithmReduceAxis::registerTrans()
 {
-  CGridTransformationFactory<CAxis>::registerTransformation(TRANS_REDUCE_AXIS_TO_AXIS, create);
+  return CGridTransformationFactory<CAxis>::registerTransformation(TRANS_REDUCE_AXIS_TO_AXIS, create);
 }
 
 

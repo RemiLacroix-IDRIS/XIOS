@@ -34,7 +34,7 @@ CGenericAlgorithmTransformation* CAxisAlgorithmZoom::create(CGrid* gridDst, CGri
 }
 bool CAxisAlgorithmZoom::registerTrans()
 {
-  CGridTransformationFactory<CAxis>::registerTransformation(TRANS_ZOOM_AXIS, create);
+  return CGridTransformationFactory<CAxis>::registerTransformation(TRANS_ZOOM_AXIS, create);
 }
 
 CAxisAlgorithmZoom::CAxisAlgorithmZoom(CAxis* axisDestination, CAxis* axisSource, CZoomAxis* zoomAxis)

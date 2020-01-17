@@ -39,7 +39,7 @@ CGenericAlgorithmTransformation* CScalarAlgorithmReduceAxis::create(CGrid* gridD
 
 bool CScalarAlgorithmReduceAxis::registerTrans()
 {
-  CGridTransformationFactory<CScalar>::registerTransformation(TRANS_REDUCE_AXIS_TO_SCALAR, create);
+  return CGridTransformationFactory<CScalar>::registerTransformation(TRANS_REDUCE_AXIS_TO_SCALAR, create);
 }
 
 CScalarAlgorithmReduceAxis::CScalarAlgorithmReduceAxis(CScalar* scalarDestination, CAxis* axisSource, CReduceAxisToScalar* algo)

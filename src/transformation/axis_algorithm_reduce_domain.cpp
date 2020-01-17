@@ -37,7 +37,7 @@ CGenericAlgorithmTransformation* CAxisAlgorithmReduceDomain::create(CGrid* gridD
 
 bool CAxisAlgorithmReduceDomain::registerTrans()
 {
-  CGridTransformationFactory<CAxis>::registerTransformation(TRANS_REDUCE_DOMAIN_TO_AXIS, create);
+  return CGridTransformationFactory<CAxis>::registerTransformation(TRANS_REDUCE_DOMAIN_TO_AXIS, create);
 }
 
 

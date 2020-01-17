@@ -41,7 +41,7 @@ CGenericAlgorithmTransformation* CAxisAlgorithmInterpolate::create(CGrid* gridDs
 
 bool CAxisAlgorithmInterpolate::registerTrans()
 {
-  CGridTransformationFactory<CAxis>::registerTransformation(TRANS_INTERPOLATE_AXIS, create);
+  return CGridTransformationFactory<CAxis>::registerTransformation(TRANS_INTERPOLATE_AXIS, create);
 }
 
 

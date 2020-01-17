@@ -33,7 +33,7 @@ CGenericAlgorithmTransformation* CAxisAlgorithmDuplicateScalar::create(CGrid* gr
 
 bool CAxisAlgorithmDuplicateScalar::registerTrans()
 {
-  CGridTransformationFactory<CAxis>::registerTransformation(TRANS_DUPLICATE_SCALAR_TO_AXIS, create);
+  return CGridTransformationFactory<CAxis>::registerTransformation(TRANS_DUPLICATE_SCALAR_TO_AXIS, create);
 }
 
 

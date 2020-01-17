@@ -235,6 +235,7 @@ namespace xios
     }
     else ERROR("template <typename T> bool CEnum_ref<T>::_fromBuffer(CBufferIn& buffer)",
                << "incompatibility between enumeration and standard integer type");
+    return ret ;
   }
  
   template <typename T>

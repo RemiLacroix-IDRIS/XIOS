@@ -38,7 +38,7 @@ CGenericAlgorithmTransformation* CAxisAlgorithmExtractDomain::create(CGrid* grid
 //bool CAxisAlgorithmExtractDomain::_dummyRegistered = CAxisAlgorithmExtractDomain::registerTrans();
 bool CAxisAlgorithmExtractDomain::registerTrans()
 {
-  CGridTransformationFactory<CAxis>::registerTransformation(TRANS_EXTRACT_DOMAIN_TO_AXIS, create);
+  return CGridTransformationFactory<CAxis>::registerTransformation(TRANS_EXTRACT_DOMAIN_TO_AXIS, create);
 }
 
 

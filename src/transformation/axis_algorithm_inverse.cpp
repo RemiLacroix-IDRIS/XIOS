@@ -39,7 +39,7 @@ CGenericAlgorithmTransformation* CAxisAlgorithmInverse::create(CGrid* gridDst, C
 
 bool CAxisAlgorithmInverse::registerTrans()
 {
-  CGridTransformationFactory<CAxis>::registerTransformation(TRANS_INVERSE_AXIS, create);
+  return CGridTransformationFactory<CAxis>::registerTransformation(TRANS_INVERSE_AXIS, create);
 }
 
 

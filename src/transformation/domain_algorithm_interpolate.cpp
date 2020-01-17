@@ -43,7 +43,7 @@ CGenericAlgorithmTransformation* CDomainAlgorithmInterpolate::create(CGrid* grid
 
 bool CDomainAlgorithmInterpolate::registerTrans()
 {
-  CGridTransformationFactory<CDomain>::registerTransformation(TRANS_INTERPOLATE_DOMAIN, create);
+  return CGridTransformationFactory<CDomain>::registerTransformation(TRANS_INTERPOLATE_DOMAIN, create);
 }
 
 CDomainAlgorithmInterpolate::CDomainAlgorithmInterpolate(CDomain* domainDestination, CDomain* domainSource, CInterpolateDomain* interpDomain)

@@ -35,7 +35,7 @@ CGenericAlgorithmTransformation* CDomainAlgorithmZoom::create(CGrid* gridDst, CG
 
 bool CDomainAlgorithmZoom::registerTrans()
 {
-  CGridTransformationFactory<CDomain>::registerTransformation(TRANS_ZOOM_DOMAIN, create);
+  return CGridTransformationFactory<CDomain>::registerTransformation(TRANS_ZOOM_DOMAIN, create);
 }
 
 CDomainAlgorithmZoom::CDomainAlgorithmZoom(CDomain* domainDestination, CDomain* domainSource, CZoomDomain* zoomDomain)

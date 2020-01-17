@@ -38,7 +38,7 @@ CGenericAlgorithmTransformation* CDomainAlgorithmExpand::create(CGrid* gridDst, 
 
 bool CDomainAlgorithmExpand::registerTrans()
 {
-  CGridTransformationFactory<CDomain>::registerTransformation(TRANS_EXPAND_DOMAIN, create);
+  return CGridTransformationFactory<CDomain>::registerTransformation(TRANS_EXPAND_DOMAIN, create);
 }
 
 CDomainAlgorithmExpand::CDomainAlgorithmExpand(CDomain* domainDestination,

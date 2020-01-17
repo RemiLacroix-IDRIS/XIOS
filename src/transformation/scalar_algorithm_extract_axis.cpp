@@ -38,7 +38,7 @@ CGenericAlgorithmTransformation* CScalarAlgorithmExtractAxis::create(CGrid* grid
 
 bool CScalarAlgorithmExtractAxis::registerTrans()
 {
-  CGridTransformationFactory<CScalar>::registerTransformation(TRANS_EXTRACT_AXIS_TO_SCALAR, create);
+  return CGridTransformationFactory<CScalar>::registerTransformation(TRANS_EXTRACT_AXIS_TO_SCALAR, create);
 }
 
 CScalarAlgorithmExtractAxis::CScalarAlgorithmExtractAxis(CScalar* scalarDestination, CAxis* axisSource, CExtractAxisToScalar* algo)
