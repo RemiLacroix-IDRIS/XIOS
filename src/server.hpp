@@ -44,6 +44,8 @@ namespace xios
         static bool finished;
         static bool is_MPI_Initialized;
 
+        static MPI_Request reqContextMsg;
+
       public:
         //! Get rank of the current process in the intraComm
         static int getRank();

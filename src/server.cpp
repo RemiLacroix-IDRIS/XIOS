@@ -24,6 +24,7 @@ namespace xios
     int CServer::serverLevel = 0 ;
     int CServer::nbContexts = 0;
     bool CServer::isRoot = false ;
+    MPI_Request CServer::reqContextMsg = MPI_REQUEST_NULL ;
     int CServer::rank_ = INVALID_RANK;
     StdOFStream CServer::m_infoStream;
     StdOFStream CServer::m_errorStream;
@@ -583,10 +584,7 @@ namespace xios
        {
          int size ;
          MPI_Comm_size(intraComm,&size) ;
-//         MPI_Request* requests= new MPI_Request[size-1] ;
-//         MPI_Status* status= new MPI_Status[size-1] ;
-         MPI_Request* requests= new MPI_Request[size] ;
-         MPI_Status* status= new MPI_Status[size] ;
+         MPI_Request* requests = new MPI_Request[size-1] ;
 
          CMessage msg ;
          msg<<id<<it->second.leaderRank;
@@ -598,13 +596,12 @@ namespace xios
          // Include root itself in order not to have a divergence
          for(int i=0; i<size; i++)
          {
-           MPI_Isend(sendBuff,sendBuffer.count(),MPI_CHAR,i,2,intraComm,&requests[i]) ;
+           MPI_Isend(sendBuff,sendBuffer.count(),MPI_CHAR,i,2,intraComm,i == 0 ? &reqContextMsg : &requests[i-1]) ;
          }
+         MPI_Waitall(size - 1, requests, MPI_STATUSES_IGNORE);
 
          recvContextId.erase(it) ;
          delete [] requests ;
-         delete [] status ;
-
        }
      }
 
@@ -635,6 +632,7 @@ namespace xios
          buffers.push_back(new char[counts.back()]) ;
          requests.push_back(request);
          MPI_Irecv((void*)(buffers.back()),counts.back(),MPI_CHAR,root,2,intraComm,&(requests.back())) ;
+         if (isRoot) MPI_Wait(&reqContextMsg, MPI_STATUS_IGNORE);
          isEventRegistered.push_back(false);
          isEventQueued.push_back(false);
          nbContexts++;
